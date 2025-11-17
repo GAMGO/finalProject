@@ -1,0 +1,150 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui,
+    sans-serif;
+}
+
+/* =======================
+   루트 + 테마 변수
+   ======================= */
+
+.app-root {
+  height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;              /* ✅ 여백 없음 */
+  display: flex;
+  overflow: hidden;
+  transition: background-color 0.2s ease;
+}
+
+/* 라이트 테마 */
+
+.app-root.light {
+  --text-main: #111827;
+
+  /* ✅ 예전 사이드바 색으로 복구 */
+  --sidebar-bg: linear-gradient(180deg, #0b5c3a 0%, #064e3b 100%);
+  --sidebar-border: rgba(0, 0, 0, 0.08);
+
+  --chat-bg: #f5f7f6;
+  --chat-header-bg: #ffffff;
+  --chat-footer-bg: #ffffff;
+  --chat-surface-bg: #ffffff;
+
+  --user-bubble-bg: #0f7b39;
+  --ai-bubble-bg: #f3f4f6;
+  --bubble-border-subtle: rgba(15, 40, 20, 0.12);
+  --bubble-hint: rgba(148, 163, 184, 1);
+
+  background: #f5f7f6;  /* 오른쪽 전체 배경 */
+  color: var(--text-main);
+}
+
+/* 다크 테마 */
+
+.app-root.dark {
+  --text-main: #f9fafb;
+
+  --sidebar-bg: linear-gradient(180deg, #052f1a 0%, #02140a 100%);
+  --sidebar-border: rgba(255, 255, 255, 0.12);
+
+  --chat-bg: #020617;
+  --chat-header-bg: #020617;
+  --chat-footer-bg: #020617;
+  --chat-surface-bg: #020617;
+
+  --user-bubble-bg: #16a34a;
+  --ai-bubble-bg: #111827;
+  --bubble-border-subtle: rgba(148, 163, 184, 0.4);
+  --bubble-hint: rgba(148, 163, 184, 0.9);
+
+  background: #020617;
+  color: var(--text-main);
+}
+
+/* =======================
+   메인 영역 (헤더 + 채팅)
+   ======================= */
+
+.main-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--chat-bg);
+  min-height: 0;
+}
+
+/* =======================
+   상단 헤더
+   ======================= */
+
+.chat-header {
+  height: 64px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--chat-header-bg);
+}
+
+.chat-header-inner {
+  width: 100%;
+  padding: 0 24px;
+}
+
+.chat-header-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.app-root.dark .chat-header-title {
+  color: #f9fafb;
+}
+
+.chat-header-sub {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.app-root.dark .chat-header-sub {
+  color: rgba(209, 213, 219, 0.9);
+}
+
+/* =======================
+   메인 빈 상태
+   ======================= */
+
+.main-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #6b7280;
+  background: var(--chat-bg);
+}
+
+.app-root.dark .main-empty {
+  color: rgba(209, 213, 219, 0.85);
+}
+
+.main-empty-highlight {
+  font-weight: 600;
+  color: #047857;
+}

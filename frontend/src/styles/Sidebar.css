@@ -1,0 +1,213 @@
+.sidebar {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--sidebar-bg);
+  color: white;
+  border-right: 1px solid var(--sidebar-border);
+  width: 260px;
+  transition: width 0.18s ease;
+}
+
+/* 접힌 상태 */
+.sidebar.collapsed {
+  width: 64px;
+}
+
+/* 로고 행 – 여백 줄임 */
+.sidebar-logo-row {
+  padding: 10px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.sidebar.collapsed .sidebar-logo-row {
+  justify-content: center;
+}
+
+.sidebar-logo {
+  width: 36px;          
+  height: 36px;
+  object-fit: contain; 
+  border-radius: 0;    
+  box-shadow: none;   
+  background: transparent; 
+}
+
+.sidebar-logo-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-logo-title {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.sidebar-logo-sub {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* 새 대화 버튼 */
+
+.sidebar-new {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.btn-new-chat {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(
+    120deg,
+    #21a366 0%,
+    #159f5c 40%,
+    #38b96f 100%
+  );
+  color: white;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* 세션 리스트 */
+
+.sidebar-sessions {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.session-item {
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.session-item:hover {
+  background-color: rgba(33, 163, 102, 0.28);
+}
+
+.session-item.active {
+  background-color: rgba(33, 163, 102, 0.45);
+}
+
+.session-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.session-time {
+  font-size: 11px;
+  margin-top: 2px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.session-empty {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 12px 10px;
+}
+
+/* 접힌 상태 힌트 */
+
+.sidebar-collapsed-hint {
+  padding-top: 8px;
+  display: flex;
+  justify-content: center;
+  font-size: 18px;
+}
+
+
+.sidebar-footer {
+  position: relative;
+  padding: 5px 0 0 0;       
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  justify-content: flex-start; 
+}
+
+.settings-btn {
+  width: 40px;
+  height: 28px;
+  border-radius: 0;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.settings-icon {
+  width: 40px;
+  height: 38px;
+}
+
+/* 드롭다운 – 아래서 살짝 뜨는 느낌 */
+
+.theme-dropdown {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 44px;
+  background: rgba(15, 23, 42, 0.98);
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 10;
+}
+
+.theme-item {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: rgba(249, 250, 251, 0.85);
+  font-size: 12px;
+  text-align: left;
+  padding: 6px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.theme-item:hover {
+  background: rgba(31, 41, 55, 0.8);
+}
+
+.theme-item.active {
+  background: rgba(34, 197, 94, 0.9);
+  color: #022c22;
+  font-weight: 600;
+}
+/* 접힌 상태에서만 쓰는 새 대화 아이콘 버튼 */
+.collapsed-new-btn {
+  width: 100%;
+  padding: 8px 0;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* 아이콘 크기 – 필요하면 28px, 32px로 더 키워도 됨 */
+.collapsed-new-icon {
+  width: 24px;
+  height: 24px;
+}

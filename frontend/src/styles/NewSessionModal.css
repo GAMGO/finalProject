@@ -1,0 +1,109 @@
+/* 전체 어두운 오버레이 */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 40;
+}
+
+/* 카드 */
+.modal-card {
+  width: 480px;
+  max-width: calc(100% - 32px);
+  background: #111827;
+  color: #f9fafb;
+  border-radius: 18px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.65);
+  padding: 20px 20px 16px;
+}
+
+/* 라이트 테마일 때는 흰 카드 */
+.app-root.light .modal-card {
+  background: #ffffff;
+  color: #111827;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.modal-close {
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.modal-label {
+  display: block;
+  margin-bottom: 16px;
+}
+
+.modal-label-text {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 6px;
+  color: rgba(148, 163, 184, 0.95);
+}
+
+.app-root.light .modal-label-text {
+  color: #6b7280;
+}
+
+.modal-input {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  padding: 10px 12px;
+  font-size: 14px;
+  background: transparent;
+  color: inherit;
+  outline: none;
+}
+
+.modal-input:focus {
+  border-color: #16a34a;
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.45);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.modal-btn {
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 13px;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.modal-btn.secondary {
+  background: transparent;
+  border-color: rgba(148, 163, 184, 0.7);
+  color: inherit;
+}
+
+.modal-btn.primary {
+  background: #16a34a;
+  color: white;
+}
+
+.modal-btn.primary:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
