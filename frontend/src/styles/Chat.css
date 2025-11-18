@@ -260,7 +260,7 @@
   gap: 10px;
   padding: 10px 12px;
   border-radius: 12px;
-  background: #0b1120; /* 어두운 카드 배경 (ChatGPT 느낌) */
+  background: #0b1120; /* 어두운 카드 배경 */
   color: #e5e7eb;
 }
 
@@ -292,53 +292,6 @@
 .file-card-sub {
   font-size: 11px;
   color: #9ca3af;
-}
-/* ===== 파일 카드 UI (이미 쓰고 있던 부분) ===== */
-
-.file-card {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: #0b1120;
-  color: #e5e7eb;
-}
-
-.file-card-icon-wrapper {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: #1f2937;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.file-card-icon {
-  width: 20px;
-  height: 20px;
-}
-
-.file-card-text {
-  display: flex;
-  flex-direction: column;
-}
-
-.file-card-name {
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.file-card-sub {
-  font-size: 11px;
-  color: #9ca3af;
-}
-
-/* 링크 기본 스타일 제거 */
-.chat-file-link {
-  text-decoration: none;
-  color: inherit;
 }
 
 /* ===== 이미지 썸네일 버튼 ===== */
@@ -348,13 +301,6 @@
   background: transparent;
   padding: 0;
   cursor: pointer;
-}
-
-/* 기존 .chat-image-preview는 썸네일 공용으로 사용 */
-.chat-image-preview {
-  max-width: 260px;
-  border-radius: 10px;
-  display: block;
 }
 
 /* ===== 이미지 미리보기 모달 ===== */
@@ -405,16 +351,22 @@
 }
 
 .image-preview-download-btn {
-  font-size: 13px;
   padding: 6px 12px;
   border-radius: 999px;
-  border: 1px solid #22c55e;
-  color: #22c55e;
   background: transparent;
   text-decoration: none;
   cursor: pointer;
+  display: flex;              /* 아이콘 중앙 정렬 */
+  align-items: center;
+  justify-content: center;
 }
 
 .image-preview-download-btn:hover {
   background: rgba(34, 197, 94, 0.15);
+}
+
+.image-preview-download-icon {
+  width: 30px;
+  height: 30px;
+  display: block;
 }
