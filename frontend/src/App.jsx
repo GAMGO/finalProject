@@ -23,14 +23,27 @@ export default function App() {
     api
       .get("/chat/sessions")
       .then((res) => {
-        const list = res.data || [];
+        const raw = res.data || [];
+
+        // 👉 어떤 이름으로 오든 timeLabel 하나로 통일
+        const list = raw.map((s) => ({
+          ...s,
+          timeLabel:
+            s.updatedAt ||
+            s.createdAtLabel ||
+            s.createdAt ||
+            "", // 혹시 없으면 빈 문자열
+        }));
+
         setSessions(list);
+
         if (list.length && !currentSessionId) {
           setCurrentSessionId(list[0].id);
           setCurrentTitle(list[0].title);
         }
       })
       .catch((err) => console.error(err));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // 현재 세션 바뀔 때마다 제목 업데이트
@@ -39,16 +52,29 @@ export default function App() {
     setCurrentTitle(s ? s.title : "");
   }, [sessions, currentSessionId]);
 
-  // "+ 새 대화" 버튼 클릭 → 모달 열기
+  // "+ 새 대화" 버튼 / 접힌 상태 newIcon 클릭 → 모달 열기
   const openNewSessionModal = () => {
     setNewModalOpen(true);
   };
 
   // 모달에서 "대화 만들기" 눌렀을 때
   const handleCreateSessionConfirm = async (title) => {
+    const trimmed = title.trim();
+    if (!trimmed) return;
+
     try {
-      const res = await api.post("/chat/sessions", { title: title.trim() });
-      const newSession = res.data;
+      const res = await api.post("/chat/sessions", { title: trimmed });
+      const dto = res.data;
+
+      const newSession = {
+        ...dto,
+        timeLabel:
+          dto.updatedAt ||
+          dto.createdAtLabel ||
+          dto.createdAt ||
+          "",
+      };
+
       // 새 세션을 목록 맨 위에 추가
       setSessions((prev) => [newSession, ...prev]);
       setCurrentSessionId(newSession.id);
@@ -59,8 +85,42 @@ export default function App() {
     }
   };
 
+  // 세션 선택
   const handleSelectSession = (id) => {
     setCurrentSessionId(id);
+  };
+
+  // 세션 삭제
+  const handleDeleteSession = async (id) => {
+    const target = sessions.find((s) => s.id === id);
+    if (!target) return;
+
+    // ✅ 여기서만 confirm 처리 (Sidebar 쪽 confirm은 지우는 걸 추천)
+    const ok = window.confirm(`"${target.title}" 대화를 삭제할까요?`);
+    if (!ok) return;
+
+    try {
+      await api.delete(`/chat/sessions/${id}`);
+
+      // 상태에서 제거 + 현재 세션이면 옮겨가기
+      setSessions((prev) => {
+        const next = prev.filter((s) => s.id !== id);
+
+        if (id === currentSessionId) {
+          if (next.length > 0) {
+            setCurrentSessionId(next[0].id);
+          } else {
+            setCurrentSessionId(null);
+            setCurrentTitle("");
+          }
+        }
+
+        return next;
+      });
+    } catch (e) {
+      console.error(e);
+      alert("대화 삭제 중 오류가 발생했어요.");
+    }
   };
 
   return (
@@ -73,8 +133,9 @@ export default function App() {
         onChangeTheme={setTheme}
         sessions={sessions}
         currentSessionId={currentSessionId}
-        onCreateSession={openNewSessionModal} // ✅ 여기서 모달 오픈
+        onCreateSession={openNewSessionModal}
         onSelectSession={handleSelectSession}
+        onDeleteSession={handleDeleteSession}
       />
 
       {/* 메인 영역 */}

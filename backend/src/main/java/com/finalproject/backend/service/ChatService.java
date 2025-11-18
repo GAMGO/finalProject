@@ -1,3 +1,4 @@
+// src/main/java/com/finalproject/backend/service/ChatService.java
 package com.finalproject.backend.service;
 
 import com.finalproject.backend.domain.chat.ChatMessage;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -23,7 +25,8 @@ public class ChatService {
     private final ChatMessageRepository messageRepository;
     private final OpenAiClient openAiClient;
 
-    private final DateTimeFormatter formatter =
+    // 리스트용 시간 포맷 (사이드바에 보일 텍스트)
+    private final DateTimeFormatter listFormatter =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     // 로그인 붙기 전이라 userId는 1 고정
@@ -31,7 +34,10 @@ public class ChatService {
         return 1L;
     }
 
-    // ===== 세션 =====
+    /* ======================
+       세션 만들기 / 목록
+       ====================== */
+
     public ChatSessionDto createSession(String title) {
         ChatSession session = ChatSession.builder()
                 .userId(getCurrentUserId())
@@ -39,22 +45,26 @@ public class ChatService {
                 .build();
 
         ChatSession saved = sessionRepository.save(session);
+
         return ChatSessionDto.builder()
                 .id(saved.getId())
                 .title(saved.getTitle())
-                .updatedAt(saved.getUpdatedAt().format(formatter))
+                // ✅ 사이드바에서 쓸 라벨
+                .createdAtLabel(saved.getUpdatedAt().format(listFormatter))
                 .build();
     }
 
     @Transactional(readOnly = true)
     public List<ChatSessionDto> listSessions() {
         Long userId = getCurrentUserId();
+
         return sessionRepository.findByUserIdOrderByUpdatedAtDesc(userId)
                 .stream()
                 .map(s -> ChatSessionDto.builder()
                         .id(s.getId())
                         .title(s.getTitle())
-                        .updatedAt(s.getUpdatedAt().format(formatter))
+                        // ✅ 여기도 동일 포맷으로 내려보내기
+                        .createdAtLabel(s.getUpdatedAt().format(listFormatter))
                         .build())
                 .collect(Collectors.toList());
     }
@@ -69,7 +79,24 @@ public class ChatService {
         return session;
     }
 
-    // ===== 메시지 =====
+    /* ======================
+       세션 삭제
+       ====================== */
+
+    public void deleteSession(Long sessionId) {
+        ChatSession session = getSessionForCurrentUser(sessionId);
+
+        // 1) 먼저 해당 세션의 메시지들 삭제
+        messageRepository.deleteBySession(session);
+
+        // 2) 세션 삭제
+        sessionRepository.delete(session);
+    }
+
+    /* ======================
+       메시지 관련
+       ====================== */
+
     @Transactional(readOnly = true)
     public List<ChatMessageDto> getMessages(Long sessionId) {
         ChatSession session = getSessionForCurrentUser(sessionId);
@@ -100,7 +127,6 @@ public class ChatService {
 
         List<Map<String, String>> messages = new ArrayList<>();
 
-        // system 프롬프트: "형식 제안하고 확인 받기"
         String systemPrompt = """
                 너는 엑셀 양식 설계를 도와주는 한국어 AI 비서야.
                 - 사용자의 업무 설명을 듣고, 먼저 어떤 열(컬럼)과 형식으로 만들지 제안해.
@@ -140,7 +166,7 @@ public class ChatService {
         aiMsg = messageRepository.save(aiMsg);
 
         // 세션 업데이트 시간 갱신
-        session.setUpdatedAt(java.time.LocalDateTime.now());
+        session.setUpdatedAt(LocalDateTime.now());
 
         return ChatReplyDto.builder()
                 .userMessage(ChatMessageDto.builder()

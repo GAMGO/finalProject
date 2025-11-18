@@ -1,3 +1,4 @@
+// src/main/java/com/finalproject/backend/controller/ChatController.java
 package com.finalproject.backend.controller;
 
 import com.finalproject.backend.dto.*;
@@ -34,5 +35,10 @@ public class ChatController {
     public ChatReplyDto sendMessage(@PathVariable Long id,
                                     @RequestBody SendMessageReq req) {
         return chatService.processMessage(id, req.getContent());
+    }
+
+    @DeleteMapping("/sessions/{id}")
+    public void deleteSession(@PathVariable Long id) {
+        chatService.deleteSession(id);
     }
 }
