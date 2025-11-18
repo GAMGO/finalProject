@@ -9,5 +9,6 @@ import lombok.*;
 public class ChatSessionDto {
     private Long id;
     private String title;
-    private String updatedAt;
+    // private String updatedAt;
+    private String createdAtLabel;
 }

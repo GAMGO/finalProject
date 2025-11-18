@@ -3,23 +3,39 @@ import { useState } from "react";
 import logo from "../assets/logo.png";
 import setIcon from "../assets/set.png";
 import newIcon from "../assets/new.png";
+import trashIcon from "../assets/trash.png";
 
 export default function Sidebar({
-  open,                 // true: 펼침 / false: 접힘
-  onToggle,             // 로고 클릭 시 접기/펼치기
+  open, // true: 펼침 / false: 접힘
+  onToggle,
   theme,
   onChangeTheme,
   sessions,
   currentSessionId,
-  onCreateSession,      // ✅ App에서 온 모달 오픈 함수
+  onCreateSession,
   onSelectSession,
+  onDeleteSession, // 🔴 삭제 콜백 (App에서 내려줌)
 }) {
   const [showTheme, setShowTheme] = useState(false);
+  const [openMenuId, setOpenMenuId] = useState(null); // 어떤 세션의 … 메뉴가 열려 있는지
 
   const handleThemeClick = () => setShowTheme((v) => !v);
   const handleThemeSelect = (value) => {
     onChangeTheme(value);
     setShowTheme(false);
+  };
+
+  const toggleSessionMenu = (e, sessionId) => {
+    e.stopPropagation();
+    setOpenMenuId((prev) => (prev === sessionId ? null : sessionId));
+  };
+
+  const handleDeleteClick = (e, sessionId) => {
+    e.stopPropagation();
+    setOpenMenuId(null);
+    if (window.confirm("이 대화를 삭제할까요?")) {
+      onDeleteSession?.(sessionId);
+    }
   };
 
   return (
@@ -35,18 +51,18 @@ export default function Sidebar({
         )}
       </div>
 
-      {/* ✅ 접힌 상태에서만 보이는 새 대화 아이콘 */}
+      {/* 접힌 상태에서만: 새 대화 아이콘 */}
       {!open && (
         <button
           type="button"
           className="collapsed-new-btn"
-          onClick={onCreateSession}   // ← 여기서 모달 열기
+          onClick={onCreateSession}
         >
           <img src={newIcon} alt="새 대화" className="collapsed-new-icon" />
         </button>
       )}
 
-      {/* 펼쳐진 상태에서만: 새 대화 버튼 + 세션 리스트 + 테마 설정 */}
+      {/* 펼쳐진 상태에서만: 새 대화, 세션 리스트, 테마 */}
       {open && (
         <>
           {/* + 새 대화 버튼 */}
@@ -54,7 +70,7 @@ export default function Sidebar({
             <button
               type="button"
               className="btn-new-chat"
-              onClick={onCreateSession}   // ← 여기도 같은 모달
+              onClick={onCreateSession}
             >
               + 새 대화
             </button>
@@ -63,28 +79,58 @@ export default function Sidebar({
           {/* 세션 리스트 */}
           <div className="sidebar-sessions">
             {sessions.length === 0 ? (
-              <div className="session-empty">
-                이전에 했던 대화는
-                <br />
-                위 로고를 클릭해서
-                <br />
-                히스토리에서 불러올 수 있어요.
-              </div>
+              <div className="session-empty" />
             ) : (
-              sessions.map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  className={
-                    "session-item" +
-                    (s.id === currentSessionId ? " active" : "")
-                  }
-                  onClick={() => onSelectSession(s.id)}
-                >
-                  <div className="session-title">{s.title}</div>
-                  <div className="session-time">{s.createdAtLabel}</div>
-                </button>
-              ))
+              sessions.map((s) => {
+                const isActive = s.id === currentSessionId;
+                const isMenuOpen = openMenuId === s.id;
+
+                return (
+                  <div
+                    key={s.id}
+                    className={
+                      "session-item" + (isActive ? " active" : "")
+                    }
+                  >
+                    {/* 메인 영역 (제목/시간) */}
+                    <button
+                      type="button"
+                      className="session-main"
+                      onClick={() => onSelectSession(s.id)}
+                    >
+                      <div className="session-title">{s.title}</div>
+                      <div className="session-time">{s.timeLabel}</div>
+                    </button>
+
+                    {/* … 버튼 */}
+                    <button
+                      type="button"
+                      className="session-menu-btn"
+                      onClick={(e) => toggleSessionMenu(e, s.id)}
+                    >
+                      ⋯
+                    </button>
+
+                    {/* 삭제 말풍선 */}
+                    {isMenuOpen && (
+                      <div className="session-menu">
+                        <button
+                          type="button"
+                          className="session-menu-delete"
+                          onClick={(e) => handleDeleteClick(e, s.id)}
+                        >
+                          <img
+                            src={trashIcon}
+                            alt="삭제"
+                            className="session-menu-icon"
+                          />
+                          삭제
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })
             )}
           </div>
 
