@@ -4,6 +4,8 @@ import logo from "../assets/logo.png";
 import setIcon from "../assets/set.png";
 import newIcon from "../assets/new.png";
 import trashIcon from "../assets/trash.png";
+import SignUpButton from "./SignUpButton";
+import { useNavigate } from "react-router-dom";
 
 export default function Sidebar({
   open, // true: 펼침 / false: 접힘
@@ -53,13 +55,17 @@ export default function Sidebar({
 
       {/* 접힌 상태에서만: 새 대화 아이콘 */}
       {!open && (
-        <button
-          type="button"
-          className="collapsed-new-btn"
-          onClick={onCreateSession}
-        >
-          <img src={newIcon} alt="새 대화" className="collapsed-new-icon" />
-        </button>
+        <>
+          <button
+            type="button"
+            className="collapsed-new-btn"
+            onClick={onCreateSession}
+          >
+            <img src={newIcon} alt="새 대화" className="collapsed-new-icon" />
+          </button>
+
+          <SignUpButton open={open} />
+        </>
       )}
 
       {/* 펼쳐진 상태에서만: 새 대화, 세션 리스트, 테마 */}
@@ -88,9 +94,7 @@ export default function Sidebar({
                 return (
                   <div
                     key={s.id}
-                    className={
-                      "session-item" + (isActive ? " active" : "")
-                    }
+                    className={"session-item" + (isActive ? " active" : "")}
                   >
                     {/* 메인 영역 (제목/시간) */}
                     <button
@@ -157,9 +161,7 @@ export default function Sidebar({
                 </button>
                 <button
                   type="button"
-                  className={
-                    "theme-item" + (theme === "dark" ? " active" : "")
-                  }
+                  className={"theme-item" + (theme === "dark" ? " active" : "")}
                   onClick={() => handleThemeSelect("dark")}
                 >
                   다크

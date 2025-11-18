@@ -5,9 +5,12 @@ import App from "./App";
 import "./styles/App.css";
 import "./styles/Sidebar.css";
 import "./styles/Chat.css";
+import { BrowserRouter } from "react-router-dom";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <App />
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   </React.StrictMode>
 );

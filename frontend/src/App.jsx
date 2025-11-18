@@ -7,7 +7,8 @@ import Sidebar from "./components/Sidebar";
 import ChatScreen from "./components/ChatScreen";
 import NewSessionModal from "./components/NewSessionModal";
 import { api } from "./api";
-
+import Signup from "./components/SignUp";
+import { useLocation } from "react-router-dom";
 export default function App() {
   const [theme, setTheme] = useState("light");
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -17,6 +18,7 @@ export default function App() {
   const [currentTitle, setCurrentTitle] = useState("");
 
   const [newModalOpen, setNewModalOpen] = useState(false);
+  const location = useLocation();
 
   // 세션 목록 처음 로딩
   useEffect(() => {
@@ -28,11 +30,7 @@ export default function App() {
         // 👉 어떤 이름으로 오든 timeLabel 하나로 통일
         const list = raw.map((s) => ({
           ...s,
-          timeLabel:
-            s.updatedAt ||
-            s.createdAtLabel ||
-            s.createdAt ||
-            "", // 혹시 없으면 빈 문자열
+          timeLabel: s.updatedAt || s.createdAtLabel || s.createdAt || "", // 혹시 없으면 빈 문자열
         }));
 
         setSessions(list);
@@ -68,11 +66,7 @@ export default function App() {
 
       const newSession = {
         ...dto,
-        timeLabel:
-          dto.updatedAt ||
-          dto.createdAtLabel ||
-          dto.createdAt ||
-          "",
+        timeLabel: dto.updatedAt || dto.createdAtLabel || dto.createdAt || "",
       };
 
       // 새 세션을 목록 맨 위에 추가
@@ -123,7 +117,9 @@ export default function App() {
     }
   };
 
-  return (
+  return location.pathname === "/signup" ? (
+    <Signup />
+  ) : (
     <div className={`app-root ${theme}`}>
       {/* 사이드바 */}
       <Sidebar
@@ -143,9 +139,7 @@ export default function App() {
         {/* 상단 헤더 (제목 표시) */}
         <header className="chat-header">
           <div className="chat-header-inner">
-            <div className="chat-header-title">
-              {currentTitle || "새 대화"}
-            </div>
+            <div className="chat-header-title">{currentTitle || "새 대화"}</div>
             <div className="chat-header-sub">
               엑셀 양식 자동화를 위한 AI 비서
             </div>
@@ -157,8 +151,8 @@ export default function App() {
           <ChatScreen sessionId={currentSessionId} />
         ) : (
           <div className="main-empty">
-            <span className="main-empty-highlight">왼쪽에서 “+ 새 대화”</span>
-            를 눌러 새 엑셀 비서 대화를 시작해 보세요.
+            <span className="main-empty-highlight">왼쪽에서 “+ 새 대화”</span>를
+            눌러 새 엑셀 비서 대화를 시작해 보세요.
           </div>
         )}
       </div>
