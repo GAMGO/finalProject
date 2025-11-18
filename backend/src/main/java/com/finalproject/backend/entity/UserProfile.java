@@ -24,4 +24,6 @@ public class UserProfile {
   @OneToOne
   @JoinColumn(name = "CUSTOMER_ID", referencedColumnName = "customersId")
   private Customers customer;
+
+  
 }

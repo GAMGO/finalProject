@@ -7,6 +7,9 @@ import com.finalproject.backend.entity.Customers;
 import com.finalproject.backend.entity.UserProfile;
 import com.finalproject.backend.repository.CustomersRepository;
 import com.finalproject.backend.repository.UserProfileRepository;
+
+import java.util.UUID;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import lombok.RequiredArgsConstructor;
 
@@ -17,6 +20,10 @@ public class AuthService {
   private final CustomersRepository customersRepository;
   private final UserProfileRepository profileRepository;
   private final PasswordEncoder passwordEncoder;
+
+  public Customers findByEmail(String email) {
+    return customersRepository.findByEmail(email).orElse(null);
+  }
 
   public void signup(SignupRequest dto) {
     if (customersRepository.existsByCustomersId(dto.getCustomersId())) {
@@ -38,4 +45,15 @@ public class AuthService {
 
     profileRepository.save(profile);
   }
+
+  public Customers googleSignup(String email, String name, String picture) {
+    Customers user = new Customers();
+    user.setCustomersId(email);
+    user.setPassword(UUID.randomUUID().toString()); // 랜덤 값
+    user.setEmailVerified(1);
+    user.setUserProfile(new UserProfile());
+
+    return customersRepository.save(user);
+  }
+
 }

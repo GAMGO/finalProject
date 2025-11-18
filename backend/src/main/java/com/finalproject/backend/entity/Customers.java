@@ -24,6 +24,9 @@ public class Customers {
   @Column(nullable = false, unique = true, length = 100)
   private String customersId;
 
+  @Column(nullable = true, unique = true, length = 255)
+  private String email; // 🔥 반드시 추가해야 함!!
+
   @Column(nullable = false, length = 255)
   private String password;
 
