@@ -7,6 +7,7 @@ import greenSend from "../assets/green_send.png";
 import uploadIcon from "../assets/upload.png";
 import fileIcon from "../assets/file.png";
 import imageIcon from "../assets/image.png";
+import downloadIcon from "../assets/download.png"; // ⬅ 다운로드 아이콘
 
 const FILE_BASE = "http://localhost:8080"; // 업로드 파일 불러올 때 사용
 
@@ -178,6 +179,7 @@ export default function ChatScreen({ sessionId }) {
                   <div className="chat-bubble-text">
                     {hasFile ? (
                       m.fileType === "IMAGE" ? (
+                        // 이미지: 썸네일 클릭 → 미리보기 모달
                         <button
                           type="button"
                           className="image-thumb-btn"
@@ -195,7 +197,7 @@ export default function ChatScreen({ sessionId }) {
                           />
                         </button>
                       ) : (
-                        // ⭐ 일반 파일: 카드 클릭 시 바로 다운로드
+                        // 일반 파일: 카드 클릭 시 바로 다운로드
                         <a
                           href={fileUrl}
                           className="chat-file-link"
@@ -308,7 +310,7 @@ export default function ChatScreen({ sessionId }) {
         />
       </div>
 
-      {/* ⭐ 이미지 미리보기 모달 */}
+      {/* 이미지 미리보기 모달 */}
       {previewImage && (
         <div
           className="image-preview-backdrop"
@@ -330,7 +332,11 @@ export default function ChatScreen({ sessionId }) {
                 className="image-preview-download-btn"
                 download={previewImage.name || "image"}
               >
-                다운로드
+                <img
+                  src={downloadIcon}
+                  alt="다운로드"
+                  className="image-preview-download-icon"
+                />
               </a>
             </div>
           </div>
