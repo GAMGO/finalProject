@@ -1,15 +1,16 @@
-import React from "react";
-import Header from "./components/Header";
-import Main from "./components/Main";
+import KakaoMap from "./components/KakaoMap";
 import "./App.css";
 
-function App() {
+export default function App() {
   return (
     <div className="app">
-      <Header />
-      <Main />
+      <aside className="side-bar">
+        <div className="side-logo">LOGO</div>
+      </aside>
+
+      <main className="main-content">
+        <KakaoMap />
+      </main>
     </div>
   );
 }
-
-export default App;

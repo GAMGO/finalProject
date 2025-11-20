@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg
+  width="512"
+  height="512"
+  viewBox="0 0 512 512"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <!-- 보라색 원 -->
+  <circle cx="256" cy="256" r="256" fill="#78266A" />
+
+  <!-- 흰색 플러스 (가로 막대) -->
+  <rect
+    x="128"
+    y="236"
+    width="256"
+    height="40"
+    rx="20"
+    fill="#FFFFFF"
+  />
+
+  <!-- 흰색 플러스 (세로 막대) -->
+  <rect
+    x="236"
+    y="128"
+    width="40"
+    height="256"
+    rx="20"
+    fill="#FFFFFF"
+  />
+</svg>
