@@ -1,4 +1,4 @@
-package com.example.health_care.entity;
+package org.iclass.finalproject.customer.entity;
 
 public enum Gender {
     M, F

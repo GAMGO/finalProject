@@ -1,4 +1,4 @@
-package org.iclass.finalproject.entity;
+package org.iclass.finalproject.BalcklistedToken.entity;
 
 import java.time.LocalDateTime;
 import jakarta.persistence.*;
@@ -22,8 +22,8 @@ public class BlacklistedTokenEntity {
     @Column(name = "token", length = 1024, nullable = false, unique = true)
     private String token;
 
-    @Column(name = "user_id", length = 100, nullable = false)
-    private String userId;
+    @Column(name = "custonmer_idx",nullable = false)
+    private Long customerIdx;
 
     @Column(name = "expires_at", nullable = false)
     private LocalDateTime expiresAt;
