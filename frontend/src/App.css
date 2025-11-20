@@ -1,0 +1,131 @@
+:root {
+  --header-bg: #78266a; /* 상단 헤더 */
+  --page-bg: #ffffff;   /* 전체 배경 */
+  --dropdown-bg: #ffd19d; /* 드롭다운 배경 */
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--page-bg);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+.app {
+  min-height: 100vh;
+  background: var(--page-bg);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== 헤더 ===== */
+
+.header {
+  background: var(--header-bg);
+  color: #ffffff;
+  position: relative;
+  z-index: 10;
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  min-height: 44px;
+}
+
+/* 왼쪽: 햄버거 */
+
+.header-left {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.menu-button {
+  border: none;
+  background: transparent;
+  padding: 4px;
+  margin: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu-icon {
+  width: 28px;
+  height: 28px;
+  display: block;
+}
+
+/* 드롭다운 */
+
+.menu-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 8px;
+  background: var(--dropdown-bg);
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  padding: 6px 0;
+  min-width: 140px;
+}
+
+.menu-item {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 14px;
+  color: #4a2a1f;
+  cursor: pointer;
+}
+
+.menu-item:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+/* 중앙: 로고 자리 */
+
+.header-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none; /* 중앙 로고가 클릭을 막지 않게 */
+}
+
+.logo-placeholder {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  pointer-events: auto; /* 필요하면 클릭 가능하도록 바꾸기 */
+}
+
+/* 오른쪽: 자리만 확보 */
+
+.header-right {
+  width: 32px; /* 왼쪽 햄버거랑 밸런스 맞추려고 */
+}
+
+/* ===== 메인 ===== */
+
+.main {
+  flex: 1;
+  background: var(--page-bg);
+}
+
+.map-placeholder {
+  height: calc(100vh - 44px);
+  border-top: 1px solid #eee;
+}
