@@ -22,8 +22,8 @@ public class BlacklistedTokenEntity {
     @Column(name = "token", length = 1024, nullable = false, unique = true)
     private String token;
 
-    @Column(name = "custonmer_idx",nullable = false)
-    private Long customerIdx;
+    @Column(name = "user_id", length = 100, nullable = false)
+    private String userId;
 
     @Column(name = "expires_at", nullable = false)
     private LocalDateTime expiresAt;

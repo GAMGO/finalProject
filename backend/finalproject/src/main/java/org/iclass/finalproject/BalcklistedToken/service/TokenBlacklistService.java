@@ -22,11 +22,11 @@ public class TokenBlacklistService {
     }
 
     @Transactional
-    public void blacklist(String token, Long customerIdx, LocalDateTime expiresAt, String reason) {
+    public void blacklist(String token, String userId, LocalDateTime expiresAt, String reason) {
         if (repository.existsByToken(token)) return;
         BlacklistedTokenEntity e = BlacklistedTokenEntity.builder()
                 .token(token)
-                .customerIdx(customerIdx)
+                .userId(userId)
                 .expiresAt(expiresAt)
                 .createdAt(LocalDateTime.now())
                 .reason(reason)
