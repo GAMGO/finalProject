@@ -1,32 +1,56 @@
-# summarizer.py
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 import torch
+from transformers import AutoTokenizer, AutoModel
+import numpy as np
 
-# 예시 모델 (원하는 KoBART 요약 모델로 교체 가능)
-SUM_MODEL_NAME = "gogamza/kobart-base-v2"  # 또는 요약에 특화된 KoBART 모델
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+EMBED_MODEL = "klue/bert-base"
 
 class ReviewSummarizer:
-    def __init__(self, model_name: str = SUM_MODEL_NAME, max_length: int = 128):
+    def __init__(self, model_name: str = EMBED_MODEL):
+        print("🔄 Loading Extractive Summarizer...")
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self.model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
-        self.max_length = max_length
+        self.model = AutoModel.from_pretrained(model_name).to(DEVICE)
+        self.model.eval()
+        print("✅ Summarizer Loaded")
 
-    def summarize(self, text: str, summary_len: int = 48):
-        inputs = self.tokenizer(
-            [text],
-            max_length=self.max_length,
-            truncation=True,
-            padding="max_length",
+    def sentence_split(self, text: str):
+        # 단순 문장 분리
+        s = text.replace("?", ".").replace("!", ".")
+        return [x.strip() for x in s.split(".") if len(x.strip()) > 0]
+
+    def embed(self, sentence: str):
+        tokens = self.tokenizer(
+            sentence,
             return_tensors="pt",
+            truncation=True,
+            max_length=128
         )
-        with torch.no_grad():
-            summary_ids = self.model.generate(
-                input_ids=inputs["input_ids"],
-                attention_mask=inputs["attention_mask"],
-                max_length=summary_len,
-                num_beams=4,
-                early_stopping=True,
-            )
+        tokens = {k: v.to(DEVICE) for k,v in tokens.items()}
 
-        summary = self.tokenizer.decode(summary_ids[0], skip_special_tokens=True)
-        return summary
+        with torch.no_grad():
+            output = self.model(**tokens)
+        cls = output.last_hidden_state[:, 0]
+        return cls.cpu().numpy()[0]
+
+    def summarize(self, text: str, max_sentences: int = 2):
+        if not text or len(text.strip()) == 0:
+            return ""
+
+        sents = self.sentence_split(text)
+
+        # 문장 하나면 그대로 반환
+        if len(sents) <= max_sentences:
+            return text
+
+        # 문장 임베딩
+        embeddings = np.vstack([self.embed(s) for s in sents])
+
+        # 중요도 점수 (L2 norm)
+        scores = np.linalg.norm(embeddings, axis=1)
+
+        # 상위 문장 선택
+        idxs = scores.argsort()[::-1][:max_sentences]
+        idxs = sorted(idxs)  # 원래 순서 유지
+
+        summary = ". ".join([sents[i] for i in idxs])
+        return summary.strip()
