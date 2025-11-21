@@ -1,0 +1,57 @@
+:root {
+  --side-bg: #78266a;  /* 보라색 */
+  --page-bg: #ffffff;  /* 흰색 */
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--page-bg);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;          /* 가로 배치 */
+  background: var(--page-bg);
+}
+
+/* ===== 왼쪽 보라색 사이드 한 줄 ===== */
+
+.side-bar {
+  width: 200px;            /* 사이드 폭, 마음에 안 들면 숫자만 바꾸면 됨 */
+  background: var(--side-bg);
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding-top: 16px;
+}
+
+/* 로고는 사이드 상단 중앙 느낌으로 */
+
+.side-logo {
+  margin: 0 auto;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ===== 오른쪽 내용 영역 ===== */
+
+.main-content {
+  flex: 1;
+  min-height: 100vh;
+  background: var(--page-bg);
+}
+
+.map-placeholder {
+  width: 100%;
+  height: 100%;
+}

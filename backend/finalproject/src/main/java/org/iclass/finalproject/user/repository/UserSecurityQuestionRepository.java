@@ -18,6 +18,6 @@ public interface UserSecurityQuestionRepository extends JpaRepository<UserSecuri
 
 /*
  * [파일 설명]
- * - UserSecurityQuestion 엔티티에 대한 DB 접근 레이어.
- * - 특정 유저의 전체 질문 목록 및 질문 종류별 단건 조회 기능 제공.
+ * - 특정 유저의 보안 질문 목록 조회, 질문 종류별 단건 조회 등을 제공하는 레포.
+ * - 비밀번호 재설정 시 보안 질문/답 검증에 사용.
  */
