@@ -14,20 +14,42 @@ java {
 repositories {
     mavenCentral()
 }
-
+def lombokVersion = '1.18.32'
+def jwtVersion = '0.12.6'
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
+    // Email + 관련 보안 의존성
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    // .env 파일 로드
+    implementation 'io.github.cdimascio:java-dotenv:5.2.2'
+
+    // Devtools
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
     runtimeOnly 'com.mysql:mysql-connector-j'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+    // Lombok
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
+    testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    // JWT (로그인 토큰)
+    implementation "io.jsonwebtoken:jjwt-api:${jwtVersion}"
+    runtimeOnly "io.jsonwebtoken:jjwt-impl:${jwtVersion}"
+    runtimeOnly "io.jsonwebtoken:jjwt-jackson:${jwtVersion}" // jackson serializer
+
+
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     // testImplementation 'org.springframework.security:spring-security-test'
+
 }
 
 tasks.named('test') {
