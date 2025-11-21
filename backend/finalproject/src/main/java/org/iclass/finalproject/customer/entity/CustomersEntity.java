@@ -1,8 +1,8 @@
 package org.iclass.finalproject.customer.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import lombok.*;
-
 import java.time.LocalDateTime;
 
 import org.iclass.finalproject.customer.entity.Gender;
@@ -18,16 +18,19 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 public class CustomersEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "customers_seq")
-    @SequenceGenerator(name = "customers_seq", sequenceName = "CUSTOMERS_SEQ", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "idx")
     private Long idx;
 
-    @Column(name = "id", length = 100, nullable = false, updatable = false, unique = true)
+    @Column(name = "customer_id", length = 100, nullable = false, updatable = false, unique = true)
     private String id;
 
-    @Column(name = "password", length = 255, nullable = false)
+    @Column(name = "password_hash", length = 255, nullable = false)
     private String password;
+    
+    @Email
+    @Column(name = "email")
+    private String email;
 
     @Column(name = "age")
     private Integer age;

@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface CustomersRepository extends JpaRepository<CustomersEntity, Long> {
   
   Optional<CustomersEntity> findById(String id);
+  Optional<CustomersEntity> findByEmail(String email);
 
   boolean existsById(String id);
 
