@@ -1,0 +1,27 @@
+package org.iclass.finalproject.customer.dto;
+
+import java.time.LocalDate;
+
+import org.iclass.finalproject.customer.entity.Gender;
+import jakarta.validation.constraints.*;
+import lombok.*;
+
+
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+public class SignupRequest {
+    @NotBlank
+    private String id;
+
+    @NotBlank
+    @Size(min = 8, max = 72)
+    private String password;
+    @Positive
+    @Max(150)
+    private Integer age;
+    
+    private Gender gender;
+
+    private LocalDate birth;
+
+    private String address;
+}

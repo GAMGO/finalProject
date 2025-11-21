@@ -1,14 +1,14 @@
 {
-  "configurations": [
-    {
-      "type": "java",
-      "name": "Spring Boot-FinalprojectApplication<finalproject>",
-      "request": "launch",
-      "cwd": "${workspaceFolder}",
-      "mainClass": "org.iclass.finalproject.FinalprojectApplication",
-      "projectName": "finalproject",
-      "args": "",
-      "envFile": "${workspaceFolder}/.env"
-    }
-  ]
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-FinalprojectApplication<finalproject>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "org.iclass.finalproject.FinalprojectApplication",
+            "projectName": "finalproject",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
 }
