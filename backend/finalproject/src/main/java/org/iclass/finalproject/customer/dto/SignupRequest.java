@@ -15,6 +15,11 @@ public class SignupRequest {
     @NotBlank
     @Size(min = 8, max = 72)
     private String password;
+
+    @Email
+    @NotBlank
+    private String email;
+
     @Positive
     @Max(150)
     private Integer age;
