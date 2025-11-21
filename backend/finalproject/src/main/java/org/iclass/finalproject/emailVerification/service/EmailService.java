@@ -23,7 +23,7 @@ public class EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
-    @Value("${GMAIL_API_EMAIL}")
+    @Value("${spring.mail.username}")
     private String fromEmail;
     
     // 📧이모지로 표시: 이메일 인증 코드를 임시 저장할 맵 추가

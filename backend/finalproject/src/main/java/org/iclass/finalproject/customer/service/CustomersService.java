@@ -46,7 +46,7 @@ public class CustomersService implements UserDetailsService {
 
                                 // 이메일 재발송
                                 emailService.sendVerificationEmail(req.getId(), newCode); // 6자리 인증번호를 발송
-                                log.info("[SIGNUP:SERVICE] 이메일 인증번호 재발송: {}", req.getId());
+                                log.info("[SIGNUP:SERVICE] 이메일 인증번호 재발송: {}", req.getEmail());
                         }
                         return existingUser;
                 }
@@ -60,6 +60,9 @@ public class CustomersService implements UserDetailsService {
                                 .password(passwordEncoder.encode(req.getPassword())) // 비밀번호 암호화
                                 .age(req.getAge())
                                 .address(req.getAddress())
+                                .birth(req.getBirth().toString())
+                                .gender(req.getGender())
+                                .email(req.getEmail())
                                 .emailVerified(false) // 이메일 인증 대기 상태
                                 .emailVerificationToken(verificationCode) // 인증번호
                                 .emailVerificationExpires(codeExpires) // 인증번호 만료 시간
@@ -68,11 +71,11 @@ public class CustomersService implements UserDetailsService {
                 CustomersEntity savedUser = customersRepository.save(user);
 
                 // 이메일 인증번호 발송
-                boolean emailSent = emailService.sendVerificationEmail(req.getId(), verificationCode);
+                boolean emailSent = emailService.sendVerificationEmail(req.getEmail(), verificationCode);
                 if (emailSent) {
-                        log.info("[SIGNUP:SERVICE] 이메일 인증번호 발송 성공: {}", req.getId());
+                        log.info("[SIGNUP:SERVICE] 이메일 인증번호 발송 성공: {}", req.getEmail());
                 } else {
-                        log.warn("[SIGNUP:SERVICE] 이메일 인증번호 발송 실패: {}", req.getId());
+                        log.warn("[SIGNUP:SERVICE] 이메일 인증번호 발송 실패: {}", req.getEmail());
                 }
 
                 return savedUser;

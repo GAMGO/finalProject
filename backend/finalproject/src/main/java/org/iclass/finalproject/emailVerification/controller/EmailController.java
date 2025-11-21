@@ -93,7 +93,7 @@ public class EmailController {
             log.info("이메일 인증 재발송 요청: {}", email);
 
             // 이메일로 사용자 찾기
-            Optional<CustomersEntity> customerOpt = customersRepository.findById(email);
+            Optional<CustomersEntity> customerOpt = customersRepository.findByEmail(email);
             if (customerOpt.isEmpty()) {
                 return ResponseEntity.badRequest()
                         .body(EmailVerificationResponse.failure("존재하지 않는 이메일입니다"));
@@ -149,7 +149,7 @@ public class EmailController {
     @GetMapping("/status")
     public ResponseEntity<EmailVerificationResponse> getVerificationStatus(@RequestParam String email) {
         try {
-            Optional<CustomersEntity> customerOpt = customersRepository.findById(email);
+            Optional<CustomersEntity> customerOpt = customersRepository.findByEmail(email);
             if (customerOpt.isEmpty()) {
                 return ResponseEntity.badRequest()
                         .body(EmailVerificationResponse.failure("존재하지 않는 이메일입니다"));
