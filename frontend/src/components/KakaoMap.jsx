@@ -1,3 +1,4 @@
+// src/components/KakaoMap.jsx
 import React, { useEffect, useRef, useState } from "react";
 import plusIcon from "../assets/plus.svg";
 import "./KakaoMap.css";

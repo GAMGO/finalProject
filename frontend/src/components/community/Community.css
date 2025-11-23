@@ -1,0 +1,388 @@
+/* -------- 공통 팔레트 -------- */
+:root {
+  --brand-purple: #78266a; /* 사이드바랑 맞추는 메인 컬러 */
+  --accent-peach: #ffd19d; /* 카드 배경 */
+  --accent-brown: #764c41; /* 텍스트/아이콘 포인트 */
+  --bg-main: #fff7f1;      /* 메인 배경 */
+  --text-main: #3a2630;
+  --text-muted: #9b7c8e;
+}
+
+/* -------- 전체 레이아웃 -------- */
+
+.community-root {
+  width: 100%;
+  height: 100%;
+  background: var(--bg-main);
+  display: flex;
+  flex-direction: column;
+}
+
+/* 상단 보라색 한 줄 헤더 */
+
+.community-top {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--brand-purple);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+}
+
+.community-top-inner {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 12px 24px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.community-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+/* 헤더 오른쪽 – 칩 + 글쓰기 버튼 */
+
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+/* 칩 줄 (인스타 스토리 느낌) */
+.story-strip {
+  display: flex;
+  gap: 10px;
+}
+
+.story-chip {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  color: #fde7ff;
+}
+
+.story-chip-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: #111111;
+  border: 2px solid #ffbf47;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+}
+
+.story-chip-active .story-chip-circle {
+  border-color: #ffffff;
+}
+
+.story-chip-label {
+  white-space: nowrap;
+}
+
+/* 글쓰기 버튼 */
+
+.write-big-btn {
+  flex-shrink: 0;
+  padding: 0 18px;
+  height: 34px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, #ff6bb3, #f97316);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* 피드 전체 영역 */
+
+.community-inner {
+  flex: 1;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 18px 24px 32px;
+}
+
+/* -------- 피드 리스트 / 카드 -------- */
+
+.post-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.post-empty {
+  margin-top: 32px;
+  padding: 32px 16px;
+  text-align: center;
+  border-radius: 16px;
+  background: rgba(255, 209, 157, 0.4);
+  color: var(--text-main);
+}
+
+/* 카드 하나 */
+
+.post-card {
+  background: var(--accent-peach);
+  border-radius: 18px;
+  border: 1px solid rgba(118, 76, 65, 0.25);
+  overflow: hidden;
+  color: var(--text-main);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
+}
+
+/* 카드 상단 메타 */
+
+.post-header {
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.post-header-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.post-type-tag {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(248, 113, 113, 0.16);
+  border: 1px solid rgba(248, 113, 113, 0.9);
+  color: #b0303b;
+}
+
+.post-category-tag {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(52, 211, 153, 0.18);
+  border: 1px solid rgba(16, 185, 129, 0.85);
+  color: #047857;
+}
+
+.post-time {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* 이미지 */
+
+.post-image-wrap {
+  width: 100%;
+  max-height: 520px;
+  overflow: hidden;
+  background: #f5ede5;
+}
+
+.post-image-wrap img {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+/* 본문 텍스트 */
+
+.post-body {
+  padding: 10px 16px 6px;
+}
+
+.post-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: var(--accent-brown);
+}
+
+.post-content {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-main);
+}
+
+/* 푸터 */
+
+.post-footer {
+  padding: 8px 16px 10px;
+  border-top: 1px solid rgba(118, 76, 65, 0.25);
+  font-size: 12px;
+}
+
+.post-location {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.post-meta-line {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.post-writer {
+  font-weight: 600;
+  color: var(--accent-brown);
+}
+
+.post-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.post-icon-btn {
+  border: none;
+  background: transparent;
+  padding: 2px 0;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--accent-brown);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* -------- 글쓰기 모달 -------- */
+
+.editor-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 20;
+}
+
+.editor-panel {
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 16px 18px 14px;
+  border: 1px solid rgba(118, 76, 65, 0.3);
+  display: flex;
+  flex-direction: column;
+  color: var(--text-main);
+}
+
+.editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.editor-header h3 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.editor-close {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.editor-form {
+  overflow-y: auto;
+  padding-top: 4px;
+}
+
+.editor-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+.editor-row label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.editor-row input,
+.editor-row textarea,
+.editor-row select {
+  border-radius: 10px;
+  border: 1px solid rgba(243, 189, 152, 0.9);
+  background: #fff7ef;
+  padding: 8px 10px;
+  font-size: 13px;
+  color: var(--text-main);
+  outline: none;
+}
+
+.editor-row input::placeholder,
+.editor-row textarea::placeholder {
+  color: #c4a79a;
+}
+
+.editor-row textarea {
+  resize: vertical;
+}
+
+/* 이미지 업로드 */
+
+.editor-image-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.editor-image-preview {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(243, 189, 152, 0.9);
+}
+
+.editor-image-preview img {
+  width: 100%;
+  display: block;
+}
+
+/* 버튼들 */
+
+.editor-actions {
+  margin-top: 8px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.editor-actions button {
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  border: 1px solid rgba(209, 213, 219, 0.9);
+  background: #ffffff;
+  color: var(--text-main);
+}
+
+.editor-submit {
+  border: none !important;
+  background: linear-gradient(135deg, #ff6bb3, #f97316);
+  color: #ffffff;
+}
