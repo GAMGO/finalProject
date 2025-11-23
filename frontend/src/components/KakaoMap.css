@@ -99,13 +99,9 @@
   padding: 6px 12px;
   border-radius: 8px;
   border: 1px solid #dddddd;
-  background: #f5f5f5;   /* 연한 회색 배경 유지 */
+  background: #f5f5f5;
   font-size: 13px;
   cursor: pointer;
-
-  /* 🔥 글씨색 테마 자주색으로 */
-  color: #78266a;
-  font-weight: 500;
 }
 
 .map-btn-submit {
