@@ -55,7 +55,7 @@ public class SecurityConfig {
                                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                                 .requestMatchers(PUBLIC_WHITELIST).permitAll()
                                                 .requestMatchers("/api/email/**").permitAll() // 이메일 인증 명시적 허용
-                                                .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/signup", "/api/recover/send-code","/api/email/verify","/api/recover/reset","/api/recover/find-id")
+                                                .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/signup", "/api/recover/send-code","/api/email/verify","/api/recover/reset","/api/recover/find-id","/api/stores")
                                                 .permitAll()
                                                 .requestMatchers("/api/auth/logout")
                                                 .authenticated() // 로그아웃, 바디프로필, 프로필, 식단 기록, 식단 알림 기능

@@ -1,11 +1,11 @@
-// src/components/KakaoMap.jsx
 import React, { useEffect, useRef, useState } from "react";
 import plusIcon from "../assets/plus.svg";
+import "./KakaoMap.css";
 
 const APP_KEY = "bdd84bdbed2db3bc5d8b90cd6736a995";
 const API_BASE = "http://localhost:8080/api";
 
-// FOOD_INFO.IDX 기준으로 맞춰줘야 함
+// FOOD_INFO.IDX 기준
 const CATEGORIES = [
   { id: 1, label: "통닭" },
   { id: 2, label: "타코야끼" },
@@ -24,36 +24,24 @@ export default function KakaoMap() {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const geocoderRef = useRef(null);
-  const tempMarkerRef = useRef(null); // 모달에서 선택 중인 위치 표시용
-  const markersRef = useRef([]); // 등록된 노점 마커들 저장
+  const tempMarkerRef = useRef(null);   // 위치 선택 중 임시 마커
+  const markersRef = useRef([]);        // 등록된 가게 마커들
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedPos, setSelectedPos] = useState(null); // {lat, lng}
+  const [selectedPos, setSelectedPos] = useState(null); // { lat, lng }
+
   const [form, setForm] = useState({
     categoryId: "",
     address: "",
     description: "", // 백엔드 storeName 으로 보낼 값
   });
 
+  // 지도에서 위치 찍는 모드 여부
+  const [isPickingLocation, setIsPickingLocation] = useState(false);
+  const isPickingLocationRef = useRef(false);
+
   // --------------------------
   // 기존 가게 불러오기
-  // --------------------------
-  const loadStoresAndDraw = async (map) => {
-    try {
-      const res = await fetch(`${API_BASE}/stores`);
-      if (!res.ok) throw new Error("load stores failed");
-
-      const json = await res.json();
-      const stores = json.data || []; // ApiResponse<List<StoreResponse>>
-
-      stores.forEach((s) => addStoreMarker(map, s));
-    } catch (err) {
-      console.error("가게 목록 불러오기 실패:", err);
-    }
-  };
-
-  // --------------------------
-  // 가게 마커 하나 그리기
   // --------------------------
   const addStoreMarker = (map, store) => {
     if (!window.kakao || !map) return;
@@ -93,6 +81,20 @@ export default function KakaoMap() {
     markersRef.current.push({ marker, infowindow });
   };
 
+  const loadStoresAndDraw = async (map) => {
+    try {
+      const res = await fetch(`${API_BASE}/stores`);
+      if (!res.ok) throw new Error("load stores failed");
+
+      const json = await res.json();
+      const stores = json.data || []; // ApiResponse<List<StoreResponse>>
+
+      stores.forEach((s) => addStoreMarker(map, s));
+    } catch (err) {
+      console.error("가게 목록 불러오기 실패:", err);
+    }
+  };
+
   // --------------------------
   // 지도 초기화
   // --------------------------
@@ -119,7 +121,7 @@ export default function KakaoMap() {
         // 주소 변환용 Geocoder
         geocoderRef.current = new window.kakao.maps.services.Geocoder();
 
-        // 지도 클릭 시 선택 위치 갱신 + 주소 채우기
+        // 지도 클릭 시: 위치 선택 + 주소 채우기
         window.kakao.maps.event.addListener(map, "click", (mouseEvent) => {
           const latlng = mouseEvent.latLng;
           const lat = latlng.getLat();
@@ -127,7 +129,7 @@ export default function KakaoMap() {
 
           setSelectedPos({ lat, lng });
 
-          // 임시 마커 (선택 위치)
+          // 임시 마커
           if (!tempMarkerRef.current) {
             tempMarkerRef.current = new window.kakao.maps.Marker({
               position: latlng,
@@ -137,7 +139,7 @@ export default function KakaoMap() {
             tempMarkerRef.current.setPosition(latlng);
           }
 
-          // 좌표 -> 주소 변환
+          // 좌표 → 주소
           if (geocoderRef.current) {
             geocoderRef.current.coord2Address(
               lng,
@@ -152,11 +154,18 @@ export default function KakaoMap() {
               }
             );
           }
+
+          // "지도에서 위치 선택" 모드일 때: 한 번 찍으면 모달 다시 열기
+          if (isPickingLocationRef.current) {
+            setIsModalOpen(true);
+            setIsPickingLocation(false);
+            isPickingLocationRef.current = false;
+          }
         });
 
         console.log("[KAKAO] map created", map);
 
-        // 기존 가게 불러오기
+        // 기존 가게 마커들
         await loadStoresAndDraw(map);
       });
     };
@@ -183,7 +192,7 @@ export default function KakaoMap() {
   }, []);
 
   // --------------------------
-  // 모달 열기 / 닫기
+  // 모달 open / close
   // --------------------------
   const openModal = () => {
     setIsModalOpen(true);
@@ -191,6 +200,8 @@ export default function KakaoMap() {
 
   const closeModal = () => {
     setIsModalOpen(false);
+    setIsPickingLocation(false);
+    isPickingLocationRef.current = false;
     setForm({ categoryId: "", address: "", description: "" });
     setSelectedPos(null);
     if (tempMarkerRef.current) {
@@ -199,8 +210,15 @@ export default function KakaoMap() {
     }
   };
 
+  // 모달 안 "지도에서 위치 선택하기" 버튼
+  const handleStartPickLocation = () => {
+    setIsPickingLocation(true);
+    isPickingLocationRef.current = true;
+    setIsModalOpen(false); // 모달 잠깐 숨기고 지도 클릭 기다리기
+  };
+
   // --------------------------
-  // 입력 변경
+  // 입력값 변경
   // --------------------------
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -208,13 +226,13 @@ export default function KakaoMap() {
   };
 
   // --------------------------
-  // 가게 등록 요청
+  // 가게 등록
   // --------------------------
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!selectedPos) {
-      alert("지도를 클릭해서 위치를 먼저 선택해줘!");
+      alert("지도를 클릭해서 위치를 먼저 선택해줘요");
       return;
     }
     if (!form.categoryId) {
@@ -223,8 +241,8 @@ export default function KakaoMap() {
     }
 
     const payload = {
-      storeName: form.description || "",           // 설명을 storeName 으로 사용
-      foodTypeId: Number(form.categoryId),        // FOOD_INFO.IDX
+      storeName: form.description || "",
+      foodTypeId: Number(form.categoryId),
       storeAddress: form.address || "",
       lat: selectedPos.lat,
       lng: selectedPos.lng,
@@ -271,7 +289,7 @@ export default function KakaoMap() {
         />
       </div>
 
-      {/* 플러스 버튼 */}
+      {/* 오른쪽 아래 + 버튼 */}
       <button
         type="button"
         style={{
@@ -302,57 +320,23 @@ export default function KakaoMap() {
       {/* 노점 등록 모달 */}
       {isModalOpen && (
         <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            backgroundColor: "rgba(0,0,0,0.45)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 10000,
-          }}
+          className="map-modal-backdrop"
           onClick={closeModal}
         >
           <div
-            style={{
-              width: "380px",
-              backgroundColor: "#fff",
-              borderRadius: "16px",
-              padding: "20px 22px",
-              boxShadow: "0 12px 30px rgba(0,0,0,0.25)",
-            }}
+            className="map-modal"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3
-              style={{
-                margin: 0,
-                marginBottom: "12px",
-                fontSize: "18px",
-                fontWeight: 700,
-              }}
-            >
-              노점 추가
-            </h3>
+            <h3 className="map-modal-title">노점 추가</h3>
 
             <form onSubmit={handleSubmit}>
               {/* 카테고리 */}
-              <label
-                style={{ display: "block", fontSize: 13, marginBottom: 4 }}
-              >
-                카테고리
-              </label>
+              <label className="map-label">카테고리</label>
               <select
                 name="categoryId"
                 value={form.categoryId}
                 onChange={handleChange}
-                style={{
-                  width: "100%",
-                  padding: "8px 10px",
-                  marginBottom: 10,
-                  borderRadius: 8,
-                  border: "1px solid #ccc",
-                  fontSize: 13,
-                }}
+                className="map-select"
               >
                 <option value="">선택해주세요</option>
                 {CATEGORIES.map((c) => (
@@ -363,105 +347,50 @@ export default function KakaoMap() {
               </select>
 
               {/* 주소 */}
-              <label
-                style={{ display: "block", fontSize: 13, marginBottom: 4 }}
-              >
-                주소 (직접 수정 가능)
-              </label>
+              <label className="map-label">주소 (직접 수정 가능)</label>
               <input
                 type="text"
                 name="address"
                 value={form.address}
                 onChange={handleChange}
                 placeholder="지도를 클릭하면 자동으로 채워져요"
-                style={{
-                  width: "100%",
-                  padding: "8px 10px",
-                  marginBottom: 10,
-                  borderRadius: 8,
-                  border: "1px solid #ccc",
-                  fontSize: 13,
-                }}
+                className="map-input"
               />
 
               {/* 설명 */}
-              <label
-                style={{ display: "block", fontSize: 13, marginBottom: 4 }}
-              >
-                노점 설명
-              </label>
+              <label className="map-label">노점 설명</label>
               <textarea
                 name="description"
                 value={form.description}
                 onChange={handleChange}
                 rows={4}
                 placeholder="예: 매일 저녁 7시~11시, 순살통닭/감자튀김 판매 등"
-                style={{
-                  width: "100%",
-                  padding: "8px 10px",
-                  marginBottom: 10,
-                  borderRadius: 8,
-                  border: "1px solid #ccc",
-                  fontSize: 13,
-                  resize: "vertical",
-                }}
+                className="map-textarea"
               />
 
-              {/* 좌표 표시 */}
-              <div
-                style={{
-                  fontSize: 11,
-                  color: "#555",
-                  marginBottom: 12,
-                }}
-              >
-                지도에서 위치를 클릭해서 좌표를 선택해줘.
-                <br />
-                {selectedPos ? (
-                  <>
-                    선택된 위치: 위도 {selectedPos.lat.toFixed(6)}, 경도{" "}
-                    {selectedPos.lng.toFixed(6)}
-                  </>
-                ) : (
-                  <>아직 위치가 선택되지 않았어요.</>
-                )}
+              {/* 지도에서 위치 선택하기 버튼 */}
+              <div className="map-pick-row">
+                <button
+                  type="button"
+                  onClick={handleStartPickLocation}
+                  className="map-pick-button"
+                >
+                  지도에서 위치 선택하기
+                </button>
               </div>
 
-              {/* 버튼 영역 */}
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  gap: 8,
-                  marginTop: 4,
-                }}
-              >
+              {/* 하단 버튼 */}
+              <div className="map-modal-actions">
                 <button
                   type="button"
                   onClick={closeModal}
-                  style={{
-                    padding: "6px 12px",
-                    borderRadius: 8,
-                    border: "1px solid #ddd",
-                    background: "#f5f5f5",
-                    fontSize: 13,
-                    cursor: "pointer",
-                  }}
+                  className="map-btn-cancel"
                 >
                   취소
                 </button>
                 <button
                   type="submit"
-                  style={{
-                    padding: "6px 14px",
-                    borderRadius: 8,
-                    border: "none",
-                    background: "#78266A",
-                    color: "#fff",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                  }}
+                  className="map-btn-submit"
                 >
                   등록하기
                 </button>
