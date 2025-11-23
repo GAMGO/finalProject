@@ -1,15 +1,8 @@
 package org.iclass.finalproject.dish;
 
-import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 
-@Entity
-@Table(name = "dish")
-public class Dish {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class DishRequest {
 
     @NotBlank
     @Size(max = 100)
@@ -19,17 +12,16 @@ public class Dish {
     private String description;
 
     @Positive
-    private int price; // 가장 작은 화폐단위(예: KRW 원) 기준
+    private int price;
 
-    protected Dish() {}
+    public DishRequest() {}
 
-    public Dish(String name, String description, int price) {
+    public DishRequest(String name, String description, int price) {
         this.name = name;
         this.description = description;
         this.price = price;
     }
 
-    public Long getId() { return id; }
     public String getName() { return name; }
     public String getDescription() { return description; }
     public int getPrice() { return price; }
