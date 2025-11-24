@@ -95,13 +95,13 @@ const LoginPage = () => {
     padding: "60px 40px",
     borderRadius: "40px",
     boxShadow: "0 4px 15px rgba(0, 0, 0, 0.3)",
-    width: "350px",
+    width: "45vh",
     textAlign: "center",
     fontFamily: customFont,
   };
 
   const logoContainerStyle = {
-    marginBottom: "15px",
+    //marginBottom: "5px",
     maxWidth: "100%",
     height: "auto",
   };
@@ -147,6 +147,7 @@ const LoginPage = () => {
     backgroundColor: white,
     color: darkPurple,
     fontFamily: customFont,
+    boxShadow: `4px 4px 0px ${darkPurple}`,
   };
 
   const buttonStyle = {
@@ -175,7 +176,7 @@ const LoginPage = () => {
 
       <div style={loginBoxStyle}>
         {/* 로고 영역 */}
-        <div>
+        <div >
           {/* alt 속성을 "DISH 로고"로 수정했습니다. */}
           <img
             src="..\src\assets\DISH_LOGO.png"
