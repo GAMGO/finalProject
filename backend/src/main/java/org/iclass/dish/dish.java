@@ -5,7 +5,7 @@ import jakarta.validation.constraints.*;
 
 @Entity
 @Table(name = "dish")
-public class dish {
+public class Dish {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,9 +21,9 @@ public class dish {
     @Positive
     private int price; // 가장 작은 화폐단위(예: KRW 원) 기준
 
-    protected dish() {}
+    protected Dish() {}
 
-    public dish(String name, String description, int price) {
+    public Dish(String name, String description, int price) {
         this.name = name;
         this.description = description;
         this.price = price;
