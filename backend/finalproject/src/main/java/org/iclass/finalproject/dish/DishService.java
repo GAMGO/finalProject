@@ -9,36 +9,36 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class DishService {
 
-    private final DishRepository DishRepository;
+    private final DishRepository dishRepository;
 
-    public DishService(DishRepository DishRepository) {
-        this.DishRepository = DishRepository;
+    public DishService(DishRepository dishRepository) {
+        this.dishRepository = dishRepository;
     }
 
     @Transactional
     public DishResponse create(DishRequest req) {
-        if (DishRepository.existsByName(req.getName())) {
-            throw new IllegalArgumentException("dish with the same name already exists.");
+        if (dishRepository.existsByName(req.getName())) {
+            throw new IllegalArgumentException("Dish with the same name already exists.");
         }
-        dish dish = new dish(req.getName(), req.getDescription(), req.getPrice());
-        dish saved = DishRepository.save(dish);
+        Dish dish = new Dish(req.getName(), req.getDescription(), req.getPrice());
+        Dish saved = dishRepository.save(dish);
         return DishResponse.from(saved);
     }
 
     public List<DishResponse> findAll() {
-        return DishRepository.findAll().stream().map(DishResponse::from).toList();
+        return dishRepository.findAll().stream().map(DishResponse::from).toList();
     }
 
     public DishResponse findById(Long id) {
-        dish dish = DishRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("dish not found: " + id));
+        Dish dish = dishRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Dish not found: " + id));
         return DishResponse.from(dish);
     }
 
     @Transactional
     public DishResponse update(Long id, DishRequest req) {
-        dish dish = DishRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("dish not found: " + id));
+        Dish dish = dishRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Dish not found: " + id));
         dish.setName(req.getName());
         dish.setDescription(req.getDescription());
         dish.setPrice(req.getPrice());
@@ -47,9 +47,9 @@ public class DishService {
 
     @Transactional
     public void delete(Long id) {
-        if (!DishRepository.existsById(id)) {
-            throw new IllegalArgumentException("dish not found: " + id);
+        if (!dishRepository.existsById(id)) {
+            throw new IllegalArgumentException("Dish not found: " + id);
         }
-        DishRepository.deleteById(id);
+        dishRepository.deleteById(id);
     }
 }

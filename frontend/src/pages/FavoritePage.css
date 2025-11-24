@@ -1,0 +1,160 @@
+/* ❗전역 절대 건드리지 말기: 여기엔 button {} 같은 거 없음 */
+.favorite-root {
+  --brand-purple: #78266a;
+  --accent-peach: #ffd19d;
+  --accent-brown: #764c41;
+  --bg-main: #fff7f1;
+  --text-main: #3a2630;
+  --text-muted: #9b7c8e;
+
+  width: 100%;
+  min-height: 100vh;
+  background: var(--bg-main);
+  display: flex;
+  flex-direction: column;
+}
+
+.favorite-top {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--brand-purple);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+}
+
+.favorite-top-inner {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 12px 24px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.favorite-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+}
+
+/* 즐겨찾기 “전용” 필터바 (커뮤니티 원형 재탕 X) */
+.fav-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.fav-chip {
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(255,255,255,0.65);
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+}
+
+.fav-chip:hover {
+  background: rgba(255,255,255,0.18);
+  transform: translateY(-1px);
+}
+
+.fav-chip-active {
+  background: #fff;
+  color: var(--brand-purple);
+  border-color: #fff;
+}
+
+.fav-chip-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.favorite-inner {
+  flex: 1;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 18px 24px 32px;
+}
+
+.fav-empty {
+  margin-top: 24px;
+  padding: 28px 16px;
+  text-align: center;
+  border-radius: 16px;
+  background: rgba(255, 209, 157, 0.4);
+  color: var(--text-main);
+}
+
+.fav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.fav-card {
+  position: relative;
+  background: var(--accent-peach);
+  border-radius: 18px;
+  border: 1px solid rgba(118, 76, 65, 0.25);
+  padding: 14px 16px 16px;
+  color: var(--text-main);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.06);
+}
+
+.fav-card-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(52, 211, 153, 0.18);
+  border: 1px solid rgba(16, 185, 129, 0.85);
+  color: #047857;
+  font-weight: 600;
+}
+
+.fav-card-right {
+  position: absolute;
+  right: 14px;
+  top: 12px;
+}
+
+.fav-unlike {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent-brown);
+}
+
+.fav-card-title {
+  margin: 10px 0 6px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--accent-brown);
+}
+
+.fav-card-addr {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.fav-card-note {
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0;
+}
