@@ -1,5 +1,7 @@
+// src/pages/CommunityPage.jsx
 import React, { useState } from "react";
-import PostFilterBar from "../components/community/PostFilterBar";
+// ✔ PostFilterBar 지우기
+// import PostFilterBar from "../components/community/PostFilterBar";
 import PostList from "../components/community/PostList";
 import PostEditor from "../components/community/PostEditor";
 import "../components/community/Community.css";
@@ -40,7 +42,7 @@ export default function CommunityPage() {
   const [posts, setPosts] = useState(dummyPosts);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
 
-  const handleChangeFilter = (next) => setFilter(next);
+  const handleFilterChange = (e) => setFilter(e.target.value);
   const handleOpenEditor = () => setIsEditorOpen(true);
   const handleCloseEditor = () => setIsEditorOpen(false);
 
@@ -61,21 +63,34 @@ export default function CommunityPage() {
 
   return (
     <div className="community-root">
-      {/* ✅ 위에 보라색 한 줄 헤더 */}
-      <div className="community-top">
-        <div className="community-top-inner">
-          <h2 className="community-title">나무위키</h2>
-
-          <PostFilterBar
-            current={filter}
-            onChange={handleChangeFilter}
-            onClickWrite={handleOpenEditor}
-          />
-        </div>
-      </div>
-
-      {/* 피드 영역 */}
+      {/* ✅ 보라색 헤더 제거하고, 콘텐츠 안쪽에 얇은 툴바만 */}
       <div className="community-inner">
+        <div className="community-toolbar">
+          <h2 className="community-title-plain">나무위키</h2>
+
+          <div className="community-toolbar-right">
+            <select
+              className="community-category-select"
+              value={filter}
+              onChange={handleFilterChange}
+            >
+              <option value="전체">전체</option>
+              <option value="제보">제보</option>
+              <option value="후기">후기</option>
+              <option value="질문">질문</option>
+              <option value="잡담">잡담</option>
+            </select>
+
+            <button
+              type="button"
+              className="write-big-btn plain"
+              onClick={handleOpenEditor}
+            >
+              + 글쓰기
+            </button>
+          </div>
+        </div>
+
         <PostList posts={filteredPosts} />
       </div>
 
