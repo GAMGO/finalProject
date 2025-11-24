@@ -18,7 +18,7 @@ public class DishResponse {
     public String getDescription() { return description; }
     public int getPrice() { return price; }
 
-    public static DishResponse from(Dish dish) {
+    public static DishResponse from(dish dish) {
         return new DishResponse(dish.getId(), dish.getName(), dish.getDescription(), dish.getPrice());
     }
 }

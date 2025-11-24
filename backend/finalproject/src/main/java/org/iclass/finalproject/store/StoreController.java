@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/stores")
-@CrossOrigin(origins = "http://localhost:5173")   // 프론트 주소 맞게
+//@CrossOrigin(origins = "http://localhost:5173")   // 프론트 주소 맞게 -> Vite수정
 public class StoreController {
 
     private final StoreRepository storeRepository;
