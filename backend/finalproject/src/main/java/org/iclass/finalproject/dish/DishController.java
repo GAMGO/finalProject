@@ -11,36 +11,36 @@ import java.util.List;
 @RequestMapping("/api/dishes")
 public class DishController {
 
-    private final DishService dishService;
+    private final DishService DishService;
 
-    public DishController(DishService dishService) {
-        this.dishService = dishService;
+    public DishController(DishService DishService) {
+        this.DishService = DishService;
     }
 
     @PostMapping
     public ResponseEntity<DishResponse> create(@Valid @RequestBody DishRequest request) {
-        DishResponse created = dishService.create(request);
+        DishResponse created = DishService.create(request);
         return ResponseEntity.created(URI.create("/api/dishes/" + created.getId())).body(created);
     }
 
     @GetMapping
     public ResponseEntity<List<DishResponse>> list() {
-        return ResponseEntity.ok(dishService.findAll());
+        return ResponseEntity.ok(DishService.findAll());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<DishResponse> get(@PathVariable Long id) {
-        return ResponseEntity.ok(dishService.findById(id));
+        return ResponseEntity.ok(DishService.findById(id));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<DishResponse> update(@PathVariable Long id, @Valid @RequestBody DishRequest request) {
-        return ResponseEntity.ok(dishService.update(id, request));
+        return ResponseEntity.ok(DishService.update(id, request));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        dishService.delete(id);
+        DishService.delete(id);
         return ResponseEntity.noContent().build();
     }
 }
