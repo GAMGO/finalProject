@@ -40,7 +40,6 @@ public class DishService {
         Dish dish = dishRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Dish not found: " + id));
         dish.setName(req.getName());
-        dish.setDescription(req.getDescription());
         dish.setPrice(req.getPrice());
         return DishResponse.from(dish);
     }
