@@ -20,8 +20,8 @@ public class DishService {
         if (dishRepository.existsByName(req.getName())) {
             throw new IllegalArgumentException("Dish with the same name already exists.");
         }
-        Dish dish = new Dish(req.getName(), req.getDescription(), req.getPrice());
-        Dish saved = dishRepository.save(dish);
+        dish dish = new dish(req.getName(), req.getDescription(), req.getPrice());
+        dish saved = dishRepository.save(dish);
         return DishResponse.from(saved);
     }
 
@@ -30,14 +30,14 @@ public class DishService {
     }
 
     public DishResponse findById(Long id) {
-        Dish dish = dishRepository.findById(id)
+        dish dish = dishRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Dish not found: " + id));
         return DishResponse.from(dish);
     }
 
     @Transactional
     public DishResponse update(Long id, DishRequest req) {
-        Dish dish = dishRepository.findById(id)
+        dish dish = dishRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Dish not found: " + id));
         dish.setName(req.getName());
         dish.setDescription(req.getDescription());
