@@ -17,7 +17,7 @@ WORKDIR /app/backend
 RUN ./gradlew clean build --no-daemon -x test
 
 # 2단계: 실행 환경
-FROM openjdk:17.0.2-jdk
+FROM openjdk:17.0.2-jdk-slim
 WORKDIR /app
 
 # 빌드된 JAR 파일 복사
