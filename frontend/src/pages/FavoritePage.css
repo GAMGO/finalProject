@@ -1,4 +1,3 @@
-/* ❗전역 절대 건드리지 말기: 여기엔 button {} 같은 거 없음 */
 .favorite-root {
   --brand-purple: #78266a;
   --accent-peach: #ffd19d;
@@ -14,18 +13,20 @@
   flex-direction: column;
 }
 
+/* ===== 상단 바 ===== */
+
 .favorite-top {
   position: sticky;
   top: 0;
   z-index: 5;
   background: var(--brand-purple);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
 }
 
 .favorite-top-inner {
-  max-width: 720px;
+  max-width: 980px;
   margin: 0 auto;
-  padding: 12px 24px 10px;
+  padding: 10px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -39,52 +40,100 @@
   white-space: nowrap;
 }
 
-/* 즐겨찾기 “전용” 필터바 (커뮤니티 원형 재탕 X) */
+.favorite-top-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* ===== 카테고리 필터 (넓을 땐 1줄, 좁아지면 2줄 이상) ===== */
+
 .fav-filter-bar {
   display: flex;
   align-items: center;
+  justify-content: center;   /* 가운데 정렬 */
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;         /* 기본은 무조건 한 줄 */
+  min-width: 260px;
 }
 
 .fav-chip {
-  height: 34px;
-  padding: 0 10px;
-  border-radius: 999px;
-  border: 1.5px solid rgba(255,255,255,0.65);
-  background: rgba(255,255,255,0.08);
-  color: #fff;
-  font-size: 12px;
+  padding: 6px 4px 4px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 11px;
   font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 6px;
-  transition: background 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+  gap: 2px;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease,
+    transform 0.12s ease;
 }
 
 .fav-chip:hover {
-  background: rgba(255,255,255,0.18);
+  background: rgba(0, 0, 0, 0.18);
   transform: translateY(-1px);
 }
 
 .fav-chip-active {
-  background: #fff;
-  color: var(--brand-purple);
-  border-color: #fff;
+  background: rgba(0, 0, 0, 0.24);
+  border-color: rgba(255, 255, 255, 0.65);
 }
 
 .fav-chip-icon {
-  font-size: 14px;
-  line-height: 1;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+
+.fav-chip-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.fav-chip-label {
+  line-height: 1.2;
+}
+
+/* + 등록하기 버튼 */
+
+.fav-add-btn {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #fff;
+  color: var(--brand-purple);
+  white-space: nowrap;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.75);
+  transition: background 0.12s ease, transform 0.12s ease;
+}
+
+.fav-add-btn:hover {
+  background: #ffe2f7;
+  transform: translateY(-1px);
+}
+
+/* ===== 메인 영역 ===== */
 
 .favorite-inner {
   flex: 1;
   width: 100%;
-  max-width: 720px;
+  max-width: 980px;
   margin: 0 auto;
-  padding: 18px 24px 32px;
+  padding: 20px 24px 32px;
 }
 
 .fav-empty {
@@ -102,14 +151,22 @@
   gap: 18px;
 }
 
+/* ===== 카드 ===== */
+
 .fav-card {
-  position: relative;
   background: var(--accent-peach);
   border-radius: 18px;
   border: 1px solid rgba(118, 76, 65, 0.25);
-  padding: 14px 16px 16px;
   color: var(--text-main);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.06);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.fav-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px 0;
 }
 
 .fav-card-badge {
@@ -125,10 +182,25 @@
   font-weight: 600;
 }
 
-.fav-card-right {
-  position: absolute;
-  right: 14px;
-  top: 12px;
+.fav-card-header-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fav-edit {
+  border: none;
+  background: rgba(0, 0, 0, 0.15);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.fav-edit:hover {
+  background: rgba(0, 0, 0, 0.25);
 }
 
 .fav-unlike {
@@ -140,11 +212,57 @@
   color: var(--accent-brown);
 }
 
+/* 이미지 영역 */
+
+.fav-card-image-wrap {
+  position: relative;
+  margin: 8px 16px 0;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #000;
+
+  /* 🔥 카드에서 보이는 기본 크기 업그레이드 */
+  height: 280px;          /* 마음에 안 들면 300~320까지 올려도 됨 */
+}
+
+
+.fav-card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: var(--crop-x, 50%) var(--crop-y, 50%);
+  transform: scale(var(--crop-zoom, 1));
+  transform-origin: center center;
+  transition: transform 0.06s linear, object-position 0.06s linear;
+}
+
+/* 초점 조절 버튼 */
+
+.fav-image-edit-btn {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+/* ===== 카드 본문 ===== */
+
+.fav-card-body {
+  padding: 10px 16px 14px;
+}
+
 .fav-card-title {
-  margin: 10px 0 6px;
+  margin: 0 0 4px;
   font-size: 15px;
   font-weight: 700;
   color: var(--accent-brown);
+  cursor: pointer;
 }
 
 .fav-card-addr {
@@ -156,5 +274,445 @@
 .fav-card-note {
   font-size: 13px;
   line-height: 1.5;
+  margin: 0 0 8px;
+}
+
+/* 카드 별점 표시 */
+
+.fav-card-rating {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.fav-static-stars {
+  display: inline-flex;
+}
+
+.fav-star-static {
+  font-size: 13px;
+  line-height: 1;
+  margin-right: 1px;
+  position: relative;
+}
+
+.fav-star-static.full {
+  color: #f97316;
+}
+
+.fav-star-static.empty {
+  color: #e5e7eb;
+}
+
+.fav-star-static.half {
+  color: #e5e7eb;
+}
+
+.fav-star-static.half::before {
+  content: "★";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 50%;
+  overflow: hidden;
+  color: #f97316;
+}
+
+.fav-card-rating-score {
+  font-size: 11px;
+  color: var(--accent-brown);
+}
+
+/* ===== 이미지 크롭 모달 (더 크게) ===== */
+
+.fav-crop-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+}
+
+.fav-crop-modal {
+  width: 880px; /* 🔥 데스크탑에서 크게 */
+  max-width: min(960px, calc(100% - 40px));
+  background: #111;
+  border-radius: 18px;
+  padding: 16px 18px 14px;
+  color: #f9fafb;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+}
+
+.fav-crop-modal-header {
+  margin-bottom: 10px;
+}
+
+.fav-crop-modal-header > span {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.fav-crop-modal-header > small {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* 프레임 영역 – 고정된 네모 안에서 이미지 드래그 */
+
+.fav-crop-frame {
+  position: relative;
+  width: 100%;
+  height: 430px; /* 🔥 기본 프레임 더 크게 */
+  background: #000;
+  overflow: hidden;
+  border-radius: 12px;
+  cursor: grab;
+}
+
+.fav-crop-frame:active {
+  cursor: grabbing;
+}
+
+.fav-crop-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.05s linear, object-position 0.05s linear;
+}
+
+/* 그리드 라인 (3x3) */
+
+.fav-crop-grid {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.7);
+}
+
+.fav-crop-grid::before,
+.fav-crop-grid::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(
+      to right,
+      transparent 0,
+      transparent calc(100% / 3 - 1px),
+      rgba(255, 255, 255, 0.6) calc(100% / 3),
+      transparent calc(100% / 3 + 1px),
+      transparent calc(200% / 3 - 1px),
+      rgba(255, 255, 255, 0.6) calc(200% / 3),
+      transparent calc(200% / 3 + 1px)
+    ),
+    linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent calc(100% / 3 - 1px),
+      rgba(255, 255, 255, 0.6) calc(100% / 3),
+      transparent calc(100% / 3 + 1px),
+      transparent calc(200% / 3 - 1px),
+      rgba(255, 255, 255, 0.6) calc(200% / 3),
+      transparent calc(200% / 3 + 1px)
+    );
+}
+
+.fav-crop-controls {
+  margin-top: 10px;
+}
+
+.fav-crop-zoom-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fav-crop-zoom-row input[type="range"] {
+  flex: 1;
+}
+
+.fav-crop-tip {
+  margin-top: 4px;
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.fav-crop-modal-actions {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* ===== 공통 버튼 ===== */
+
+.fav-btn {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: none;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.fav-btn.small {
+  font-size: 11px;
+  padding: 3px 8px;
+}
+
+.fav-btn.ghost {
+  background: #f5f5f5;
+  color: var(--text-main);
+}
+
+.fav-btn.primary {
+  background: var(--brand-purple);
+  color: #fff;
+}
+
+/* ===== 등록/수정 폼 모달 ===== */
+
+.fav-form-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.fav-form {
+  width: 460px;
+  max-width: calc(100% - 32px);
+  max-height: calc(100% - 32px);
+  overflow-y: auto;
+  background: linear-gradient(145deg, #ffffff, #fff7f7);
+  border-radius: 18px;
+  padding: 18px 20px 14px;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.25);
+}
+
+.fav-form-header {
+  margin-bottom: 10px;
+}
+
+.fav-form-title {
   margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--brand-purple);
+}
+
+.fav-form-subtitle {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #8b5b7a;
+}
+
+/* 섹션 구분 */
+
+.fav-form-section {
+  padding: 10px 0;
+  border-top: 1px dashed #f0d0d0;
+}
+
+.fav-form-section:first-of-type {
+  border-top: none;
+}
+
+.fav-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+.fav-form-field > label {
+  font-weight: 600;
+  color: var(--accent-brown);
+}
+
+.fav-form-field input[type="text"],
+.fav-form-field textarea,
+.fav-form-field select {
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  padding: 6px 8px;
+  font-size: 13px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--text-main); /* 🔥 항상 글자 진하게 보이게 */
+}
+
+/* placeholder 색 명시 – 수정 모달에서도 항상 보이게 */
+
+.fav-form-field input::placeholder,
+.fav-form-field textarea::placeholder {
+  color: #c4a1b3;
+  opacity: 1;
+}
+
+/* 셀렉트 드롭다운 옵션 색 – 흰배경에서도 보이도록 */
+
+.fav-form-field select {
+  background-color: rgba(255, 255, 255, 0.95);
+}
+
+.fav-form-field select option {
+  color: #3a2630;
+  background: #ffffff;
+}
+
+.fav-form-field textarea {
+  resize: vertical;
+}
+
+.fav-form-field input:focus,
+.fav-form-field textarea:focus,
+.fav-form-field select:focus {
+  outline: none;
+  border-color: #f97316;
+  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.25);
+}
+
+.fav-form-field small {
+  font-size: 11px;
+  color: #888;
+}
+
+.fav-form-image-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.fav-form-image-preview {
+  width: 72px;
+  height: 72px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid #ddd;
+}
+
+/* 파일 선택 버튼 */
+
+.fav-file-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: none;
+  background: var(--brand-purple);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* 폼 내 별점 */
+
+.fav-form-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.fav-star {
+  border: none;
+  background: transparent;
+  padding: 0 2px;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  position: relative;
+}
+
+.fav-star.full {
+  color: #f97316;
+}
+
+.fav-star.empty {
+  color: #e5e7eb;
+}
+
+.fav-star.half {
+  color: #e5e7eb;
+}
+
+.fav-star.half::before {
+  content: "★";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 50%;
+  overflow: hidden;
+  color: #f97316;
+}
+
+.fav-form-rating-score {
+  font-size: 12px;
+  color: var(--accent-brown);
+  margin-left: 4px;
+}
+
+.fav-form-actions {
+  margin-top: 8px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* 반응형 */
+
+@media (max-width: 640px) {
+  .favorite-top-inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* 창이 작아지면 2줄 이상으로 자동 줄바꿈 */
+@media (max-width: 900px) {
+  .fav-filter-bar {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(60px, 1fr)); /* 4개씩 배치 → 7개면 2줄 */
+    gap: 6px;
+    justify-items: center;
+  }
+}
+
+
+  .favorite-top-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .favorite-inner {
+    padding-inline: 12px;
+  }
+
+  .fav-crop-modal {
+    width: 100%;
+    padding: 12px 12px 10px;
+  }
+
+  .fav-crop-frame {
+    height: 260px;
+  }
+}
+
+/* 카드에 보이는 즐겨찾기 사진 기본 높이 강제 조정 */
+.fav-card-image-wrap {
+  height: 620px !important;   
+}
+
+@media (max-width: 900px) {
+  .fav-card-image-wrap {
+    height: 500px !important;
+  }
 }
