@@ -25,7 +25,7 @@ WORKDIR /app
 
 # JAR 파일 복사 경로 (backend 폴더 내의 build/libs에서 복사)
 # [YOUR_PROJECT_NAME] 부분을 실제 프로젝트 이름으로 반드시 교체해 주세요!
-COPY --from=build /app/backend/build/libs/[YOUR_PROJECT_NAME]-0.0.1-SNAPSHOT.jar app.jar 
+COPY --from=build /app/backend/build/libs/finalProject-0.0.1-SNAPSHOT.jar app.jar 
 
 EXPOSE 8080 
 ENV PORT 8080
