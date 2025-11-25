@@ -53,7 +53,7 @@ tasks.named('test') {
 }
 // JAR 파일의 최종 이름을 'app.jar'로 설정
 jar {
-    archiveFileName = 'app.jar'
+    enabled = false // 💡 일반 JAR 파일 생성을 비활성화하여 혼동 방지
 }
 // 또는 Spring Boot의 bootJar 태스크를 사용 (권장)
 bootJar {
