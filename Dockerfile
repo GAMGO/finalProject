@@ -13,7 +13,7 @@ WORKDIR /app/backend
 RUN ./gradlew clean build --no-daemon -x test
 
 # 2단계: 실행 환경 (Production Stage)
-FROM openjdk:17-jdk-slim
+FROM openjdk:17.0.2-jdk
 WORKDIR /app
 
 # JAR 파일 복사 경로 (backend 폴더 내의 build/libs에서 복사)
