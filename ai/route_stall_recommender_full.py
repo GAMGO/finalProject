@@ -10,6 +10,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
+
 load_dotenv()
 
 # ============================================================
@@ -23,7 +24,7 @@ DIRECTIONS_URL = "https://apis-navi.kakaomobility.com/v1/directions"
 # 1. Kakao 경로 API
 # ============================================================
 def get_route_from_kakao(start, destination, waypoints=None, priority="TIME"):
-    if KAKAO_REST_API_KEY is None:
+    if not KAKAO_REST_API_KEY:
         raise RuntimeError("환경변수 KAKAO_REST_API_KEY가 없습니다.")
 
     headers = {"Authorization": f"KakaoAK {KAKAO_REST_API_KEY}"}
@@ -44,7 +45,7 @@ def get_route_from_kakao(start, destination, waypoints=None, priority="TIME"):
     if waypoints_param:
         params["waypoints"] = waypoints_param
 
-    r = requests.get(DIRECTIONS_URL, headers=headers, params=params)
+    r = requests.get(DIRECTIONS_URL, headers=headers, params=params, timeout=10)
     r.raise_for_status()
     data = r.json()
 
@@ -71,7 +72,7 @@ def get_route_from_kakao(start, destination, waypoints=None, priority="TIME"):
 
 
 # ============================================================
-# 2. 거리 계산
+# 2. 거리 계산 유틸
 # ============================================================
 def haversine(lat1, lon1, lat2, lon2):
     R = 6371000
@@ -80,15 +81,17 @@ def haversine(lat1, lon1, lat2, lon2):
     phi1 = math.radians(lat1)
     phi2 = math.radians(lat2)
 
-    a = math.sin(dphi/2)**2 + math.cos(phi1)*math.cos(phi2)*math.sin(dlambda/2)**2
-    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+    a = math.sin(dphi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2) ** 2
+    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
 
 def min_distance_to_route(st_lat, st_lng, route_points):
     if not route_points:
-        return 999999
-    dists = [haversine(st_lat, st_lng, lat, lng) for lat, lng in route_points]
-    return min(dists)
+        return 999999.0
+    return min(
+        haversine(st_lat, st_lng, lat, lng)
+        for (lat, lng) in route_points
+    )
 
 
 # ============================================================
@@ -120,8 +123,6 @@ def build_dummy_stalls(center_lat, center_lng, n=80):
             "name": f"노점_{i+1}",
             "lat": lats[i],
             "lng": lngs[i],
-
-            # 추천 모델용 더미 피처
             "stall_category_id": np.random.randint(1, 5),
             "rating_avg": np.random.uniform(2, 5),
             "rating_count_log": np.log1p(np.random.randint(1, 200)),
@@ -140,14 +141,14 @@ class StallModel(nn.Module):
         self.user_emb = nn.Embedding(num_users, 16)
         self.cat_emb = nn.Embedding(num_categories, 8)
 
-        self.numeric_dim = 6  # distance_from_route + rating + sentiment 등
+        self.numeric_dim = 6  # distance_from_route + rating + etc.
 
         self.mlp = nn.Sequential(
-            nn.Linear(16+8+self.numeric_dim, 64),
+            nn.Linear(16 + 8 + self.numeric_dim, 64),
             nn.ReLU(),
             nn.Linear(64, 32),
             nn.ReLU(),
-            nn.Linear(32, 1)
+            nn.Linear(32, 1),
         )
 
     def forward(self, user_id, cat_id, numeric):
@@ -157,7 +158,7 @@ class StallModel(nn.Module):
 
 class StallDataset(Dataset):
     def __init__(self, df, user2idx, cat2idx):
-        self.df = df
+        self.df = df.reset_index(drop=True)
         self.user2idx = user2idx
         self.cat2idx = cat2idx
         self.num_cols = [
@@ -166,7 +167,7 @@ class StallDataset(Dataset):
             "rating_count_log",
             "sentiment_score",
             "price_level",
-            "hour_sin"
+            "hour_sin",
         ]
 
     def __len__(self):
@@ -174,10 +175,31 @@ class StallDataset(Dataset):
 
     def __getitem__(self, idx):
         r = self.df.iloc[idx]
-        user = torch.tensor(self.user2idx[r["user_id"]], dtype=torch.long)
-        cat = torch.tensor(self.cat2idx[r["stall_category_id"]], dtype=torch.long)
-        numeric = torch.tensor(r[self.num_cols].values, dtype=torch.float32)
-        label = torch.tensor(r["label"], dtype=torch.float32)
+
+        # user / category
+        user_raw = r["user_id"]
+        cat_raw = r["stall_category_id"]
+        user = torch.tensor(self.user2idx[user_raw], dtype=torch.long)
+        cat = torch.tensor(self.cat2idx[cat_raw], dtype=torch.long)
+
+        # 🔥 numeric: object / str 방지용 강제 float 변환
+        numeric_vals = []
+        for col in self.num_cols:
+            v = r[col]
+            try:
+                v = float(v)
+            except Exception:
+                v = 0.0
+            numeric_vals.append(v)
+        numeric = torch.tensor(numeric_vals, dtype=torch.float32)
+
+        # label
+        try:
+            label_val = float(r["label"])
+        except Exception:
+            label_val = 0.0
+        label = torch.tensor(label_val, dtype=torch.float32)
+
         return user, cat, numeric, label
 
 
@@ -187,7 +209,7 @@ def train_model(model, train_loader, val_loader, device="cpu"):
 
     for epoch in range(3):
         model.train()
-        tot = 0
+        tot = 0.0
         for u, c, n, y in train_loader:
             u, c, n, y = u.to(device), c.to(device), n.to(device), y.to(device)
             opt.zero_grad()
@@ -197,13 +219,15 @@ def train_model(model, train_loader, val_loader, device="cpu"):
             opt.step()
             tot += loss.item()
 
-        print(f"[Epoch {epoch+1}] TrainLoss={tot:.4f}")
+        print(f"[Epoch {epoch + 1}] TrainLoss={tot:.4f}")
 
         model.eval()
-        vtot = 0
+        vtot = 0.0
         with torch.no_grad():
             for u, c, n, y in val_loader:
-                vtot += loss_fn(model(u.to(device), c.to(device), n.to(device)), y.to(device)).item()
+                u, c, n, y = u.to(device), c.to(device), n.to(device), y.to(device)
+                loss = loss_fn(model(u, c, n), y)
+                vtot += loss.item()
         print(f"           ValLoss={vtot:.4f}")
 
 
@@ -212,11 +236,11 @@ def train_model(model, train_loader, val_loader, device="cpu"):
 # ============================================================
 @torch.no_grad()
 def recommend(model, df, user_id, user2idx, cat2idx, k=3, temperature=0.7, device="cpu"):
-    df = df.copy()
+    if len(df) == 0:
+        print("⚠️ 추천 후보가 없습니다.")
+        return df
 
-    # user_id 하나 입력
-    user_idx = torch.tensor([user2idx[user_id]] * len(df), dtype=torch.long, device=device)
-    cat_idx = torch.tensor([cat2idx[c] for c in df["stall_category_id"]], dtype=torch.long, device=device)
+    df = df.copy()
 
     numeric_cols = [
         "distance_from_route",
@@ -224,15 +248,23 @@ def recommend(model, df, user_id, user2idx, cat2idx, k=3, temperature=0.7, devic
         "rating_count_log",
         "sentiment_score",
         "price_level",
-        "hour_sin"
+        "hour_sin",
     ]
 
+    # numeric 안전 변환
+    for col in numeric_cols:
+        df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0.0).astype(float)
+
+    user_idx = torch.tensor([user2idx[user_id]] * len(df), dtype=torch.long, device=device)
+    cat_idx = torch.tensor([cat2idx[c] for c in df["stall_category_id"]], dtype=torch.long, device=device)
     numeric = torch.tensor(df[numeric_cols].values, dtype=torch.float32, device=device)
 
     scores = model(user_idx, cat_idx, numeric)
     probs = F.softmax(scores / temperature, dim=0)
 
+    k = min(k, len(df))
     chosen = torch.multinomial(probs, k, replacement=False).cpu().numpy()
+
     df["score"] = scores.cpu().numpy()
     df["prob"] = probs.cpu().numpy()
 
@@ -243,16 +275,15 @@ def recommend(model, df, user_id, user2idx, cat2idx, k=3, temperature=0.7, devic
 # 7. 실행
 # ============================================================
 if __name__ == "__main__":
-
     # 1) 경로 설정
-    start = {"lat": 37.5665, "lng": 126.9780}
-    destination = {"lat": 37.4979, "lng": 127.0276}
-    waypoints = [{"lat": 37.5048, "lng": 127.0041}]
+    start = {"lat": 37.5665, "lng": 126.9780}      # 서울 시청
+    destination = {"lat": 37.4979, "lng": 127.0276}  # 강남역
+    waypoints = [{"lat": 37.5048, "lng": 127.0041}]  # 고속터미널 근처
 
     print("🔹 Kakao 경로 요청...")
     route = get_route_from_kakao(start, destination, waypoints)
     path = route["path"]
-    mid_lat, mid_lng = path[len(path)//2]
+    mid_lat, mid_lng = path[len(path) // 2]
 
     print("🚚 경로 좌표 수:", len(path))
 
@@ -270,28 +301,29 @@ if __name__ == "__main__":
     print("200m:", len(near200))
 
     # ---------------------------------------------
-    #       4) PyTorch 모델 학습
+    # 4) PyTorch 모델 학습용 데이터 준비
     # ---------------------------------------------
     stalls["user_id"] = np.random.randint(1, 20, size=len(stalls))
-    stalls["hour_sin"] = np.sin(np.random.randint(0, 24) / 3.14)
-    stalls["label"] = np.where(stalls["rating_avg"] > 4.5, 1, 0)
+    stalls["hour_sin"] = np.sin(np.random.randint(0, 24, size=len(stalls)) / 3.14)
+    stalls["label"] = np.where(stalls["rating_avg"] > 4.5, 1, 0).astype(float)
 
-    # 🔥 학습용 distance_from_route 생성 (랜덤)
+    # distance_from_route: 학습용 더미 값
     stalls["distance_from_route"] = np.random.uniform(10, 400, size=len(stalls))
 
-    # 🔥 모든 numeric 컬럼 float 변환 (object 에러 방지)
+    # numeric 컬럼 float 강제
     numeric_cols_fix = [
         "distance_from_route",
         "rating_avg",
         "rating_count_log",
         "sentiment_score",
         "price_level",
-        "hour_sin"
+        "hour_sin",
     ]
     for col in numeric_cols_fix:
-        stalls[col] = pd.to_numeric(stalls[col], errors="coerce").astype(float)
+        stalls[col] = pd.to_numeric(stalls[col], errors="coerce").fillna(0.0).astype(float)
 
-    # 아래는 기존 코드 동일
+    stalls = stalls.replace([np.inf, -np.inf], np.nan).fillna(0.0)
+
     user2idx = {u: i for i, u in enumerate(stalls["user_id"].unique())}
     cat2idx = {c: i for i, c in enumerate(stalls["stall_category_id"].unique())}
 
@@ -310,19 +342,28 @@ if __name__ == "__main__":
     TEST_USER = list(user2idx.keys())[0]
 
     # ---------------------------------------------
-    #       5) 반경별 추천 (distance_from_route 재설정)
+    # 5) 반경별 추천 (distance_from_route를 실제 거리로 설정)
     # ---------------------------------------------
     print("\n🎯 50m 추천:")
     if len(near50) > 0:
+        near50 = near50.copy()
+        near50["user_id"] = TEST_USER
+        near50["hour_sin"] = np.sin(np.random.randint(0, 24, size=len(near50)) / 3.14)
         near50["distance_from_route"] = near50["distance_to_route_m"]
-        print(recommend(model, near50, TEST_USER, user2idx, cat2idx, k=3))
+        print(recommend(model, near50, TEST_USER, user2idx, cat2idx, k=3, device=device))
 
     print("\n🎯 100m 추천:")
     if len(near100) > 0:
+        near100 = near100.copy()
+        near100["user_id"] = TEST_USER
+        near100["hour_sin"] = np.sin(np.random.randint(0, 24, size=len(near100)) / 3.14)
         near100["distance_from_route"] = near100["distance_to_route_m"]
-        print(recommend(model, near100, TEST_USER, user2idx, cat2idx, k=3))
+        print(recommend(model, near100, TEST_USER, user2idx, cat2idx, k=3, device=device))
 
     print("\n🎯 200m 추천:")
     if len(near200) > 0:
+        near200 = near200.copy()
+        near200["user_id"] = TEST_USER
+        near200["hour_sin"] = np.sin(np.random.randint(0, 24, size=len(near200)) / 3.14)
         near200["distance_from_route"] = near200["distance_to_route_m"]
-        print(recommend(model, near200, TEST_USER, user2idx, cat2idx, k=3))
+        print(recommend(model, near200, TEST_USER, user2idx, cat2idx, k=3, device=device))
