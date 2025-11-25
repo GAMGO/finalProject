@@ -1,35 +1,34 @@
-/* -------- 공통 팔레트 -------- */
+/* -------- 커뮤니티 전용 팔레트 (App 변수 재사용) -------- */
 :root {
   --brand-purple: #78266a;
-  --accent-peach: #ffd19d; /* 지금은 거의 안 씀 */
-  --accent-brown: #333943; /* 살짝 더 뉴트럴 톤 */
-  --bg-main: #f3f4f6;      /* ✅ 노란 배경 → 연회색으로 변경 */
+  --accent-brown: #333943;
+  --bg-main: #f3f4f6;
   --text-main: #111827;
   --text-muted: #6b7280;
 }
 
-/* -------- 전체 레이아웃 -------- */
+/* -------- 커뮤니티 레이아웃 -------- */
 
 .community-root {
   width: 100%;
-  height: 100%;
+  min-height: 100vh;
   background: var(--bg-main);
   display: flex;
   flex-direction: column;
 }
 
-/* 상단 보라 헤더 안 쓰는 경우 그냥 둬도 되고, 필요 없으면 지워도 됨 */
+/* (예전 상단 보라줄은 안 씀) */
 .community-top {
   display: none;
 }
 
-/* 메인 콘텐츠 영역 – 가로 꽉 차게(컨텐츠는 1040px까지) */
+/* 오른쪽 메인 안에서의 컨텐츠 영역 */
 .community-inner {
   flex: 1;
   width: 100%;
-  max-width: 1040px;
-  margin: 0 auto;
-  padding: 24px 32px 40px;
+  max-width: 960px;            /* 피드 실제 폭 */
+  margin: 0 auto;              /* 가운데 정렬 */
+  padding: 24px 24px 40px;
 }
 
 /* -------- 상단 툴바 (제목 + 드롭다운 + 글쓰기) -------- */
@@ -38,7 +37,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .community-title-plain {
@@ -75,15 +74,14 @@
   font-weight: 600;
 }
 
-/* -------- 게시판 리스트 박스 -------- */
+/* -------- 피드 카드 리스트 -------- */
 
 .post-list {
+  width: 100%;
   display: flex;
   flex-direction: column;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  background: #ffffff;         /* ✅ 리스트 전체 흰색 박스 */
-  overflow: hidden;
+  gap: 16px;                   /* 카드 사이 간격 */
+  background: transparent;
 }
 
 /* 비어있을 때 */
@@ -91,36 +89,36 @@
   padding: 40px 16px;
   text-align: center;
   color: var(--text-muted);
+  background: #ffffff;
+  border-radius: 12px;
 }
 
-/* 각 줄 하나 */
+/* 각 게시글 카드 */
 .post-row {
+  width: 100%;
   list-style: none;
   display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 12px 20px;
-  border-bottom: 1px solid #e5e7eb;
+  flex-direction: column;      /* 사진 위, 텍스트 아래 */
+  gap: 10px;
+  padding: 14px 16px 10px;
   background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 
-.post-row:last-child {
-  border-bottom: none;
-}
-
-/* hover 시 살짝 파란 느낌 */
 .post-row:hover {
-  background: #f3f4ff;
+  transform: translateY(-2px);
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.13);
 }
 
-/* 썸네일 (왼쪽) */
+/* 사진 영역 */
 .post-thumb {
-  width: 60px;
-  height: 60px;
-  border-radius: 8px;
+  width: 100%;
+  height: 260px;               /* 220~300 사이에서 원하는 값으로 조절 */
+  border-radius: 14px;
   overflow: hidden;
   background: #e5e7eb;
-  flex-shrink: 0;
 }
 
 .post-thumb img {
@@ -130,35 +128,32 @@
   display: block;
 }
 
-/* 가운데 텍스트 영역 */
+/* 텍스트 영역 */
 .post-row-main {
-  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  min-width: 0;
 }
 
+/* 타입 태그 + 제목 */
 .post-row-title-line {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-/* [제보] [후기] 타입 태그 */
 .post-row-type {
   font-size: 11px;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: 999px;
   background: #eff6ff;
   border: 1px solid #bfdbfe;
   color: #1d4ed8;
   white-space: nowrap;
 }
 
-/* 제목 */
 .post-row-title {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--accent-brown);
   white-space: nowrap;
@@ -173,7 +168,6 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  min-width: 0;
 }
 
 .post-row-location {
@@ -191,13 +185,12 @@
   color: var(--text-muted);
 }
 
-/* 오른쪽 좋아요 / 싫어요 – 숫자만 딱 보이게 */
+/* 좋아요/싫어요 */
 .post-row-actions {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-  margin-left: 8px;
+  justify-content: flex-start;
+  gap: 14px;
+  margin-top: 6px;
 }
 
 .post-row-action-btn {
@@ -213,6 +206,40 @@
 }
 
 .post-row-action-btn span {
-  min-width: 16px;
-  text-align: right;
+  min-width: auto;
+  text-align: left;
+}
+
+/* -------- 페이지네이션 -------- */
+
+.pagination {
+  margin-top: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+}
+
+.page-btn,
+.page-arrow {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  font-size: 13px;
+  color: var(--text-main);
+  cursor: pointer;
+}
+
+.page-btn-active {
+  border-color: #2563eb;
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.page-arrow:disabled {
+  opacity: 0.4;
+  cursor: default;
 }

@@ -5,12 +5,10 @@ import "./App.css";
 
 export default function App() {
   const [page, setPage] = useState("map"); // map / community
-
   return (
     <div className="app">
       <aside className="side-bar">
         <div className="side-logo" onClick={() => setPage("map")}>
-          LOGO
         </div>
 
         <button
