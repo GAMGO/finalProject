@@ -1,0 +1,31 @@
+/* SidebarPatch.css */
+/* App.css/기존 CSS 절대 수정 없이 "덮어쓰기"만 한다 */
+
+.app {
+  width: 100vw;              /* body flex-center 영향 받아도 전체 폭 고정 */
+}
+
+/* 사이드바는 무조건 세로 스택 + 고정 */
+.side-bar {
+  display: flex;
+  flex-direction: column;    /* 핵심: 버튼 세로 정렬 고정 */
+  align-items: stretch;      /* 버튼 폭을 sidebar 기준으로 꽉 채움 */
+  flex-shrink: 0;
+  height: 100vh;             /* 스크롤해도 사이드는 고정된 높이 */
+  position: sticky;
+  top: 0;
+}
+
+/* 로고 중앙 유지 */
+.side-logo {
+  align-self: center;
+  margin-bottom: 8px;
+}
+
+/* 혹시 어디서 건드려도 글자 세로로 안 눌리게 강제 */
+.side-nav-btn {
+  writing-mode: horizontal-tb !important;
+  transform: none !important;
+  white-space: nowrap;
+  display: block;
+}

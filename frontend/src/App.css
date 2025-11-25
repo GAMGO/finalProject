@@ -87,3 +87,13 @@ body {
   /* ✅ 여기서는 flex 안 씀 – 커뮤니티가 전체를 다 씀 */
   display: block;
 }
+
+/* ===== 사이드바 버튼 강제 고정(전역 CSS 덮임 방지) ===== */
+.side-nav-btn {
+  display: block !important;
+  writing-mode: horizontal-tb !important;
+  transform: none !important;
+  white-space: nowrap !important;
+  text-align: center !important;
+  line-height: normal !important;
+}
