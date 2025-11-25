@@ -7,12 +7,12 @@ import "./App.css";
 import "./SidebarPatch.css";
 
 export default function App() {
-<<<<<<< HEAD
-  const [page, setPage] = useState("map"); // map / community
-=======
+
+
+
   const [page, setPage] = useState("map"); // map / community / profile / favorite
 
->>>>>>> d74e9d5a1db6651300ad0dde6709c0491e381714
+
   return (
     <div className="app">
       <aside className="side-bar">
