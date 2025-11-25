@@ -51,7 +51,14 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
-
+// JAR 파일의 최종 이름을 'app.jar'로 설정
+jar {
+    archiveFileName = 'app.jar'
+}
+// 또는 Spring Boot의 bootJar 태스크를 사용 (권장)
+bootJar {
+    archiveFileName = 'app.jar'
+}
 /*
  * [파일 설명]
  * - Spring Boot + JPA + Security + Validation + MySQL 사용하는 Gradle 빌드 설정.
