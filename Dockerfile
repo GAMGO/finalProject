@@ -21,7 +21,7 @@ FROM openjdk:17.0.2-jdk-slim
 WORKDIR /app
 
 # 빌드된 JAR 파일 복사
-COPY --from=build /app/backend/build/libs/finalProject-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=build /app/backend/build/libs/app.jar app.jar
 
 EXPOSE 8080
 ENV PORT 8080
