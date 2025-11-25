@@ -27,14 +27,10 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     // .env 파일 로드
     implementation 'io.github.cdimascio:java-dotenv:5.2.2'
-
     // Devtools
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
-
+    // MySQL
     runtimeOnly 'com.mysql:mysql-connector-j'
-
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
     // Lombok
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
