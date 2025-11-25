@@ -3,6 +3,8 @@ FROM gradle:8.5-jdk17 AS build
 WORKDIR /app
 
 # backend 전체 복사 (gradlew 포함)
+COPY backend/gradlew /app/gradlew
+COPY backend/gradle /app/gradle
 COPY backend /app/backend
 
 # gradlew 실행 권한 부여
