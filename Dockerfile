@@ -1,5 +1,5 @@
 # 1단계: 빌드 환경 (Build Stage) - Gradle과 OpenJDK 17 환경을 사용하여 JAR 파일 생성
-FROM gradle:8.5.0-jdk17 AS build
+FROM gradle:8.5-jdk17 AS build
 WORKDIR /app
 
 # 현재 리포지토리가 finalProject/backend 구조라면 아래 명령어를 사용해야 합니다.
@@ -13,7 +13,7 @@ WORKDIR /app/backend
 RUN ./gradlew clean build --no-daemon -x test
 
 # 2단계: 실행 환경 (Production Stage)
-FROM openjdk:17-jre-slim
+FROM openjdk:17-jdk-slim
 WORKDIR /app
 
 # JAR 파일 복사 경로 (backend 폴더 내의 build/libs에서 복사)
