@@ -26,4 +26,8 @@ COPY --from=build /app/backend/build/libs/app.jar app.jar
 EXPOSE 8080
 ENV PORT 8080
 
-CMD ["java", "-jar", "app.jar"]
+CMD ["java", "-jar", \
+    "-Dspring.datasource.url=$RENDER_SQL_API", \
+    "-Dspring.datasource.username=$RENDER_SQL_ID", \
+    "-Dspring.datasource.password=$RENDER_SQL_PW", \
+    "app.jar"]
