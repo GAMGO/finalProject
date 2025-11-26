@@ -1,4 +1,4 @@
-import React, { useState } from "react"; // useState 훅을 사용하기 위해 import
+import React, { useState } from "react";
 
 const LoginPage = () => {
   // ------------------------------------
@@ -6,14 +6,16 @@ const LoginPage = () => {
   // ------------------------------------
   const [customerId, setCustomerId] = useState(""); // ID 입력 상태
   const [password, setPassword] = useState(""); // PW 입력 상태
+  const [isLoginMode, setIsLoginMode] = useState(true); // 🌟 모드 상태: true=로그인, false=회원가입
+  
+  // 🌟 회원가입 모드에서 필요한 추가 상태
+  const [confirmPassword, setConfirmPassword] = useState(""); // 비밀번호 확인
+  const [email, setEmail] = useState(""); // 이메일
 
   // ------------------------------------
   // 2. 로그인 처리 함수 (Login Handler)
   // ------------------------------------
   const handleLogin = async () => {
-    // 폼 제출 방지 (버튼의 기본 동작 방지)
-    // <button>에 type="submit"이 아닌 type="button"을 사용하거나, onClick에서 event.preventDefault()를 사용합니다.
-
     if (!customerId || !password) {
       alert("아이디와 비밀번호를 모두 입력해주세요.");
       return;
@@ -27,7 +29,6 @@ const LoginPage = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          // 백엔드 요구 사항에 맞게 필드명 사용
           id: customerId,
           password: password,
         }),
@@ -37,7 +38,7 @@ const LoginPage = () => {
         const data = await response.json();
         console.log("로그인 성공:", data);
         alert("로그인에 성공했습니다! 메인 페이지로 이동합니다.");
-        // TODO: 로그인 성공 후 토큰 저장 및 페이지 이동 로직 구현 (예: navigate('/main'))
+        // TODO: 로그인 성공 후 토큰 저장 및 페이지 이동 로직 구현
       } else {
         const errorData = await response.json();
         console.error("로그인 실패 응답:", errorData);
@@ -54,10 +55,62 @@ const LoginPage = () => {
   };
 
   // ------------------------------------
+  // 2. 회원가입 처리 함수 (Register Handler)
+  // ------------------------------------
+  const handleRegister = async () => {
+    if (!customerId || !password || !confirmPassword || !email) {
+      alert("모든 필드를 입력해주세요.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      alert("비밀번호가 일치하지 않습니다.");
+      return;
+    }
+
+    // 실제 백엔드 회원가입 API 엔드포인트로 변경해야 합니다.
+    try {
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          id: customerId, 
+          password: password, 
+          email: email 
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("회원가입 성공:", data);
+        alert("회원가입에 성공했습니다! 로그인 페이지로 이동합니다.");
+        
+        // 성공 후 로그인 모드로 전환 및 폼 초기화
+        setIsLoginMode(true); 
+        setCustomerId("");
+        setPassword("");
+        setConfirmPassword("");
+        setEmail("");
+
+      } else {
+        const errorData = await response.json();
+        console.error("회원가입 실패 응답:", errorData);
+        alert(
+          `회원가입 실패: ${
+            errorData.message || "이미 존재하는 아이디이거나 서버 오류입니다."
+          }`
+        );
+      }
+    } catch (error) {
+      console.error("서버 연결 오류:", error);
+      alert("서버 연결에 실패했습니다. 네트워크 상태를 확인해주세요.");
+    }
+  };
+  
+  // ------------------------------------
   // 3. 스타일 및 변수 정의
   // ------------------------------------
 
-  // 폰트 정의를 위한 CSS 문자열
   const fontFaceCss = `
     @font-face {
       font-family: 'PartialSans';
@@ -67,25 +120,21 @@ const LoginPage = () => {
     }
   `;
 
-  // 이미지에서 사용된 색상 변수
   const darkPurple = "#5B2C6F";
   const lightPeach = "#F5D7B7";
   const white = "#FFFFFF";
-  const brown = "#4E2A1A";
   const customFont = "PartialSans, sans-serif";
 
-  // 텍스트 그림자 스타일 정의
   const textShadowStyle = {
     textShadow: `4px 4px 2px ${darkPurple}`,
   };
 
-  // 컴포넌트 스타일 정의
   const containerStyle = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    width: "100vw", // 뷰포트 전체 너비
-    height: "100vh", // 뷰포트 전체 높이
+    width: "100vw",
+    height: "100vh",
     backgroundColor: darkPurple,
     fontFamily: customFont,
   };
@@ -101,23 +150,8 @@ const LoginPage = () => {
   };
 
   const logoContainerStyle = {
-    //marginBottom: "5px",
     maxWidth: "100%",
     height: "auto",
-  };
-
-  const logoTextStyle = {
-    fontSize: "24px",
-    fontWeight: "bold",
-    color: brown,
-    marginBottom: "10px",
-    ...textShadowStyle,
-  };
-
-  const iconStyle = {
-    fontSize: "40px",
-    color: brown,
-    ...textShadowStyle,
   };
 
   const inputGroupStyle = {
@@ -159,76 +193,180 @@ const LoginPage = () => {
     borderRadius: "20px",
     border: `2px solid ${darkPurple}`,
     cursor: "pointer",
-    marginTop: "30px",
+    marginTop: "20px",
+    margin: "10px", 
     transition: "background-color 0.3s",
     fontFamily: customFont,
     boxShadow: `4px 4px 0px ${darkPurple}`,
   };
 
   // ------------------------------------
-  // 4. 컴포넌트 렌더링 (Component Render)
+  // 4. 서브 컴포넌트 (폼) 정의
+  // ------------------------------------
+  
+  // 🌟 로그인 폼
+  const LoginForm = () => (
+    <>
+      <div style={inputGroupStyle}>
+        <label htmlFor="customerId" style={labelStyle}>
+          ID
+        </label>
+        <input
+          type="text"
+          id="customerId"
+          placeholder="아이디를 입력하세요"
+          style={inputStyle}
+          value={customerId}
+          onChange={(e) => setCustomerId(e.target.value)}
+        />
+      </div>
+
+      <div style={inputGroupStyle}>
+        <label htmlFor="password" style={labelStyle}>
+          PW
+        </label>
+        <input
+          type="password"
+          id="password"
+          placeholder="비밀번호를 입력하세요"
+          style={inputStyle}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+      </div>
+
+      <div>
+        <button type="button" style={buttonStyle} onClick={handleLogin}>
+          로그인
+        </button>
+      </div>
+
+      <div>
+        <button 
+          type="button" 
+          style={buttonStyle} 
+          onClick={() => {
+            setIsLoginMode(false); // 회원가입 모드로 전환
+            setCustomerId("");
+            setPassword("");
+          }}
+        >
+          회원가입
+        </button>
+      </div>
+    </>
+  );
+
+  // 🌟 회원가입 폼
+  const RegisterForm = () => (
+    <>
+      {/* 1. ID 입력 */}
+      <div style={inputGroupStyle}>
+        <label htmlFor="reg_customerId" style={labelStyle}>
+          ID
+        </label>
+        <input
+          type="text"
+          id="reg_customerId"
+          placeholder="사용할 아이디를 입력하세요"
+          style={inputStyle}
+          value={customerId}
+          onChange={(e) => setCustomerId(e.target.value)}
+        />
+      </div>
+
+      {/* 2. Email 입력 */}
+      <div style={inputGroupStyle}>
+        <label htmlFor="reg_email" style={labelStyle}>
+          Email
+        </label>
+        <input
+          type="email"
+          id="reg_email"
+          placeholder="이메일 주소를 입력하세요"
+          style={inputStyle}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+      </div>
+
+      {/* 3. 비밀번호 입력 */}
+      <div style={inputGroupStyle}>
+        <label htmlFor="reg_password" style={labelStyle}>
+          비밀번호
+        </label>
+        <input
+          type="password"
+          id="reg_password"
+          placeholder="비밀번호를 입력하세요"
+          style={inputStyle}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+      </div>
+      
+      {/* 4. 비밀번호 확인 입력 */}
+      <div style={inputGroupStyle}>
+        <label htmlFor="reg_confirmPassword" style={labelStyle}>
+          비밀번호 확인
+        </label>
+        <input
+          type="password"
+          id="reg_confirmPassword"
+          placeholder="비밀번호를 다시 입력하세요"
+          style={inputStyle}
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+        />
+      </div>
+
+      <div>
+        <button type="button" style={buttonStyle} onClick={handleRegister}>
+          회원가입 완료
+        </button>
+      </div>
+      
+      <div>
+        <button 
+          type="button" 
+          style={buttonStyle} 
+          onClick={() => {
+            setIsLoginMode(true); // 로그인 모드로 전환
+            // 폼 필드 초기화
+            setCustomerId("");
+            setPassword("");
+            setConfirmPassword("");
+            setEmail("");
+          }}
+        >
+          로그인 페이지로
+        </button>
+      </div>
+    </>
+  );
+  
+  // ------------------------------------
+  // 5. 컴포넌트 렌더링 (Component Render)
   // ------------------------------------
 
   return (
     <div style={containerStyle}>
-      {/* 폰트 로딩을 위한 <style> 태그를 동적으로 삽입합니다. */}
+      {/* 폰트 로딩을 위한 <style> 태그 */}
       <style>{fontFaceCss}</style>
 
       <div style={loginBoxStyle}>
         {/* 로고 영역 */}
-        <div >
-          {/* alt 속성을 "DISH 로고"로 수정했습니다. */}
+        <div>
           <img
             src="..\src\assets\DISH_LOGO.png"
             alt="DISH 로고"
             style={logoContainerStyle}
           />
         </div>
+        
+        {/* 🌟 조건부 렌더링: 모드에 따라 폼 전환 */}
+        {isLoginMode ? <LoginForm /> : <RegisterForm />}
 
-        {/* ID 입력 필드 */}
-        <div style={inputGroupStyle}>
-          <label htmlFor="customerId" style={labelStyle}>
-            ID
-          </label>
-          <input
-            type="text"
-            id="customerId"
-            placeholder="아이디를 입력하세요"
-            style={inputStyle}
-            value={customerId} // **상태 값 연결**
-            onChange={(e) => setCustomerId(e.target.value)} // **변경 핸들러 연결**
-          />
-        </div>
-
-        {/* PW 입력 필드 */}
-        <div style={inputGroupStyle}>
-          <label htmlFor="password" style={labelStyle}>
-            PW
-          </label>{" "}
-          {/* htmlFor를 "password"로 변경하여 input id와 일치시킴 */}
-          <input
-            type="password"
-            id="password" // **id를 password로 변경하여 상태 및 label과 일관성 유지**
-            placeholder="비밀번호를 입력하세요"
-            style={inputStyle}
-            value={password} // **상태 값 연결**
-            onChange={(e) => setPassword(e.target.value)} // **변경 핸들러 연결**
-          />
-        </div>
-
-        {/* 로그인 버튼 */}
-        <div>
-          <button type="button" style={buttonStyle} onClick={handleLogin}>
-            로그인
-          </button>
-        </div>
-
-        <div>
-          {/* 회원가입 버튼 */}
-          <button type="button" style={buttonStyle} onClick={handleLogin}>
-            회원가입
-          </button>
-        </div>
       </div>
     </div>
   );
