@@ -14,6 +14,7 @@ public class CorsConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration c = new CorsConfiguration();
         c.addAllowedOriginPattern("*"); // 개발 단계라 모두 허용
+        c.addAllowedOrigin("https://dishinside.shop");
         c.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         c.setAllowedHeaders(List.of("Content-Type", "Authorization"));
         c.setAllowCredentials(true);
