@@ -1,42 +1,56 @@
 import React, { useState } from "react";
 
-// 'onToggleMode' 프롭을 받아 회원가입 버튼 클릭 시 모드를 전환하도록 합니다.
-const LoginPage = ({ onToggleMode }) => { 
+// 'onToggleMode' 프롭을 받아 로그인 버튼 클릭 시 모드를 전환하도록 합니다.
+const SignupPage = ({ onToggleMode }) => {
   // ------------------------------------
   // 1. 상태 관리
   // ------------------------------------
   const [customerId, setCustomerId] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [email, setEmail] = useState("");
 
   // ------------------------------------
-  // 2. 로그인 처리 함수
+  // 2. 회원가입 처리 함수
   // ------------------------------------
-  const handleLogin = async () => {
-    if (!customerId || !password) {
-      alert("아이디와 비밀번호를 모두 입력해주세요.");
+  const handleRegister = async () => {
+    if (!customerId || !password || !confirmPassword || !email) {
+      alert("모든 필드를 입력해주세요.");
       return;
     }
-    // (API 호출 로직 생략 및 유지)
+
+    if (password !== confirmPassword) {
+      alert("비밀번호가 일치하지 않습니다.");
+      return;
+    }
+
     try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: customerId, password: password }),
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: customerId, password: password, email: email }),
       });
+
       if (response.ok) {
-        alert("로그인에 성공했습니다! 메인 페이지로 이동합니다.");
+        alert("회원가입에 성공했습니다! 로그인 페이지로 돌아갑니다.");
+        // 성공 후 로그인 모드로 자동 전환 요청
+        onToggleMode(); 
       } else {
         const errorData = await response.json();
-        alert(`로그인 실패: ${errorData.message || "아이디 또는 비밀번호를 다시 확인해주세요."}`);
+        alert(
+          `회원가입 실패: ${
+            errorData.message || "이미 존재하는 아이디이거나 서버 오류입니다."
+          }`
+        );
       }
     } catch (error) {
       alert("서버 연결에 실패했습니다. 네트워크 상태를 확인해주세요.");
     }
   };
-
-  // ------------------------------------
-  // 3. 스타일 및 변수 정의 (인라인 스타일 복원)
-  // ------------------------------------
   
+  // ------------------------------------
+  // 3. 스타일 정의 (LoginPage와 동일한 스타일 사용 - 복원)
+  // ------------------------------------
   const darkPurple = "#5B2C6F";
   const lightPeach = "#F5D7B7";
   const white = "#FFFFFF";
@@ -74,7 +88,7 @@ const LoginPage = ({ onToggleMode }) => {
     backgroundColor: white, color: darkPurple, padding: "10px 30px",
     fontSize: "18px", fontWeight: "bold", borderRadius: "20px",
     border: `2px solid ${darkPurple}`, cursor: "pointer", 
-    marginTop: "20px", margin: "5px", // 간격 조정
+    marginTop: "10px", margin: "5px", 
     transition: "background-color 0.3s", fontFamily: customFont,
     boxShadow: `4px 4px 0px ${darkPurple}`,
   };
@@ -86,40 +100,51 @@ const LoginPage = ({ onToggleMode }) => {
     <div style={containerStyle}>
       <style>{fontFaceCss}</style>
       <div style={loginBoxStyle}>
-        {/* 로고 영역 */}
-        <div>
-          <img src="..\src\assets\DISH_LOGO.png" alt="DISH 로고" style={logoContainerStyle} />
-        </div>
-
-        {/* ID 입력 필드 */}
+        {/* 1. ID 입력 필드 */}
         <div style={inputGroupStyle}>
-          <label htmlFor="customerId" style={labelStyle}>ID</label>
+          <label htmlFor="reg_customerId" style={labelStyle}>ID</label>
           <input
-            type="text" id="customerId" placeholder="아이디를 입력하세요" style={inputStyle}
-            value={customerId} 
-            onChange={(e) => setCustomerId(e.target.value)}
+            type="text" id="reg_customerId" placeholder="사용할 아이디를 입력하세요" style={inputStyle}
+            value={customerId} onChange={(e) => setCustomerId(e.target.value)}
           />
         </div>
 
-        {/* PW 입력 필드 */}
+        {/* 2. Email 입력 필드 */}
         <div style={inputGroupStyle}>
-          <label htmlFor="password" style={labelStyle}>PW</label>
+          <label htmlFor="reg_email" style={labelStyle}>Email</label>
           <input
-            type="password" id="password" placeholder="비밀번호를 입력하세요" style={inputStyle}
-            value={password} 
-            onChange={(e) => setPassword(e.target.value)}
+            type="email" id="reg_email" placeholder="이메일 주소를 입력하세요" style={inputStyle}
+            value={email} onChange={(e) => setEmail(e.target.value)}
+          />
+        </div>
+
+        {/* 3. 비밀번호 입력 필드 */}
+        <div style={inputGroupStyle}>
+          <label htmlFor="reg_password" style={labelStyle}>비밀번호</label>
+          <input
+            type="password" id="reg_password" placeholder="비밀번호를 입력하세요" style={inputStyle}
+            value={password} onChange={(e) => setPassword(e.target.value)}
+          />
+        </div>
+        
+        {/* 4. 비밀번호 확인 입력 필드 */}
+        <div style={inputGroupStyle}>
+          <label htmlFor="reg_confirmPassword" style={labelStyle}>비밀번호 확인</label>
+          <input
+            type="password" id="reg_confirmPassword" placeholder="비밀번호를 다시 입력하세요" style={inputStyle}
+            value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
           />
         </div>
 
         {/* 버튼 영역 */}
         <div>
-          <button type="button" style={buttonStyle} onClick={handleLogin}>
-            로그인
+          <button type="button" style={buttonStyle} onClick={handleRegister}>
+            회원가입 완료
           </button>
           
-          {/* 🌟 회원가입 버튼 클릭 시 부모에게 모드 전환 요청 */}
+          {/* 로그인 페이지로 버튼 클릭 시 부모에게 모드 전환 요청 */}
           <button type="button" style={buttonStyle} onClick={onToggleMode}>
-            회원가입
+            로그인 페이지로
           </button>
         </div>
       </div>
@@ -127,4 +152,4 @@ const LoginPage = ({ onToggleMode }) => {
   );
 };
 
-export default LoginPage;
+export default SignupPage;
