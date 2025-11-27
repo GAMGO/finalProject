@@ -114,11 +114,11 @@ public class JwtTokenProvider {
     }
 
     // >>> [ADDED] (비밀번호 재설정용) 15분짜리 단기 토큰 발급
-    public String createRecoveryToken(String userId) {
+    public String createRecoveryToken(String customer_id) {
         Date expiry = new Date(System.currentTimeMillis() + 15 * 60 * 1000);
         return Jwts.builder()
                 .signWith(getSecretKey())
-                .subject(userId)
+                .subject(customer_id)
                 .issuer("com.example")
                 .issuedAt(new Date())
                 .expiration(expiry)

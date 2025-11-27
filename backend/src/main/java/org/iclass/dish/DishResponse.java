@@ -13,12 +13,12 @@ public class DishResponse {
         this.price = price;
     }
 
-    public Long getId() { return id; }
+    public Long getCustomer_id() { return id; }
     public String getName() { return name; }
     public String getDescription() { return description; }
     public int getPrice() { return price; }
 
     public static DishResponse from(Dish dish) {
-        return new DishResponse(dish.getId(), dish.getName(), dish.getDescription(), dish.getPrice());
+        return new DishResponse(dish.getCustomer_id(), dish.getName(), dish.getDescription(), dish.getPrice());
     }
 }

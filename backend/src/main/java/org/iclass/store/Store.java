@@ -38,7 +38,7 @@ public class Store {
 
     // ===== Getter / Setter =====
 
-    public Long getId() { return id; }
+    public Long getCustomer_id() { return id; }
     public void setId(Long id) { this.id = id; }
 
     public String getStoreName() { return storeName; }

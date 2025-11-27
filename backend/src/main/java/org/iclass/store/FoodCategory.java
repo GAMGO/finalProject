@@ -22,7 +22,7 @@ public enum FoodCategory {
         this.label = label;
     }
 
-    public Long getId() {
+    public Long getCustomer_id() {
         return id;
     }
 

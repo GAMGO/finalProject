@@ -20,7 +20,7 @@ public class DishController {
     @PostMapping
     public ResponseEntity<DishResponse> create(@Valid @RequestBody DishRequest request) {
         DishResponse created = DishService.create(request);
-        return ResponseEntity.created(URI.create("/api/dishes/" + created.getId())).body(created);
+        return ResponseEntity.created(URI.create("/api/dishes/" + created.getCustomer_id())).body(created);
     }
 
     @GetMapping

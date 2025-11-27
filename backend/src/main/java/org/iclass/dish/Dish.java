@@ -29,7 +29,7 @@ public class Dish {
         this.price = price;
     }
 
-    public Long getId() { return id; }
+    public Long getCustomer_id() { return id; }
     public String getName() { return name; }
     public String getDescription() { return description; }
     public int getPrice() { return price; }

@@ -10,7 +10,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class SignupResponse {
-    private String id;
+    private String customer_id;
     private String email;
     private Integer age;
     private Gender gender;
@@ -26,7 +26,7 @@ public class SignupResponse {
     // AuthController 에서 엔티티를 그대로 반환하지 않고 DTO로 변환하기 위해 추가
     public static SignupResponse fromEntity(CustomersEntity entity) {
        return SignupResponse.builder()
-                .id(entity.getId())
+                .id(entity.getCustomer_id())
                 .email(entity.getEmail())
                 .age(entity.getAge())
                 .gender(entity.getGender())

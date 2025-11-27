@@ -31,11 +31,11 @@ public class CustomersService implements UserDetailsService {
 
         @Transactional
         public CustomersEntity signup(SignupRequest req) {
-                log.debug("[SIGNUP:SERVICE] existsById? id={}", req.getId()); // log 확인
-                if (customersRepository.existsById(req.getId())) {
-                        log.warn("[SIGNUP:SERVICE] duplicate id={}", req.getId());
+                log.debug("[SIGNUP:SERVICE] existsById? id={}", req.getCustomer_id()); // log 확인
+                if (customersRepository.existsById(req.getCustomer_id())) {
+                        log.warn("[SIGNUP:SERVICE] duplicate id={}", req.getCustomer_id());
                         // 중복 ID인 경우 기존 사용자 정보 반환 (이메일 인증만 재발송)
-                        CustomersEntity existingUser = customersRepository.findById(req.getId()).orElse(null);
+                        CustomersEntity existingUser = customersRepository.findById(req.getCustomer_id()).orElse(null);
                         if (existingUser != null && !existingUser.getEmailVerified()) {
                                 // 이메일 인증이 안된 경우 인증번호 재생성
                                 String newCode = emailService.generateVerificationCode(); // UUID 대신 6자리 숫자 생성
@@ -45,7 +45,7 @@ public class CustomersService implements UserDetailsService {
                                 customersRepository.save(existingUser);
 
                                 // 이메일 재발송
-                                emailService.sendVerificationEmail(req.getId(), newCode); // 6자리 인증번호를 발송
+                                emailService.sendVerificationEmail(req.getCustomer_id(), newCode); // 6자리 인증번호를 발송
                                 log.info("[SIGNUP:SERVICE] 이메일 인증번호 재발송: {}", req.getEmail());
                         }
                         return existingUser;
@@ -56,7 +56,7 @@ public class CustomersService implements UserDetailsService {
                 LocalDateTime codeExpires = LocalDateTime.now().plusMinutes(5);
 
                 CustomersEntity user = CustomersEntity.builder()
-                                .id(req.getId())
+                                .customer_id(req.getCustomer_id())
                                 .password(passwordEncoder.encode(req.getPassword())) // 비밀번호 암호화
                                 .age(req.getAge())
                                 .address(req.getAddress())
@@ -82,12 +82,12 @@ public class CustomersService implements UserDetailsService {
         }
 
         @Override
-        public UserDetails loadUserByUsername(String id) throws UsernameNotFoundException {
-                CustomersEntity user = customersRepository.findById(id)
-                                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다 : " + id));
+        public UserDetails loadUserByUsername(String customer_id) throws UsernameNotFoundException {
+                CustomersEntity user = customersRepository.findById(customer_id)
+                                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다 : " + customer_id));
 
                 return org.springframework.security.core.userdetails.User.builder()
-                                .username(user.getId())
+                                .username(user.getCustomer_id())
                                 .password(user.getPassword())
                                 .roles("USER")
                                 .build();

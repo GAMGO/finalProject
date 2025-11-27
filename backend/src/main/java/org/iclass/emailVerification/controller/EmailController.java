@@ -69,9 +69,9 @@ public class EmailController {
             customer.setEmailVerificationExpires(null);
             customersRepository.save(customer);
 
-            log.info("이메일 인증 완료: {}", customer.getId());
+            log.info("이메일 인증 완료: {}", customer.getCustomer_id());
 
-            return ResponseEntity.ok(EmailVerificationResponse.success(customer.getId()));
+            return ResponseEntity.ok(EmailVerificationResponse.success(customer.getCustomer_id()));
 
         } catch (Exception e) {
             log.error("이메일 인증 처리 중 오류 발생", e);

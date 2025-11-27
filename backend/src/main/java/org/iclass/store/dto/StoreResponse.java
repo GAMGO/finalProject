@@ -17,7 +17,7 @@ public class StoreResponse {
 
     public static StoreResponse from(Store store) {
         StoreResponse dto = new StoreResponse();
-        dto.id = store.getId();
+        dto.id = store.getCustomer_id();
         dto.storeName = store.getStoreName();
         dto.foodTypeId = store.getFoodTypeId();
         dto.category = FoodCategory.labelOf(store.getFoodTypeId());
@@ -29,7 +29,7 @@ public class StoreResponse {
 
     // ===== Getter / Setter =====
 
-    public Long getId() { return id; }
+    public Long getCustomer_id() { return id; }
     public void setId(Long id) { this.id = id; }
 
     public String getStoreName() { return storeName; }
