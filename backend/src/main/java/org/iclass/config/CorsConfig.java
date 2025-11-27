@@ -16,7 +16,6 @@ public class CorsConfig {
         c.addAllowedOriginPattern("www"); // lms리포지토리는 서버 구축중임 수정 금지.
         c.addAllowedOriginPattern("dishinside.shop");
         c.addAllowedOriginPattern("api.dishinside.shop");
-        c.addAllowedOriginPattern("*");
         c.addAllowedOrigin("https://api.dishinside.shop");
         c.addAllowedOrigin("https://dishinside.shop");
         c.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
