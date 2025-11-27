@@ -11,10 +11,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CustomersRepository extends JpaRepository<CustomersEntity, Long> {
   
-  Optional<CustomersEntity> findById(String id);
+  Optional<CustomersEntity> findById(String customer_id);
   Optional<CustomersEntity> findByEmail(String email);
 
-  boolean existsById(String id);
+  boolean existsById(String customer_id);
 
   // 이메일 인증 토큰으로 사용자 조회
   Optional<CustomersEntity> findByEmailVerificationToken(String token);

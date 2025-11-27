@@ -23,7 +23,7 @@ public class CustomersEntity {
     private Long idx;
 
     @Column(name = "customer_id", length = 100, nullable = false, updatable = false, unique = true)
-    private String id;
+    private String customer_id;
 
     @Column(name = "password_hash", length = 255, nullable = false)
     private String password;

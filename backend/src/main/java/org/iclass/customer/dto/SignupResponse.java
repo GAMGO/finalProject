@@ -26,7 +26,7 @@ public class SignupResponse {
     // AuthController 에서 엔티티를 그대로 반환하지 않고 DTO로 변환하기 위해 추가
     public static SignupResponse fromEntity(CustomersEntity entity) {
        return SignupResponse.builder()
-                .id(entity.getCustomer_id())
+                .customer_id(entity.getCustomer_id())
                 .email(entity.getEmail())
                 .age(entity.getAge())
                 .gender(entity.getGender())

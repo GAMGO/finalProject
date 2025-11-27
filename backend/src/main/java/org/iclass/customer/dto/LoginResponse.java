@@ -12,5 +12,5 @@ import lombok.NoArgsConstructor;
 public class LoginResponse {
     private String token;
     private String tokenType;
-    private String id;
+    private String customer_id;
 }
