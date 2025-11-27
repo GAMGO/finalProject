@@ -1,5 +1,7 @@
 import React, { useState, useCallback } from "react"; // ⭐️ useCallback 추가
-
+import axios from 'axios';
+//const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+const API_BASE_URL = "https://api.dishmade.shop";
 // 'onToggleMode' 프롭을 받아 로그인 버튼 클릭 시 모드를 전환하도록 합니다.
 const SignupPage = ({ onToggleMode }) => {
   // ------------------------------------
@@ -17,24 +19,55 @@ const SignupPage = ({ onToggleMode }) => {
   const createHandleChange = useCallback((setter) => (e) => {
     setter(e.target.value);
   }, []); // 이 함수 자체는 한 번만 생성
-
-  // ------------------------------------
-  // 3. 회원가입 처리 함수 (생략 및 유지)
-  // ------------------------------------
-  const handleRegister = async () => {
-    // ... 기존 회원가입 로직 유지 ...
-    if (!customerId || !password || !confirmPassword || !email) {
-      alert("모든 필드를 입력해주세요.");
+const handleRegister = async () => {
+  // ... 기존 회원가입 로직 유지 ...
+  if (!customerId || !password || !confirmPassword || !email) {
+    alert("모든 필드를 입력해주세요.");
+    return;
+  }
+  if (password !== confirmPassword) {
+      alert("비밀번호 확인이 일치하지 않습니다.");
       return;
-    }
-    // ... API 호출 및 에러 처리 ...
-    try {
-        // ...
-    } catch (error) {
-        alert("서버 연결에 실패했습니다. 네트워크 상태를 확인해주세요.");
-    }
-  };
+  }
   
+  // ⭐️ API 호출 데이터 준비
+  const registerData = {
+    customerId,
+    password,
+    email
+    // 백엔드에서 요구하는 다른 필드(이름, 전화번호 등)가 있다면 여기에 추가해야 합니다.
+  };
+
+  try {
+    const response = await axios.post(
+      // ⭐️ 백엔드 회원가입 엔드포인트: https://api.dishmade.shop/api/auth/signup
+      `${API_BASE_URL}/api/auth/signup`, 
+      registerData,
+      { withCredentials: true }
+    );
+    
+    // ⭐️ 회원가입 성공 처리
+    alert("회원가입이 성공적으로 완료되었습니다! 로그인해 주세요.");
+    console.log("회원가입 응답 데이터:", response.data);
+    
+    // ⭐️ [성공 후 로직] 회원가입 후 로그인 페이지로 이동 등의 로직 추가하세요.
+    // 예: navigate('/login'); 
+
+  } catch (error) {
+    // ⭐️ 서버 연결 또는 실패 처리
+    if (error.response) {
+      // 서버 응답 (예: 409 Conflict - 이미 존재하는 사용자)
+      alert(`회원가입 실패: ${error.response.data.message || "이미 존재하는 사용자 이름입니다."}`);
+      console.error("회원가입 에러 응답:", error.response);
+    } else if (error.request) {
+      alert("서버 응답이 없습니다. CORS 설정 또는 네트워크 상태를 확인해주세요.");
+      console.error("회원가입 에러 요청:", error.request);
+    } else {
+      alert("서버 연결에 실패했습니다. 네트워크 상태를 확인해주세요.");
+      console.error("회원가입 에러:", error.message);
+    }
+  }
+};
   // ------------------------------------
   // 4. 스타일 정의 (기존 인라인 스타일 유지)
   // ------------------------------------

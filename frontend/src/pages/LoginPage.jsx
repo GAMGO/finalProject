@@ -1,5 +1,7 @@
 import React, { useState, useCallback } from "react"; // ⭐️ useCallback 추가
-
+import axios from 'axios';
+//const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+const API_BASE_URL = "https://api.dishmade.shop";
 // 'onToggleMode' 프롭을 받아 회원가입 버튼 클릭 시 모드를 전환하도록 합니다.
 const LoginPage = ({ onToggleMode }) => { 
   // ------------------------------------
@@ -21,22 +23,53 @@ const LoginPage = ({ onToggleMode }) => {
       setPassword(e.target.value);
   }, []);
   
-  // ------------------------------------
-  // 3. 로그인 처리 함수 (생략 및 유지)
-  // ------------------------------------
   const handleLogin = async () => {
-    // ... 기존 로그인 로직 유지 ...
-    if (!customerId || !password) {
-      alert("아이디와 비밀번호를 모두 입력해주세요.");
-      return;
-    }
-    // ... API 호출 및 에러 처리 ...
-    try {
-        // ...
-    } catch (error) {
-        alert("서버 연결에 실패했습니다. 네트워크 상태를 확인해주세요.");
-    }
+  // ... 기존 로그인 로직 유지 ...
+  if (!customerId || !password) {
+    alert("아이디와 비밀번호를 모두 입력해주세요.");
+    return;
+  }
+  
+  // ⭐️ API 호출 데이터 준비
+  const loginData = {
+    customerId: customerId, // ⚠️ 인풋 필드에서 값을 가져오는 변수명인지 확인하세요.
+    password: password      
   };
+
+  try {
+    const response = await axios.post(
+      // ⭐️ 백엔드 로그인 엔드포인트: https://api.dishmade.shop/api/auth/login
+      `${API_BASE_URL}/api/auth/login`, 
+      loginData,
+      // ⭐️ 인증 정보를 포함하여 요청합니다.
+      { withCredentials: true } 
+    );
+    
+    // ⭐️ 로그인 성공 처리
+    alert("로그인 성공!");
+    console.log("로그인 응답 데이터:", response.data);
+    
+    // ⭐️ [성공 후 로직] JWT 토큰 저장 및 페이지 이동 등을 여기에 추가하세요.
+    // 예: localStorage.setItem('jwtToken', response.data.token);
+    // 예: navigate('/'); 
+
+  } catch (error) {
+    // ⭐️ 서버 연결 또는 인증 실패 처리
+    if (error.response) {
+      // 서버가 응답을 보냈지만 2xx 범위가 아닐 경우 (예: 401 Unauthorized, 400 Bad Request)
+      alert(`로그인 실패: ${error.response.data.message || "아이디 또는 비밀번호를 확인해주세요."}`);
+      console.error("로그인 에러 응답:", error.response);
+    } else if (error.request) {
+      // 요청이 전송되었지만 응답을 받지 못한 경우 (네트워크, CORS 등)
+      alert("서버 응답이 없습니다. CORS 설정 또는 네트워크 상태를 확인해주세요.");
+      console.error("로그인 에러 요청:", error.request);
+    } else {
+      // 요청 설정 자체에서 오류가 발생한 경우
+      alert("서버 연결에 실패했습니다. 네트워크 상태를 확인해주세요.");
+      console.error("로그인 에러:", error.message);
+    }
+  }
+};
 
   // ------------------------------------
   // 4. 스타일 정의 (기존 인라인 스타일 유지)
