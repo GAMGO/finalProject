@@ -33,9 +33,8 @@ const handleRegister = async () => {
   // ⭐️ API 호출 데이터 준비
   const registerData = {
     id,
-    password_hash,
-    email
-    // 백엔드에서 요구하는 다른 필드(이름, 전화번호 등)가 있다면 여기에 추가해야 합니다.
+    password,
+    email,
   };
 
   try {
@@ -50,8 +49,7 @@ const handleRegister = async () => {
     alert("회원가입이 성공적으로 완료되었습니다! 로그인해 주세요.");
     console.log("회원가입 응답 데이터:", response.data);
     
-    // ⭐️ [성공 후 로직] 회원가입 후 로그인 페이지로 이동 등의 로직 추가하세요.
-    // 예: navigate('/login'); 
+    navigate('/login'); 
 
   } catch (error) {
     // ⭐️ 서버 연결 또는 실패 처리

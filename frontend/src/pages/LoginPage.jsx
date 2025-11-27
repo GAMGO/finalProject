@@ -1,7 +1,8 @@
 import React, { useState, useCallback } from "react"; // ⭐️ useCallback 추가
 import axios from 'axios';
+import Main from "../components/Main";
 //const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
-const API_BASE_URL = "https://api.dishinside.shop";
+const API_BASE_URL = "http://localhost:8080";
 // 'onToggleMode' 프롭을 받아 회원가입 버튼 클릭 시 모드를 전환하도록 합니다.
 const LoginPage = ({ onToggleMode }) => { 
   // ------------------------------------
@@ -33,7 +34,7 @@ const LoginPage = ({ onToggleMode }) => {
   // ⭐️ API 호출 데이터 준비
   const loginData = {
     id: customerId, // ⚠️ 인풋 필드에서 값을 가져오는 변수명인지 확인하세요.
-    password_hash: password      
+    password: password      
   };
 
   try {
@@ -50,8 +51,8 @@ const LoginPage = ({ onToggleMode }) => {
     console.log("로그인 응답 데이터:", response.data);
     
     // ⭐️ [성공 후 로직] JWT 토큰 저장 및 페이지 이동 등을 여기에 추가하세요.
-    // 예: localStorage.setItem('jwtToken', response.data.token);
-    // 예: navigate('/'); 
+    localStorage.setItem('jwtToken', response.data.token);
+    navigate(Main); 
 
   } catch (error) {
     // ⭐️ 서버 연결 또는 인증 실패 처리
