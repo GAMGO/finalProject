@@ -14,26 +14,26 @@ public enum FoodCategory {
     EGG_BREAD(10L, "계란빵"),
     CORN(11L, "옥수수");
 
-    private final Long id;
+    private final Long idx;
     private final String label;
 
-    FoodCategory(Long id, String label) {
-        this.id = id;
+    FoodCategory(Long idx, String label) {
+        this.idx = idx;
         this.label = label;
     }
 
-    public Long getCustomer_id() {
-        return id;
+    public Long getIdx() {
+        return idx;
     }
 
     public String getLabel() {
         return label;
     }
 
-    public static String labelOf(Long id) {
-        if (id == null) return null;
+    public static String labelOf(Long idx) {
+        if (idx == null) return null;
         for (FoodCategory c : values()) {
-            if (c.id.equals(id)) return c.label;
+            if (c.idx.equals(idx)) return c.label;
         }
         return null;
     }

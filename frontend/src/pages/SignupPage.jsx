@@ -32,7 +32,7 @@ const handleRegister = async () => {
   
   // ⭐️ API 호출 데이터 준비
   const registerData = {
-    customer_id,
+    id,
     password_hash,
     email
     // 백엔드에서 요구하는 다른 필드(이름, 전화번호 등)가 있다면 여기에 추가해야 합니다.

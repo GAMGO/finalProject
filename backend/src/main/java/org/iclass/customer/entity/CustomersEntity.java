@@ -19,11 +19,11 @@ public class CustomersEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Long id;
+    @Column(name = "idx")
+    private Long idx;
 
     @Column(name = "customer_id", length = 100, nullable = false, updatable = false, unique = true)
-    private String customer_id;
+    private String id;
 
     @Column(name = "password_hash", length = 255, nullable = false)
     private String password;

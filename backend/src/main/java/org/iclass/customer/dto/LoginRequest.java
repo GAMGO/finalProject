@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class LoginRequest {
     @NotBlank
-    private String customer_id;
+    private String id;
 
     @NotBlank
     @Size(min = 8, max = 72)

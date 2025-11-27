@@ -10,7 +10,7 @@ public class Store {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "IDX")
-    private Long id;
+    private Long idx;
 
     @Column(name = "STORE_NAME", length = 255, nullable = false)
     private String storeName;      // 노점 이름 + 한 줄 설명 느낌
@@ -38,8 +38,8 @@ public class Store {
 
     // ===== Getter / Setter =====
 
-    public Long getCustomer_id() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getIdx() { return idx; }
+    public void setId(Long idx) { this.idx = idx; }
 
     public String getStoreName() { return storeName; }
     public void setStoreName(String storeName) { this.storeName = storeName; }

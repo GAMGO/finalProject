@@ -10,7 +10,7 @@ import lombok.*;
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class SignupRequest {
     @NotBlank
-    private String customer_id;
+    private String id;
 
     @NotBlank
     @Size(min = 8, max = 72)

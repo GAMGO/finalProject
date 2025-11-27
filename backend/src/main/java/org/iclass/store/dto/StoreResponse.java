@@ -5,7 +5,7 @@ import org.iclass.store.Store;
 
 public class StoreResponse {
 
-    private Long id;
+    private Long idx;
     private String storeName;
     private Long foodTypeId;
     private String category;        // "통닭" 이런 한글 이름
@@ -17,7 +17,7 @@ public class StoreResponse {
 
     public static StoreResponse from(Store store) {
         StoreResponse dto = new StoreResponse();
-        dto.id = store.getCustomer_id();
+        dto.idx = store.getIdx();
         dto.storeName = store.getStoreName();
         dto.foodTypeId = store.getFoodTypeId();
         dto.category = FoodCategory.labelOf(store.getFoodTypeId());
@@ -29,8 +29,8 @@ public class StoreResponse {
 
     // ===== Getter / Setter =====
 
-    public Long getCustomer_id() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getIdx() { return idx; }
+    public void setId(Long idx) { this.idx = idx; }
 
     public String getStoreName() { return storeName; }
     public void setStoreName(String storeName) { this.storeName = storeName; }

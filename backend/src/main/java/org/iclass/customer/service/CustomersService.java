@@ -31,11 +31,11 @@ public class CustomersService implements UserDetailsService {
 
         @Transactional
         public CustomersEntity signup(SignupRequest req) {
-                log.debug("[SIGNUP:SERVICE] existsById? id={}", req.getCustomer_id()); // log 확인
-                if (customersRepository.existsById(req.getCustomer_id())) {
-                        log.warn("[SIGNUP:SERVICE] duplicate id={}", req.getCustomer_id());
+                log.debug("[SIGNUP:SERVICE] existsById? id={}", req.getId()); // log 확인
+                if (customersRepository.existsById(req.getId())) {
+                        log.warn("[SIGNUP:SERVICE] duplicate id={}", req.getId());
                         // 중복 ID인 경우 기존 사용자 정보 반환 (이메일 인증만 재발송)
-                        CustomersEntity existingUser = customersRepository.findById(req.getCustomer_id()).orElse(null);
+                        CustomersEntity existingUser = customersRepository.findById(req.getId()).orElse(null);
                         if (existingUser != null && !existingUser.getEmailVerified()) {
                                 // 이메일 인증이 안된 경우 인증번호 재생성
                                 String newCode = emailService.generateVerificationCode(); // UUID 대신 6자리 숫자 생성
@@ -45,7 +45,7 @@ public class CustomersService implements UserDetailsService {
                                 customersRepository.save(existingUser);
 
                                 // 이메일 재발송
-                                emailService.sendVerificationEmail(req.getCustomer_id(), newCode); // 6자리 인증번호를 발송
+                                emailService.sendVerificationEmail(req.getId(), newCode); // 6자리 인증번호를 발송
                                 log.info("[SIGNUP:SERVICE] 이메일 인증번호 재발송: {}", req.getEmail());
                         }
                         return existingUser;
@@ -56,7 +56,7 @@ public class CustomersService implements UserDetailsService {
                 LocalDateTime codeExpires = LocalDateTime.now().plusMinutes(5);
 
                 CustomersEntity user = CustomersEntity.builder()
-                                .customer_id(req.getCustomer_id())
+                                .id(req.getId())
                                 .password(passwordEncoder.encode(req.getPassword())) // 비밀번호 암호화
                                 .age(req.getAge())
                                 .address(req.getAddress())
@@ -82,12 +82,12 @@ public class CustomersService implements UserDetailsService {
         }
 
         @Override
-        public UserDetails loadUserByUsername(String customer_id) throws UsernameNotFoundException {
-                CustomersEntity user = customersRepository.findById(customer_id)
-                                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다 : " + customer_id));
+        public UserDetails loadUserByUsername(String id) throws UsernameNotFoundException {
+                CustomersEntity user = customersRepository.findById(id)
+                                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다 : " + id));
 
                 return org.springframework.security.core.userdetails.User.builder()
-                                .username(user.getCustomer_id())
+                                .username(user.getId())
                                 .password(user.getPassword())
                                 .roles("USER")
                                 .build();
@@ -96,9 +96,9 @@ public class CustomersService implements UserDetailsService {
 
         // >>> [ADDED] 복구/프로필 등에서 공용으로 쓰는 비밀번호 변경 유틸
         @Transactional
-        public void updatePassword(String customerId, String newPassword) {
-                CustomersEntity user = customersRepository.findById(customerId)
-                                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다 : " + customerId));
+        public void updatePassword(String customer_id, String newPassword) {
+                CustomersEntity user = customersRepository.findById(customer_id)
+                                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다 : " + customer_id));
                 user.setPassword(passwordEncoder.encode(newPassword));
                 customersRepository.save(user);
         }

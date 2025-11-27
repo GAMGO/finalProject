@@ -48,15 +48,15 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<SignupResponse> signup(@Valid @RequestBody SignupRequest request) {
-        log.info("[SIGNUP] request id = {}, age = {}, gender = {}, birth = {}, address = {}", request.getCustomer_id(),
+        log.info("[SIGNUP] request id = {}, age = {}, gender = {}, birth = {}, address = {}", request.getId(),
                 request.getBirth(), request.getAge(), request.getGender(), request.getAddress()); // log 확인
         CustomersEntity saved = customersService.signup(request);
-        log.info("[SIGNUP] saved id = {}", saved.getCustomer_id()); // log 확인
+        log.info("[SIGNUP] saved id = {}", saved.getId()); // log 확인
 
         // 지금까지는 CustomersEntity를 그대로 반환해서 비밀번호 같은 민감한 정보가 노출됐음
         // 응답 전용 DTO(SignupResponse)로 변환해서 필요한 데이터만 반환
         SignupResponse response = SignupResponse.fromEntity(saved);
-        return ResponseEntity.created(URI.create("/api/users/" + saved.getCustomer_id()))
+        return ResponseEntity.created(URI.create("/api/users/" + saved.getId()))
                 .body(response);
     }
 
@@ -66,7 +66,7 @@ public class AuthController {
             // 사용자 인증
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            request.getCustomer_id(),
+                            request.getId(),
                             request.getPassword()));
 
             // JWT 토큰 생성
@@ -78,7 +78,7 @@ public class AuthController {
             LoginResponse response = LoginResponse.builder()
                     .token(token)
                     .tokenType("Bearer")
-                    .customer_id(userDetails.getUsername())
+                    .id(userDetails.getUsername())
                     .build();
 
             return ResponseEntity.ok(response);
@@ -120,15 +120,15 @@ public class AuthController {
         }
 
         // 토큰에서 사용자/만료시각 추출 (메서드명은 현재 구현과 동일 사용)
-        String customer_id = (user != null) ? user.getUsername() : jwtTokenProvider.getUsernameFromToken(token);
+        String id = (user != null) ? user.getUsername() : jwtTokenProvider.getUsernameFromToken(token);
         LocalDateTime exp = jwtTokenProvider.getExpiry(token);
 
-        if (!StringUtils.hasText(customer_id) || exp == null) {
+        if (!StringUtils.hasText(id) || exp == null) {
             return ResponseEntity.badRequest()
                     .body(LogoutResponse.builder().message("Invalid token").build());
         }
 
-        tokenBlacklistService.blacklist(token, customer_id, exp, "USER_LOGOUT");
+        tokenBlacklistService.blacklist(token, id, exp, "USER_LOGOUT");
         return ResponseEntity.ok(LogoutResponse.builder().message("Logged out").build());
     }
 }

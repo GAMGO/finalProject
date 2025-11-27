@@ -32,7 +32,7 @@ const LoginPage = ({ onToggleMode }) => {
   
   // ⭐️ API 호출 데이터 준비
   const loginData = {
-    customer_id: customerId, // ⚠️ 인풋 필드에서 값을 가져오는 변수명인지 확인하세요.
+    id: customerId, // ⚠️ 인풋 필드에서 값을 가져오는 변수명인지 확인하세요.
     password_hash: password      
   };
 
