@@ -120,15 +120,15 @@ public class AuthController {
         }
 
         // 토큰에서 사용자/만료시각 추출 (메서드명은 현재 구현과 동일 사용)
-        String userId = (user != null) ? user.getUsername() : jwtTokenProvider.getUsernameFromToken(token);
+        String id = (user != null) ? user.getUsername() : jwtTokenProvider.getUsernameFromToken(token);
         LocalDateTime exp = jwtTokenProvider.getExpiry(token);
 
-        if (!StringUtils.hasText(userId) || exp == null) {
+        if (!StringUtils.hasText(id) || exp == null) {
             return ResponseEntity.badRequest()
                     .body(LogoutResponse.builder().message("Invalid token").build());
         }
 
-        tokenBlacklistService.blacklist(token, userId, exp, "USER_LOGOUT");
+        tokenBlacklistService.blacklist(token, id, exp, "USER_LOGOUT");
         return ResponseEntity.ok(LogoutResponse.builder().message("Logged out").build());
     }
 }

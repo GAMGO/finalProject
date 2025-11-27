@@ -16,14 +16,14 @@ public class BlacklistedTokenEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "blk_tok_seq_gen")
-    @Column(name = "id")
-    private Long id;
+    @Column(name = "idx")
+    private Long idx;
 
     @Column(name = "token", length = 1024, nullable = false, unique = true)
     private String token;
 
-    @Column(name = "user_id", length = 100, nullable = false)
-    private String userId;
+    @Column(name = "customer_id", length = 100, nullable = false)
+    private String id;
 
     @Column(name = "expires_at", nullable = false)
     private LocalDateTime expiresAt;

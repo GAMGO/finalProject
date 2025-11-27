@@ -29,16 +29,16 @@ public class DishService {
         return dishRepository.findAll().stream().map(DishResponse::from).toList();
     }
 
-    public DishResponse findById(Long id) {
-        Dish dish = dishRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Dish not found: " + id));
+    public DishResponse findById(Long idx) {
+        Dish dish = dishRepository.findById(idx)
+                .orElseThrow(() -> new IllegalArgumentException("Dish not found: " + idx));
         return DishResponse.from(dish);
     }
 
     @Transactional
-    public DishResponse update(Long id, DishRequest req) {
-        Dish dish = dishRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Dish not found: " + id));
+    public DishResponse update(Long idx, DishRequest req) {
+        Dish dish = dishRepository.findById(idx)
+                .orElseThrow(() -> new IllegalArgumentException("Dish not found: " + idx));
         dish.setName(req.getName());
         dish.setDescription(req.getDescription());
         dish.setPrice(req.getPrice());
@@ -46,10 +46,10 @@ public class DishService {
     }
 
     @Transactional
-    public void delete(Long id) {
-        if (!dishRepository.existsById(id)) {
-            throw new IllegalArgumentException("Dish not found: " + id);
+    public void delete(Long idx) {
+        if (!dishRepository.existsById(idx)) {
+            throw new IllegalArgumentException("Dish not found: " + idx);
         }
-        dishRepository.deleteById(id);
+        dishRepository.deleteById(idx);
     }
 }

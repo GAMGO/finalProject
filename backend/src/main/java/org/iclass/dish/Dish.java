@@ -9,7 +9,7 @@ public class Dish {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long idx;
 
     @NotBlank
     @Size(max = 100)
@@ -29,7 +29,7 @@ public class Dish {
         this.price = price;
     }
 
-    public Long getId() { return id; }
+    public Long getIdx() { return idx; }
     public String getName() { return name; }
     public String getDescription() { return description; }
     public int getPrice() { return price; }

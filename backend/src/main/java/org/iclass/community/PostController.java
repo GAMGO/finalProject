@@ -26,7 +26,7 @@ public class PostController {
     }
 
     @GetMapping("/{id}")
-    public Post one(@PathVariable Long id) {
-        return service.one(id);
+    public Post one(@PathVariable Long idx) {
+        return service.one(idx);
     }
 }

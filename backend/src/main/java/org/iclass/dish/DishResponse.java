@@ -1,24 +1,24 @@
 package org.iclass.dish;
 
 public class DishResponse {
-    private Long id;
+    private Long idx;
     private String name;
     private String description;
     private int price;
 
-    public DishResponse(Long id, String name, String description, int price) {
-        this.id = id;
+    public DishResponse(Long idx, String name, String description, int price) {
+        this.idx = idx;
         this.name = name;
         this.description = description;
         this.price = price;
     }
 
-    public Long getId() { return id; }
+    public Long getIdx() { return idx; }
     public String getName() { return name; }
     public String getDescription() { return description; }
     public int getPrice() { return price; }
 
     public static DishResponse from(Dish dish) {
-        return new DishResponse(dish.getId(), dish.getName(), dish.getDescription(), dish.getPrice());
+        return new DishResponse(dish.getIdx(), dish.getName(), dish.getDescription(), dish.getPrice());
     }
 }
