@@ -27,7 +27,7 @@ public class UserProfileService {
         UserProfileEntity entity = userProfileRepository.findByCustomerIdx(customer_idx)
                 .orElseGet(() -> {
                     UserProfileEntity e = new UserProfileEntity();
-                    e.setCustomerId(customer_idx);
+                    e.setCustomerIdx(customer_idx);
                     return userProfileRepository.save(e);
                 });
 
@@ -40,7 +40,7 @@ public class UserProfileService {
         UserProfileEntity entity = userProfileRepository.findByCustomerIdx(customer_idx)
                 .orElseGet(() -> {
                     UserProfileEntity e = new UserProfileEntity();
-                    e.setCustomerId(customer_idx);
+                    e.setCustomerIdx(customer_idx);
                     return e;
                 });
 

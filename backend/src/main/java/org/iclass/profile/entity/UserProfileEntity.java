@@ -12,7 +12,7 @@ public class UserProfileEntity {
     private Long idx;
 
     // TODO: 나중에 인증 붙으면 CUSTOMERS 외래키
-    @Column(name = "customer_id")
+    @Column(name = "customer_idx")
     private Long customer_idx;
 
     @Column(length = 50)
@@ -57,11 +57,11 @@ public class UserProfileEntity {
         this.idx = idx;
     }
 
-    public Long getCustomerId() {
+    public Long getCustomerIdx() {
         return customer_idx;
     }
 
-    public void setCustomerId(Long customer_idx) {
+    public void setCustomerIdx(Long customer_idx) {
         this.customer_idx = customer_idx;
     }
 
