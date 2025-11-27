@@ -55,7 +55,7 @@ public class SecurityConfig {
                                                 .requestMatchers("/api/email/**","/api/stores").permitAll() // 이메일 인증, 가게목록 명시적 허용
                                                 .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/signup", "/api/recover/send-code","/api/email/verify","/api/recover/reset","/api/recover/find-id")
                                                 .permitAll()
-                                                .requestMatchers("/api/auth/logout","/api/posts")
+                                                .requestMatchers("/api/auth/logout","/api/posts","/api/favorites")
                                                 .authenticated()
                                                 .anyRequest().authenticated())
                                 // 폼/베이직 로그인 비활성
