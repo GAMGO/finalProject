@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from "react"; // ⭐️ useCallback 추가
 import axios from 'axios';
 //const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
-const API_BASE_URL = "https://api.dishmade.shop";
+const API_BASE_URL = "https://api.dishinside.shop";
 // 'onToggleMode' 프롭을 받아 회원가입 버튼 클릭 시 모드를 전환하도록 합니다.
 const LoginPage = ({ onToggleMode }) => { 
   // ------------------------------------
@@ -38,7 +38,7 @@ const LoginPage = ({ onToggleMode }) => {
 
   try {
     const response = await axios.post(
-      // ⭐️ 백엔드 로그인 엔드포인트: https://api.dishmade.shop/api/auth/login
+      // ⭐️ 백엔드 로그인 엔드포인트: https://api.dishinside.shop/api/auth/login
       `${API_BASE_URL}/api/auth/login`, 
       loginData,
       // ⭐️ 인증 정보를 포함하여 요청합니다.
