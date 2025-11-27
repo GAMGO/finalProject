@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface FavoriteRepository extends JpaRepository<FavoriteEntity, Long> {
 
-    List<FavoriteEntity> findByCustomerIdOrderByCreatedAtDesc(Long customerId);
+    List<FavoriteEntity> findByCustomerIdOrderByCreatedAtDesc(Long customer_idx);
 }

@@ -22,12 +22,12 @@ public class UserProfileService {
     }
 
     public UserProfileDto getMyProfile() {
-        Long customerId = getCurrentCustomerIdx();
+        Long customer_idx = getCurrentCustomerIdx();
 
-        UserProfileEntity entity = userProfileRepository.findByCustomerId(customerId)
+        UserProfileEntity entity = userProfileRepository.findByCustomerIdx(customer_idx)
                 .orElseGet(() -> {
                     UserProfileEntity e = new UserProfileEntity();
-                    e.setCustomerId(customerId);
+                    e.setCustomerId(customer_idx);
                     return userProfileRepository.save(e);
                 });
 
@@ -35,12 +35,12 @@ public class UserProfileService {
     }
 
     public UserProfileDto saveMyProfile(UserProfileDto dto) {
-        Long customerId = getCurrentCustomerIdx();
+        Long customer_idx = getCurrentCustomerIdx();
 
-        UserProfileEntity entity = userProfileRepository.findByCustomerId(customerId)
+        UserProfileEntity entity = userProfileRepository.findByCustomerIdx(customer_idx)
                 .orElseGet(() -> {
                     UserProfileEntity e = new UserProfileEntity();
-                    e.setCustomerId(customerId);
+                    e.setCustomerId(customer_idx);
                     return e;
                 });
 
