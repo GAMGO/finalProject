@@ -16,8 +16,8 @@ public class BlacklistedTokenEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "blk_tok_seq_gen")
-    @Column(name = "idx")
-    private Long idx;
+    @Column(name = "id")
+    private Long id;
 
     @Column(name = "token", length = 1024, nullable = false, unique = true)
     private String token;

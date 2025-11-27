@@ -20,6 +20,6 @@ public interface CustomersRepository extends JpaRepository<CustomersEntity, Long
   Optional<CustomersEntity> findByEmailVerificationToken(String token);
 
   // 🚨이모지로 표시: 매개변수 타입을 String에서 Gender로 변경합니다.
-  Optional<CustomersEntity> findByIdxAndGender(Long idx, Gender gender);
-  Optional<CustomersEntity> findByIdx(Long idx);
+  Optional<CustomersEntity> findByIdxAndGender(Long id, Gender gender);
+  Optional<CustomersEntity> findByIdx(Long id);
 }
