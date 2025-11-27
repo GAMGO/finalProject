@@ -2,6 +2,7 @@ package org.iclass.favorite.dto;
 
 public class FavoriteRequest {
 
+    private Long idx;
     private String category;
     private String title;
     private String address;
@@ -11,6 +12,9 @@ public class FavoriteRequest {
     private String videoUrl;
 
     // ---- getter / setter ----
+    public Long getIDx() {
+        return idx;
+    }
 
     public String getCategory() {
         return category;

@@ -27,8 +27,8 @@ public class FavoriteService {
     }
 
     public List<FavoriteResponse> getMyFavorites() {
-        Long customer_idx = getCurrentCustomerIdx();
-        return favoriteRepository.findByCustomerIdOrderByCreatedAtDesc(customer_idx)
+        Long idx = getCurrentCustomerIdx();
+        return favoriteRepository.findByCustomerIdOrderByCreatedAtDesc(idx)
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
