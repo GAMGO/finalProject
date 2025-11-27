@@ -9,11 +9,11 @@ public class FavoriteEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long idx;
 
     // TODO: 로그인 붙으면 CUSTOMER_ID 외래키로 교체
-    @Column(name = "customer_id")
-    private Long customerId;
+    @Column(name = "customer_idx")
+    private Long customer_idx;
 
     @Column(nullable = false, length = 50)
     private String category;
@@ -55,20 +55,20 @@ public class FavoriteEntity {
 
     // ===== getter / setter =====
 
-    public Long getId() {
-        return id;
+    public Long getIdx() {
+        return idx;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setId(Long idx) {
+        this.idx = idx;
     }
 
-    public Long getCustomerId() {
-        return customerId;
+    public Long getCustomer_Idx() {
+        return customer_idx;
     }
 
-    public void setCustomerId(Long customerId) {
-        this.customerId = customerId;
+    public void setCustomerIdx(Long customer_idx) {
+        this.customer_idx = customer_idx;
     }
 
     public String getCategory() {

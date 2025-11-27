@@ -22,12 +22,12 @@ public class FavoriteService {
     }
 
     // TODO: 나중에 팀원이 로그인 붙이면 여기만 수정
-    private Long getCurrentCustomerId() {
+    private Long getCurrentCustomerIdx() {
         return 1L;  // 임시 하드코딩
     }
 
     public List<FavoriteResponse> getMyFavorites() {
-        Long customerId = getCurrentCustomerId();
+        Long customerId = getCurrentCustomerIdx();
         return favoriteRepository.findByCustomerIdOrderByCreatedAtDesc(customerId)
                 .stream()
                 .map(this::toResponse)
@@ -36,7 +36,7 @@ public class FavoriteService {
 
     public FavoriteResponse createFavorite(FavoriteRequest req) {
         FavoriteEntity entity = new FavoriteEntity();
-        entity.setCustomerId(getCurrentCustomerId());
+        entity.setCustomerIdx(getCurrentCustomerIdx());
         entity.setCategory(req.getCategory());
         entity.setTitle(req.getTitle());
         entity.setAddress(req.getAddress());
@@ -49,9 +49,9 @@ public class FavoriteService {
         return toResponse(saved);
     }
 
-    public FavoriteResponse updateFavorite(Long id, FavoriteRequest req) {
-        FavoriteEntity entity = favoriteRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("즐겨찾기를 찾을 수 없음: " + id));
+    public FavoriteResponse updateFavorite(Long idx, FavoriteRequest req) {
+        FavoriteEntity entity = favoriteRepository.findById(idx)
+                .orElseThrow(() -> new NoSuchElementException("즐겨찾기를 찾을 수 없음: " + idx));
 
         entity.setCategory(req.getCategory());
         entity.setTitle(req.getTitle());
@@ -65,13 +65,13 @@ public class FavoriteService {
         return toResponse(saved);
     }
 
-    public void deleteFavorite(Long id) {
-        favoriteRepository.deleteById(id);
+    public void deleteFavorite(Long idx) {
+        favoriteRepository.deleteById(idx);
     }
 
     private FavoriteResponse toResponse(FavoriteEntity entity) {
         FavoriteResponse dto = new FavoriteResponse();
-        dto.setId(entity.getId());
+        dto.setIdx(entity.getIdx());
         dto.setCategory(entity.getCategory());
         dto.setTitle(entity.getTitle());
         dto.setAddress(entity.getAddress());

@@ -9,11 +9,11 @@ public class UserProfileEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long idx;
 
     // TODO: 나중에 인증 붙으면 CUSTOMERS 외래키
     @Column(name = "customer_id")
-    private Long customerId;
+    private Long customer_idx;
 
     @Column(length = 50)
     private String nickname;
@@ -49,20 +49,20 @@ public class UserProfileEntity {
 
     // --- getter / setter ---
 
-    public Long getId() {
-        return id;
+    public Long getIdx() {
+        return idx;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setIdx(Long idx) {
+        this.idx = idx;
     }
 
     public Long getCustomerId() {
-        return customerId;
+        return customer_idx;
     }
 
-    public void setCustomerId(Long customerId) {
-        this.customerId = customerId;
+    public void setCustomerId(Long customer_idx) {
+        this.customer_idx = customer_idx;
     }
 
     public String getNickname() {

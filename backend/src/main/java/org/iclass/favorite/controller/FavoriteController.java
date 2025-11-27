@@ -30,13 +30,13 @@ public class FavoriteController {
     }
 
     @PutMapping("/{id}")
-    public FavoriteResponse updateFavorite(@PathVariable Long id,
+    public FavoriteResponse updateFavorite(@PathVariable Long idx,
                                            @RequestBody FavoriteRequest req) {
-        return favoriteService.updateFavorite(id, req);
+        return favoriteService.updateFavorite(idx, req);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteFavorite(@PathVariable Long id) {
-        favoriteService.deleteFavorite(id);
+    public void deleteFavorite(@PathVariable Long idx) {
+        favoriteService.deleteFavorite(idx);
     }
 }

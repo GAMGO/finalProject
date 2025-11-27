@@ -2,7 +2,7 @@ package org.iclass.profile.dto;
 
 public class UserProfileDto {
 
-    private Long id;
+    private Long idx;
     private String nickname;
     private String intro;
     private String avatarUrl;
@@ -11,12 +11,12 @@ public class UserProfileDto {
 
     // --- getter / setter ---
 
-    public Long getId() {
-        return id;
+    public Long getIdx() {
+        return idx;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setIdx(Long idx) {
+        this.idx = idx;
     }
 
     public String getNickname() {

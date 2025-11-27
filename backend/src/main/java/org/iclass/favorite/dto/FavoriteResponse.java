@@ -2,7 +2,7 @@ package org.iclass.favorite.dto;
 
 public class FavoriteResponse {
 
-    private Long id;
+    private Long idx;
     private String category;
     private String title;
     private String address;
@@ -13,12 +13,12 @@ public class FavoriteResponse {
 
     // ---- getter / setter ----
 
-    public Long getId() {
-        return id;
+    public Long getIdx() {
+        return idx;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setIdx(Long idx) {
+        this.idx = idx;
     }
 
     public String getCategory() {
