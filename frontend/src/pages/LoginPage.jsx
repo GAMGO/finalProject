@@ -1,17 +1,17 @@
-import React, { useState, useCallback } from "react";
-import axios from "axios";
+import React, { useState, useCallback } from "react"; // ⭐️ useCallback 추가
+import axios from 'axios';
 import dishLogo from "../assets/DISH_LOGO.png"; // ✅ 로고 이미지 import
-
-// const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
-const API_BASE_URL = "https://api.dishinside.shop";
-
+import { useNavigate } from 'react-router-dom'; 
+//const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+const API_BASE_URL = "http://localhost:8080";
+// 'onToggleMode' 프롭을 받아 회원가입 버튼 클릭 시 모드를 전환하도록 합니다.
 const LoginPage = ({ onToggleMode }) => {
   // ------------------------------------
   // 1. 상태 관리
   // ------------------------------------
   const [customerId, setCustomerId] = useState("");
   const [password, setPassword] = useState("");
-
+  const navigate = useNavigate();
   // ------------------------------------
   // 2. 상태 설정 함수 (useCallback)
   // ------------------------------------
@@ -27,52 +27,57 @@ const LoginPage = ({ onToggleMode }) => {
   // 3. 로그인 처리
   // ------------------------------------
   const handleLogin = async () => {
-    if (!customerId || !password) {
-      alert("아이디와 비밀번호를 모두 입력해주세요.");
-      return;
-    }
 
-    const loginData = {
-      id: customerId,        // 👈 백엔드에서 기대하는 필드명 확인
-      password_hash: password,
-    };
-
-    try {
-      const response = await axios.post(
-        `${API_BASE_URL}/api/auth/login`,
-        loginData,
-        { withCredentials: true }
-      );
-
-      alert("로그인 성공!");
-      console.log("로그인 응답 데이터:", response.data);
-
-      // TODO: JWT 저장 및 라우팅 등 성공 후 처리
-      // localStorage.setItem("jwtToken", response.data.token);
-      // navigate("/");
-
-    } catch (error) {
-      if (error.response) {
-        alert(
-          `로그인 실패: ${
-            error.response.data.message || "아이디 또는 비밀번호를 확인해주세요."
-          }`
-        );
-        console.error("로그인 에러 응답:", error.response);
-      } else if (error.request) {
-        alert("서버 응답이 없습니다. CORS 설정 또는 네트워크 상태를 확인해주세요.");
-        console.error("로그인 에러 요청:", error.request);
-      } else {
-        alert("서버 연결에 실패했습니다. 네트워크 상태를 확인해주세요.");
-        console.error("로그인 에러:", error.message);
-      }
-    }
+  // ... 기존 로그인 로직 유지 ...
+  if (!customerId || !password) {
+    alert("아이디와 비밀번호를 모두 입력해주세요.");
+    return;
+  }
+  
+  // ⭐️ API 호출 데이터 준비
+  const loginData = {
+    id: customerId, // ⚠️ 인풋 필드에서 값을 가져오는 변수명인지 확인하세요.
+    password: password      
   };
 
+  try {
+    const response = await axios.post(
+      // ⭐️ 백엔드 로그인 엔드포인트: https://api.dishinside.shop/api/auth/login
+      `${API_BASE_URL}/api/auth/login`, 
+      loginData,
+      // ⭐️ 인증 정보를 포함하여 요청합니다.
+      { withCredentials: true } 
+    );
+    
+    // ⭐️ 로그인 성공 처리
+    alert("로그인 성공!");
+    console.log("로그인 응답 데이터:", response.data);
+    
+    // ⭐️ [성공 후 로직] JWT 토큰 저장 및 페이지 이동 등을 여기에 추가하세요.
+    localStorage.setItem('jwtToken', response.data.token);
+    navigate('/'); 
+
+  } catch (error) {
+    // ⭐️ 서버 연결 또는 인증 실패 처리
+    if (error.response) {
+      // 서버가 응답을 보냈지만 2xx 범위가 아닐 경우 (예: 401 Unauthorized, 400 Bad Request)
+      alert(`로그인 실패: ${error.response.data.message || "아이디 또는 비밀번호를 확인해주세요."}`);
+      console.error("로그인 에러 응답:", error.response);
+    } else if (error.request) {
+      // 요청이 전송되었지만 응답을 받지 못한 경우 (네트워크, CORS 등)
+      alert("서버 응답이 없습니다. CORS 설정 또는 네트워크 상태를 확인해주세요.");
+      console.error("로그인 에러 요청:", error.request);
+    } else {
+      // 요청 설정 자체에서 오류가 발생한 경우
+      alert("서버 연결에 실패했습니다. 네트워크 상태를 확인해주세요.");
+      console.error("로그인 에러:", error.message);
+    }
+  }
+};
   // ------------------------------------
   // 4. 스타일 정의
   // ------------------------------------
-  const darkPurple = "#5B2C6F";
+  const darkPurple = "#78266A";
   const lightPeach = "#F5D7B7";
   const white = "#FFFFFF";
   const customFont = "PartialSans, sans-serif";
@@ -149,7 +154,7 @@ const LoginPage = ({ onToggleMode }) => {
     color: darkPurple,
     padding: "10px 30px",
     fontSize: "18px",
-    fontWeight: "bold",
+    fontWeight: "100",
     borderRadius: "20px",
     border: `2px solid ${darkPurple}`,
     cursor: "pointer",
