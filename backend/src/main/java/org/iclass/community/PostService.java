@@ -21,7 +21,7 @@ public class PostService {
         return repo.findAll();
     }
 
-    public Post one(Long id) {
-        return repo.findById(id).orElseThrow();
+    public Post one(Long idx) {
+        return repo.findById(idx).orElseThrow();
     }
 }

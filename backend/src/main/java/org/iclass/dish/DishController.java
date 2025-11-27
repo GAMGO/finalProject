@@ -20,7 +20,7 @@ public class DishController {
     @PostMapping
     public ResponseEntity<DishResponse> create(@Valid @RequestBody DishRequest request) {
         DishResponse created = DishService.create(request);
-        return ResponseEntity.created(URI.create("/api/dishes/" + created.getId())).body(created);
+        return ResponseEntity.created(URI.create("/api/dishes/" + created.getIdx())).body(created);
     }
 
     @GetMapping
@@ -29,18 +29,18 @@ public class DishController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<DishResponse> get(@PathVariable Long id) {
-        return ResponseEntity.ok(DishService.findById(id));
+    public ResponseEntity<DishResponse> get(@PathVariable Long idx) {
+        return ResponseEntity.ok(DishService.findById(idx));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<DishResponse> update(@PathVariable Long id, @Valid @RequestBody DishRequest request) {
-        return ResponseEntity.ok(DishService.update(id, request));
+    public ResponseEntity<DishResponse> update(@PathVariable Long idx, @Valid @RequestBody DishRequest request) {
+        return ResponseEntity.ok(DishService.update(idx, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        DishService.delete(id);
+    public ResponseEntity<Void> delete(@PathVariable Long idx) {
+        DishService.delete(idx);
         return ResponseEntity.noContent().build();
     }
 }
