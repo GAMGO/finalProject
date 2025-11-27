@@ -1,5 +1,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import "./FavoritePage.css";
+import { favoriteApi } from "../api/apiClient";
+import MediaEmbed from "../components/MediaEmbed";
 
 // ===== 아이콘 =====
 import allIcon from "../assets/favIcons/All.png";
@@ -8,20 +10,40 @@ import ddeokbokkiIcon from "../assets/favIcons/ddeokbokki.png";
 import bungebbangIcon from "../assets/favIcons/bungebbang.png";
 import seafoodIcon from "../assets/favIcons/seafood.png";
 import takoyakiIcon from "../assets/favIcons/takoyaki.png";
+
+// 새로 만든 아이콘들
+import bbeongtIcon from "../assets/favIcons/bbeongttuigi.png"; // 뻥튀기
+import chestnutSweetpotatoIcon from "../assets/favIcons/chestnut_sweatpotato.png"; // 군밤/고구마
+import cornIcon from "../assets/favIcons/corn.png"; // 옥수수
+import eggbreadIcon from "../assets/favIcons/eggbread.png"; // 계란빵
+import skewersIcon from "../assets/favIcons/skewers.png"; // 닭꼬치
+import sundaeGopchangIcon from "../assets/favIcons/sundae_gopchang.png"; // 순대곱창
+
+// 기타 공용
 import etcIcon from "../assets/favIcons/Etc.png";
 
-// ===== 샘플 사진 =====
+// ===== 샘플 사진 (fallback 용) =====
 import favChicken from "../assets/images/favorites/chicken.jpg";
 import favBungebbang from "../assets/images/favorites/bungebbang.jpg";
 import favPojangmacha from "../assets/images/favorites/pojangmacha.jpg";
 
+/** KakaoMap 쪽 드롭다운이랑 맞춰 놓은 카테고리들 */
 const FILTERS = [
   { key: "전체", label: "전체", icon: allIcon },
+
   { key: "통닭", label: "통닭", icon: chickenIcon },
-  { key: "분식", label: "분식", icon: ddeokbokkiIcon },
-  { key: "붕어빵", label: "붕어빵", icon: bungebbangIcon },
-  { key: "해산물", label: "해산물", icon: seafoodIcon },
   { key: "타코야끼", label: "타코야끼", icon: takoyakiIcon },
+  { key: "순대곱창", label: "순대·곱창", icon: sundaeGopchangIcon },
+  { key: "붕어빵", label: "붕어빵", icon: bungebbangIcon },
+  { key: "군밤/고구마", label: "군밤/고구마", icon: chestnutSweetpotatoIcon },
+  { key: "닭꼬치", label: "닭꼬치", icon: skewersIcon },
+
+  { key: "분식", label: "분식", icon: ddeokbokkiIcon },
+  { key: "해산물", label: "해산물", icon: seafoodIcon },
+  { key: "뻥튀기", label: "뻥튀기", icon: bbeongtIcon },
+  { key: "계란빵", label: "계란빵", icon: eggbreadIcon },
+  { key: "옥수수", label: "옥수수", icon: cornIcon },
+
   { key: "기타", label: "기타", icon: etcIcon },
 ];
 
@@ -35,51 +57,59 @@ const DEFAULT_CROP = {
   zoom: 1,
 };
 
-const initialFavorites = [
-  {
-    id: 1,
-    category: "통닭",
-    title: "시청 앞 통닭 트럭",
-    address: "서울 중구 정동길 25 근처",
-    note: "줄 길지만 진짜 맛있음",
-    rating: 5.0,
-    image: favChicken,
-  },
-  {
-    id: 2,
-    category: "붕어빵",
-    title: "광화문 붕어빵",
-    address: "광화문역 7번 출구 앞",
-    note: "팥 듬뿍 + 5개 3천원",
-    rating: 4.0,
-    image: favBungebbang,
-  },
-  {
-    id: 3,
-    category: "분식",
-    title: "을지로 떡볶이 포차",
-    address: "서울 중구 어딘가",
-    note: "매콤달달",
-    rating: 4.5,
-    image: favPojangmacha,
-  },
-];
+const getFallbackImage = (category) => {
+  switch (category) {
+    case "붕어빵":
+      return favBungebbang;
+    case "통닭":
+      return favChicken;
+    default:
+      return favPojangmacha;
+  }
+};
+
+// 백엔드 DTO -> 프론트에서 쓰는 형태로 매핑
+const mapFromDto = (dto) => {
+  const id = dto.id ?? dto.idx ?? dto.IDX;
+
+  const category = dto.category ?? dto.CATEGORY ?? "기타";
+  const title = dto.title ?? dto.TITLE ?? "";
+  const favoriteAddress =
+    dto.favoriteAddress ?? dto.FAVORITE_ADDRESS ?? dto.address ?? "";
+  const note = dto.note ?? dto.NOTE ?? "";
+  const ratingRaw = dto.rating ?? dto.RATING ?? 0;
+  const rating =
+    typeof ratingRaw === "number" ? ratingRaw : Number(ratingRaw) || 0;
+
+  const imageUrl = dto.imageUrl ?? dto.IMAGE_URL ?? "";
+  const videoUrl = dto.videoUrl ?? dto.VIDEO_URL ?? "";
+
+  return {
+    id,
+    category,
+    title,
+    address: favoriteAddress,
+    note,
+    rating,
+    image: imageUrl || getFallbackImage(category),
+    videoUrl,
+    createdAt: dto.createdAt ?? dto.CREATED_AT ?? null,
+    expiredAt: dto.expiredAt ?? dto.EXPIRED_AT ?? null,
+  };
+};
 
 export default function FavoritePage() {
   // 카테고리 필터
   const [filter, setFilter] = useState("전체");
 
-  // 즐겨찾기 목록
-  const [favorites, setFavorites] = useState(initialFavorites);
+  // 즐겨찾기 목록 (실제 화면용 오브젝트)
+  const [favorites, setFavorites] = useState([]);
 
-  // 이미지 초점 조절 상태
-  const [cropState, setCropState] = useState(() => {
-    const map = {};
-    initialFavorites.forEach((fav) => {
-      map[fav.id] = { ...DEFAULT_CROP };
-    });
-    return map;
-  });
+  // DB 로딩 상태
+  const [isLoading, setIsLoading] = useState(false);
+
+  // 이미지 초점 조절 상태: { [id]: { offsetX, offsetY, zoom } }
+  const [cropState, setCropState] = useState({});
 
   // 크롭 모달 상태
   const [editingCropId, setEditingCropId] = useState(null);
@@ -87,7 +117,12 @@ export default function FavoritePage() {
 
   // 드래그 상태
   const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0, offsetX: 50, offsetY: 50 });
+  const [dragStart, setDragStart] = useState({
+    x: 0,
+    y: 0,
+    offsetX: 50,
+    offsetY: 50,
+  });
 
   // 등록/수정 폼
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -99,11 +134,47 @@ export default function FavoritePage() {
     note: "",
     rating: 4.5,
     imageUrl: "",
+    videoUrl: "", // 파일/온라인 공용
     customCategoryRequest: "",
   });
 
+  // 저장 중 상태 (중복 저장 방지)
+  const [isSaving, setIsSaving] = useState(false);
+
   // 별점 호버 상태 (.5 단위)
   const [hoverRating, setHoverRating] = useState(null);
+
+  // ====== DB에서 즐겨찾기 목록 불러오기 ======
+  const fetchFavorites = async () => {
+    try {
+      setIsLoading(true);
+      const list = await favoriteApi.getAll(); // ApiResponse 해제된 배열이라고 가정
+      const mapped = Array.isArray(list) ? list.map(mapFromDto) : [];
+      setFavorites(mapped);
+    } catch (error) {
+      console.error("즐겨찾기 목록 불러오기 실패", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 마운트 시 1회 로딩
+  useEffect(() => {
+    fetchFavorites();
+  }, []);
+
+  // favorites가 바뀔 때마다 새로 추가된 것들에 기본 크롭값 세팅
+  useEffect(() => {
+    setCropState((prev) => {
+      const next = { ...prev };
+      favorites.forEach((fav) => {
+        if (!next[fav.id]) {
+          next[fav.id] = { ...DEFAULT_CROP };
+        }
+      });
+      return next;
+    });
+  }, [favorites]);
 
   // 필터링 된 목록
   const filteredFavorites = useMemo(() => {
@@ -157,13 +228,13 @@ export default function FavoritePage() {
   };
 
   // 드래그 시작
-  const handleCropMouseDown = (e) => {
-    e.preventDefault();
-    const container = e.currentTarget.getBoundingClientRect();
+  const handleCropMouseDown = (event) => {
+    event.preventDefault();
+    const container = event.currentTarget.getBoundingClientRect();
     setIsDragging(true);
     setDragStart({
-      x: e.clientX,
-      y: e.clientY,
+      x: event.clientX,
+      y: event.clientY,
       offsetX: draftCrop.offsetX,
       offsetY: draftCrop.offsetY,
       width: container.width,
@@ -175,10 +246,10 @@ export default function FavoritePage() {
   useEffect(() => {
     if (!isDragging) return;
 
-    const handleMove = (e) => {
+    const handleMove = (event) => {
       setDraftCrop((prev) => {
-        const dx = e.clientX - dragStart.x;
-        const dy = e.clientY - dragStart.y;
+        const dx = event.clientX - dragStart.x;
+        const dy = event.clientY - dragStart.y;
 
         const moveX =
           dragStart.width && dragStart.width > 0
@@ -212,9 +283,23 @@ export default function FavoritePage() {
     };
   }, [isDragging, dragStart]);
 
-  // ===== 즐겨찾기 삭제 =====
-  const handleUnfavorite = (id) => {
-    setFavorites((prev) => prev.filter((f) => f.id !== id));
+  // ===== 즐겨찾기 삭제 (DB + 화면) =====
+  const handleUnfavorite = async (id) => {
+    // confirm 싫으면 이 두 줄 지워도 됨
+    if (!window.confirm("이 즐겨찾기를 해제할까요?")) return;
+
+    try {
+      await favoriteApi.remove(id);
+      setFavorites((prev) => prev.filter((f) => f.id !== id));
+      setCropState((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+    } catch (error) {
+      console.error("즐겨찾기 해제 실패", error);
+      alert("즐겨찾기 해제에 실패했습니다.");
+    }
   };
 
   // ===== 등록/수정 폼 =====
@@ -227,6 +312,7 @@ export default function FavoritePage() {
       note: "",
       rating: 4.5,
       imageUrl: "",
+      videoUrl: "",
       customCategoryRequest: "",
     });
     setHoverRating(null);
@@ -242,6 +328,7 @@ export default function FavoritePage() {
       note: fav.note || "",
       rating: fav.rating ?? 4.5,
       imageUrl: fav.image || "",
+      videoUrl: fav.videoUrl || "",
       customCategoryRequest: "",
     });
     setHoverRating(null);
@@ -252,16 +339,31 @@ export default function FavoritePage() {
     setFormState((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleFormImageChange = (e) => {
-    const file = e.target.files && e.target.files[0];
+  const handleFormImageChange = (event) => {
+    const file = event.target.files && event.target.files[0];
     if (!file) return;
+
     const url = URL.createObjectURL(file);
-    setFormState((prev) => ({ ...prev, imageUrl: url }));
+
+    // 사진/영상 통합: 파일 타입에 따라 imageUrl / videoUrl 채우기
+    if (file.type.startsWith("video/")) {
+      setFormState((prev) => ({
+        ...prev,
+        imageUrl: "",
+        videoUrl: url, // blob: → MediaEmbed에서 video로 처리
+      }));
+    } else {
+      setFormState((prev) => ({
+        ...prev,
+        imageUrl: url,
+        // 사진만 올린 경우 기존 videoUrl은 유지 (온라인 링크 썼을 수도 있음)
+      }));
+    }
   };
 
   // 별 클릭 시 .5 / 1.0 결정
-  const getHalfOrFullValue = (starIndex, e) => {
-    const native = e.nativeEvent;
+  const getHalfOrFullValue = (starIndex, event) => {
+    const native = event.nativeEvent;
     const target = native.target;
     const width = target.clientWidth || 1;
     const offsetX = native.offsetX;
@@ -270,13 +372,13 @@ export default function FavoritePage() {
     return isHalf ? starIndex - 0.5 : starIndex;
   };
 
-  const handleStarClick = (starIndex, e) => {
-    const value = getHalfOrFullValue(starIndex, e);
+  const handleStarClick = (starIndex, event) => {
+    const value = getHalfOrFullValue(starIndex, event);
     handleFormChange("rating", value);
   };
 
-  const handleStarHover = (starIndex, e) => {
-    const value = getHalfOrFullValue(starIndex, e);
+  const handleStarHover = (starIndex, event) => {
+    const value = getHalfOrFullValue(starIndex, event);
     setHoverRating(value);
   };
 
@@ -296,8 +398,8 @@ export default function FavoritePage() {
               key={star}
               type="button"
               className={`fav-star ${cls}`}
-              onClick={(e) => handleStarClick(star, e)}
-              onMouseMove={(e) => handleStarHover(star, e)}
+              onClick={(event) => handleStarClick(star, event)}
+              onMouseMove={(event) => handleStarHover(star, event)}
               onMouseLeave={() => setHoverRating(null)}
             >
               ★
@@ -329,69 +431,101 @@ export default function FavoritePage() {
     );
   };
 
-  const handleFormSubmit = (e) => {
-    e.preventDefault();
+  // ===== 폼 제출 → DB 저장(Create/Update) =====
+  const handleFormSubmit = async (event) => {
+    event.preventDefault();
+    if (isSaving) return;
 
     const trimmedTitle = formState.title.trim();
     if (!trimmedTitle) return;
 
-    if (formState.id == null) {
-      // 새 등록
-      const newId =
-        favorites.length > 0
-          ? Math.max(...favorites.map((f) => f.id)) + 1
-          : 1;
+    const baseImage =
+      formState.imageUrl ||
+      (formState.id == null
+        ? getFallbackImage(formState.category)
+        : favorites.find((f) => f.id === formState.id)?.image ||
+          getFallbackImage(formState.category));
 
-      const newFav = {
-        id: newId,
-        category: formState.category,
-        title: trimmedTitle,
-        address: formState.address.trim(),
-        note: formState.note.trim(),
-        rating: Number(formState.rating) || 0,
-        image:
-          formState.imageUrl ||
-          (formState.category === "붕어빵"
-            ? favBungebbang
-            : formState.category === "통닭"
-            ? favChicken
-            : favPojangmacha),
-      };
+    const trimmedVideoUrl =
+      typeof formState.videoUrl === "string"
+        ? formState.videoUrl.trim()
+        : formState.videoUrl || "";
 
-      setFavorites((prev) => [...prev, newFav]);
-      setCropState((prev) => ({
-        ...prev,
-        [newId]: { ...DEFAULT_CROP },
-      }));
-    } else {
-      // 수정
-      setFavorites((prev) =>
-        prev.map((fav) =>
-          fav.id === formState.id
-            ? {
-                ...fav,
-                category: formState.category,
-                title: trimmedTitle,
-                address: formState.address.trim(),
-                note: formState.note.trim(),
-                rating: Number(formState.rating) || 0,
-                image: formState.imageUrl || fav.image,
-              }
-            : fav
-        )
-      );
+    const payload = {
+      // FAVORITE 테이블 구조에 맞춘 필드들 (엔티티/DTO에 맞게 일부는 무시돼도 됨)
+      idx: formState.id ?? null,
+      id: formState.id ?? null, // 혹시 id 필드를 쓰는 경우 대비
+      customerIdx: 1, // TODO: 로그인 붙으면 토큰에서 꺼내서 백엔드에서 세팅하는 쪽이 베스트
+      favoriteStoreIdx: null, // 아직 STORE랑 연동 안 하니까 NULL
+
+      category: formState.category,
+      title: trimmedTitle,
+      favoriteAddress: formState.address.trim(),
+      note: formState.note.trim(),
+      rating: Number(formState.rating) || 0,
+      imageUrl: baseImage,
+      videoUrl: trimmedVideoUrl || "",
+    };
+
+    try {
+      setIsSaving(true);
+
+      if (formState.id == null) {
+        // 신규 등록
+        const createdDto = await favoriteApi.create(payload);
+        const created = mapFromDto(createdDto);
+        setFavorites((prev) => [...prev, created]);
+      } else {
+        // 수정
+        const updatedDto = await favoriteApi.update(formState.id, payload);
+        const updated = mapFromDto(updatedDto);
+        setFavorites((prev) =>
+          prev.map((fav) => (fav.id === updated.id ? updated : fav))
+        );
+      }
+
+      if (formState.customCategoryRequest.trim()) {
+        console.log(
+          "새 카테고리 요청:",
+          formState.customCategoryRequest.trim()
+        );
+      }
+
+      setIsFormOpen(false);
+    } catch (error) {
+      console.error("즐겨찾기 저장 실패", error);
+      alert("즐겨찾기 저장에 실패했습니다.");
+    } finally {
+      setIsSaving(false);
     }
-
-    if (formState.customCategoryRequest.trim()) {
-      console.log("새 카테고리 요청:", formState.customCategoryRequest.trim());
-    }
-
-    setIsFormOpen(false);
   };
 
   const handleFormCancel = () => {
+    if (isSaving) return;
     setIsFormOpen(false);
   };
+
+  // 필터 칩 2행으로 나누기 (위 절반 / 아래 절반)
+  const mid = Math.ceil(FILTERS.length / 2);
+  const topRowFilters = FILTERS.slice(0, mid);
+  const bottomRowFilters = FILTERS.slice(mid);
+
+  const renderFilterChip = (f) => (
+    <button
+      key={f.key}
+      className={filter === f.key ? "fav-chip fav-chip-active" : "fav-chip"}
+      type="button"
+      onClick={() => setFilter(f.key)}
+      title={f.label}
+    >
+      {f.icon && (
+        <span className="fav-chip-icon">
+          <img src={f.icon} alt={f.label} />
+        </span>
+      )}
+      <span className="fav-chip-label">{f.label}</span>
+    </button>
+  );
 
   return (
     <div className="favorite-root">
@@ -402,26 +536,14 @@ export default function FavoritePage() {
 
           <div className="favorite-top-right">
             <div className="fav-filter-bar">
-              {FILTERS.map((f) => (
-                <button
-                  key={f.key}
-                  className={
-                    filter === f.key
-                      ? "fav-chip fav-chip-active"
-                      : "fav-chip"
-                  }
-                  type="button"
-                  onClick={() => setFilter(f.key)}
-                  title={f.label}
-                >
-                  {f.icon && (
-                    <span className="fav-chip-icon">
-                      <img src={f.icon} alt={f.label} />
-                    </span>
-                  )}
-                  <span className="fav-chip-label">{f.label}</span>
-                </button>
-              ))}
+              <div className="fav-filter-row">
+                {topRowFilters.map(renderFilterChip)}
+              </div>
+              {bottomRowFilters.length > 0 && (
+                <div className="fav-filter-row">
+                  {bottomRowFilters.map(renderFilterChip)}
+                </div>
+              )}
             </div>
 
             <button
@@ -437,7 +559,9 @@ export default function FavoritePage() {
 
       {/* 본문 */}
       <div className="favorite-inner">
-        {filteredFavorites.length === 0 ? (
+        {isLoading ? (
+          <div className="fav-empty">즐겨찾기를 불러오는 중입니다...</div>
+        ) : filteredFavorites.length === 0 ? (
           <div className="fav-empty">즐겨찾기한 노점이 없어요.</div>
         ) : (
           <div className="fav-list">
@@ -449,6 +573,8 @@ export default function FavoritePage() {
                 "--crop-y": `${crop.offsetY}%`,
                 "--crop-zoom": crop.zoom,
               };
+
+              const hasVideo = !!item.videoUrl;
 
               return (
                 <article key={item.id} className="fav-card">
@@ -467,50 +593,66 @@ export default function FavoritePage() {
                         className="fav-unlike"
                         onClick={() => handleUnfavorite(item.id)}
                       >
-                        ❤️ 해제
+                        해제
                       </button>
                     </div>
                   </div>
 
-                  {/* 이미지 */}
+                  {/* 이미지 / 비디오 */}
                   <div className="fav-card-image-wrap">
-                    <img
-                      src={item.image}
-                      alt={item.title}
-                      className="fav-card-image"
-                      style={imgStyle}
-                    />
-                    <button
-                      type="button"
-                      className="fav-image-edit-btn"
-                      onClick={() => openCropFor(item.id)}
-                    >
-                      초점 조절
-                    </button>
+                    {hasVideo ? (
+                      <MediaEmbed
+                        url={item.videoUrl}
+                        poster={item.image}
+                        className="fav-card-media"
+                      />
+                    ) : (
+                      <>
+                        <img
+                          src={item.image}
+                          alt={item.title}
+                          className="fav-card-image"
+                          style={imgStyle}
+                        />
+                        <button
+                          type="button"
+                          className="fav-image-edit-btn"
+                          onClick={() => openCropFor(item.id)}
+                        >
+                          초점 조절
+                        </button>
+                      </>
+                    )}
                   </div>
 
                   {/* 텍스트 영역 */}
                   <div className="fav-card-body">
-                    <h3
-                      className="fav-card-title"
-                      onClick={() => openEditForm(item)}
-                    >
-                      {item.title}
-                    </h3>
-                    <div className="fav-card-addr">📍 {item.address}</div>
-
-                    {item.note && (
-                      <p className="fav-card-note">{item.note}</p>
-                    )}
-
-                    {typeof item.rating === "number" && (
-                      <div className="fav-card-rating">
-                        {renderStaticStars(item.rating)}
-                        <span className="fav-card-rating-score">
-                          {item.rating.toFixed(1)}
-                        </span>
+                    <div className="fav-card-body-main">
+                      <div className="fav-card-text">
+                        <h3
+                          className="fav-card-title"
+                          onClick={() => openEditForm(item)}
+                        >
+                          {item.title}
+                        </h3>
+                        <div className="fav-card-addr">
+                          📍 {item.address}
+                        </div>
                       </div>
-                    )}
+
+                      {item.note && (
+                        <p className="fav-card-note">{item.note}</p>
+                      )}
+
+                      {typeof item.rating === "number" && (
+                        <div className="fav-card-rating fav-card-rating-right">
+                          {renderStaticStars(item.rating)}
+                          <span className="fav-card-rating-score">
+                            {item.rating.toFixed(1)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </article>
               );
@@ -519,23 +661,21 @@ export default function FavoritePage() {
         )}
       </div>
 
-      {/* 이미지 크롭 모달 (1번 스샷 느낌) */}
+      {/* 이미지 크롭 모달 */}
       {editingCropId && (
         <div className="fav-crop-modal-backdrop">
           <div className="fav-crop-modal">
             <div className="fav-crop-modal-header">
               <span>사진 위치 조정</span>
-              <small>사진을 끌어서 위치를 맞추고, 확대/축소로 딱 맞게 잘라 보세요.</small>
+              <small>
+                사진을 끌어서 위치를 맞추고, 확대/축소로 딱 맞게 잘라 보세요.
+              </small>
             </div>
 
-            <div
-              className="fav-crop-frame"
-              onMouseDown={handleCropMouseDown}
-            >
+            <div className="fav-crop-frame" onMouseDown={handleCropMouseDown}>
               <img
                 src={
-                  favorites.find((f) => f.id === editingCropId)?.image ||
-                  ""
+                  favorites.find((f) => f.id === editingCropId)?.image || ""
                 }
                 alt="crop"
                 style={{
@@ -543,7 +683,6 @@ export default function FavoritePage() {
                   transform: `scale(${draftCrop.zoom})`,
                 }}
               />
-              {/* 그리드 라인 */}
               <div className="fav-crop-grid" />
             </div>
 
@@ -561,7 +700,9 @@ export default function FavoritePage() {
                   min="100"
                   max="200"
                   value={Math.round(draftCrop.zoom * 100)}
-                  onChange={(e) => handleZoomChange(Number(e.target.value) / 100)}
+                  onChange={(event) =>
+                    handleZoomChange(Number(event.target.value) / 100)
+                  }
                 />
                 <button
                   type="button"
@@ -612,13 +753,15 @@ export default function FavoritePage() {
                 {formState.id == null ? "즐겨찾기 등록" : "즐겨찾기 수정"}
               </h3>
               <p className="fav-form-subtitle">
-                오늘 지나가다 본 노점, 내일 잊어버리기 전에 여기다가 한 번만 적어두자.
+                오늘 지나가다 본 노점, 내일 잊어버리기 전에 여기다가 한 번만
+                적어두자.
               </p>
             </div>
 
             <div className="fav-form-section">
+              {/* 사진 / 영상 업로드 */}
               <div className="fav-form-field">
-                <label>사진</label>
+                <label>사진 / 영상</label>
                 <div className="fav-form-image-input">
                   {formState.imageUrl && (
                     <img
@@ -627,11 +770,20 @@ export default function FavoritePage() {
                       className="fav-form-image-preview"
                     />
                   )}
+                  {!formState.imageUrl &&
+                    formState.videoUrl &&
+                    formState.videoUrl.startsWith("blob:") && (
+                      <video
+                        src={formState.videoUrl}
+                        className="fav-form-video-preview"
+                        controls
+                      />
+                    )}
                   <label className="fav-file-label">
                     파일 선택
                     <input
                       type="file"
-                      accept="image/*"
+                      accept="image/*,video/*"
                       onChange={handleFormImageChange}
                       hidden
                     />
@@ -639,12 +791,33 @@ export default function FavoritePage() {
                 </div>
               </div>
 
+              {/* 온라인 영상 링크 */}
+              <div className="fav-form-field">
+                <label>온라인 영상 링크 (선택)</label>
+                <input
+                  type="text"
+                  placeholder="예: 유튜브 / 네이버 / 카카오 등 영상 주소"
+                  value={
+                    formState.videoUrl.startsWith("blob:")
+                      ? ""
+                      : formState.videoUrl
+                  }
+                  onChange={(event) =>
+                    handleFormChange("videoUrl", event.target.value)
+                  }
+                />
+                <small>
+                  온라인 영상 주소를 붙여넣으면 카드에서 바로 재생을 시도해요.
+                  (막힌 사이트는 위 링크로 새창에서 볼 수 있음)
+                </small>
+              </div>
+
               <div className="fav-form-field">
                 <label>카테고리</label>
                 <select
                   value={formState.category}
-                  onChange={(e) =>
-                    handleFormChange("category", e.target.value)
+                  onChange={(event) =>
+                    handleFormChange("category", event.target.value)
                   }
                 >
                   {FILTERS.filter((f) => f.key !== "전체").map((f) => (
@@ -661,8 +834,11 @@ export default function FavoritePage() {
                   type="text"
                   placeholder="예: 어묵, 붕어빵+아이스크림 등"
                   value={formState.customCategoryRequest}
-                  onChange={(e) =>
-                    handleFormChange("customCategoryRequest", e.target.value)
+                  onChange={(event) =>
+                    handleFormChange(
+                      "customCategoryRequest",
+                      event.target.value
+                    )
                   }
                 />
                 <small>기존 분류에 없으면 여기 적어서 관리자에게 요청.</small>
@@ -676,7 +852,9 @@ export default function FavoritePage() {
                   type="text"
                   placeholder="예: 시청 앞 통닭 트럭"
                   value={formState.title}
-                  onChange={(e) => handleFormChange("title", e.target.value)}
+                  onChange={(event) =>
+                    handleFormChange("title", event.target.value)
+                  }
                   required
                 />
               </div>
@@ -687,7 +865,9 @@ export default function FavoritePage() {
                   type="text"
                   placeholder="예: ○○역 3번 출구 앞"
                   value={formState.address}
-                  onChange={(e) => handleFormChange("address", e.target.value)}
+                  onChange={(event) =>
+                    handleFormChange("address", event.target.value)
+                  }
                 />
               </div>
 
@@ -697,7 +877,9 @@ export default function FavoritePage() {
                   rows={3}
                   placeholder="예: 줄 길지만 진짜 맛있음"
                   value={formState.note}
-                  onChange={(e) => handleFormChange("note", e.target.value)}
+                  onChange={(event) =>
+                    handleFormChange("note", event.target.value)
+                  }
                 />
               </div>
             </div>
@@ -715,11 +897,16 @@ export default function FavoritePage() {
                 type="button"
                 className="fav-btn ghost"
                 onClick={handleFormCancel}
+                disabled={isSaving}
               >
                 취소
               </button>
-              <button type="submit" className="fav-btn primary">
-                저장
+              <button
+                type="submit"
+                className="fav-btn primary"
+                disabled={isSaving}
+              >
+                {isSaving ? "저장 중..." : "저장"}
               </button>
             </div>
           </form>
