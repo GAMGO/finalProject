@@ -52,8 +52,8 @@ public class SecurityConfig {
                                                 .requestMatchers(SWAGGER_WHITELIST).permitAll()
                                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                                 .requestMatchers(PUBLIC_WHITELIST).permitAll()
-                                                .requestMatchers("/api/email/**").permitAll() // 이메일 인증 명시적 허용
-                                                .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/signup", "/api/recover/send-code","/api/email/verify","/api/recover/reset","/api/recover/find-id","/api/stores")
+                                                .requestMatchers("/api/email/**","/api/stores").permitAll() // 이메일 인증, 가게목록 명시적 허용
+                                                .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/signup", "/api/recover/send-code","/api/email/verify","/api/recover/reset","/api/recover/find-id")
                                                 .permitAll()
                                                 .requestMatchers("/api/auth/logout","/api/posts")
                                                 .authenticated()

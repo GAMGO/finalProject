@@ -1,17 +1,17 @@
 import React, { useState, useCallback } from "react"; // ⭐️ useCallback 추가
 import axios from 'axios';
-import Main from "../components/Main";
 import dishLogo from "../assets/DISH_LOGO.png"; // ✅ 로고 이미지 import
+import { useNavigate } from 'react-router-dom'; 
 //const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const API_BASE_URL = "http://localhost:8080";
 // 'onToggleMode' 프롭을 받아 회원가입 버튼 클릭 시 모드를 전환하도록 합니다.
-const LoginPage = ({ onToggleMode }) => { 
+const LoginPage = ({ onToggleMode }) => {
   // ------------------------------------
   // 1. 상태 관리
   // ------------------------------------
   const [customerId, setCustomerId] = useState("");
   const [password, setPassword] = useState("");
-
+  const navigate = useNavigate();
   // ------------------------------------
   // 2. 상태 설정 함수 (useCallback)
   // ------------------------------------
@@ -55,7 +55,7 @@ const LoginPage = ({ onToggleMode }) => {
     
     // ⭐️ [성공 후 로직] JWT 토큰 저장 및 페이지 이동 등을 여기에 추가하세요.
     localStorage.setItem('jwtToken', response.data.token);
-    navigate(Main); 
+    navigate('/'); 
 
   } catch (error) {
     // ⭐️ 서버 연결 또는 인증 실패 처리
@@ -77,7 +77,7 @@ const LoginPage = ({ onToggleMode }) => {
   // ------------------------------------
   // 4. 스타일 정의
   // ------------------------------------
-  const darkPurple = "#5B2C6F";
+  const darkPurple = "#78266A";
   const lightPeach = "#F5D7B7";
   const white = "#FFFFFF";
   const customFont = "PartialSans, sans-serif";
@@ -154,7 +154,7 @@ const LoginPage = ({ onToggleMode }) => {
     color: darkPurple,
     padding: "10px 30px",
     fontSize: "18px",
-    fontWeight: "bold",
+    fontWeight: "100",
     borderRadius: "20px",
     border: `2px solid ${darkPurple}`,
     cursor: "pointer",
