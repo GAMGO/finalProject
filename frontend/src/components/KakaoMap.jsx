@@ -4,7 +4,10 @@ import plusIcon from "../assets/plus.svg";
 import "./KakaoMap.css";
 
 const APP_KEY = "bdd84bdbed2db3bc5d8b90cd6736a995";
-const API_BASE = "http://localhost:8080/";
+
+// ★ 8080 루트만 사용
+const API_BASE = "http://localhost:8080";
+const STORE_ENDPOINT = "/stores"; // GET/POST 공통 경로
 
 // FOOD_INFO.IDX 기준
 const CATEGORIES = [
@@ -25,8 +28,8 @@ export default function KakaoMap() {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const geocoderRef = useRef(null);
-  const tempMarkerRef = useRef(null);   // 위치 선택 중 임시 마커
-  const markersRef = useRef([]);        // 등록된 가게 마커들
+  const tempMarkerRef = useRef(null); // 위치 선택 중 임시 마커
+  const markersRef = useRef([]); // 등록된 가게 마커들
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPos, setSelectedPos] = useState(null); // { lat, lng }
@@ -37,12 +40,11 @@ export default function KakaoMap() {
     description: "", // 백엔드 storeName 으로 보낼 값
   });
 
-  // 지도에서 위치 찍는 모드 여부
-  const [isPickingLocation, setIsPickingLocation] = useState(false);
+  // 지도에서 위치 찍는 모드 여부 (ref만 사용)
   const isPickingLocationRef = useRef(false);
 
   // --------------------------
-  // 기존 가게 불러오기
+  // 마커 하나 추가
   // --------------------------
   const addStoreMarker = (map, store) => {
     if (!window.kakao || !map) return;
@@ -82,20 +84,6 @@ export default function KakaoMap() {
     markersRef.current.push({ marker, infowindow });
   };
 
-  const loadStoresAndDraw = async (map) => {
-    try {
-      const res = await fetch(`${API_BASE}api/stores`);
-      if (!res.ok) throw new Error("load stores failed");
-
-      const json = await res.json();
-      const stores = json.data || []; // ApiResponse<List<StoreResponse>>
-
-      stores.forEach((s) => addStoreMarker(map, s));
-    } catch (err) {
-      console.error("가게 목록 불러오기 실패:", err);
-    }
-  };
-
   // --------------------------
   // 지도 초기화
   // --------------------------
@@ -121,6 +109,21 @@ export default function KakaoMap() {
 
         // 주소 변환용 Geocoder
         geocoderRef.current = new window.kakao.maps.services.Geocoder();
+
+        // ★ useEffect 안으로 옮겨온 목록 불러오기 함수
+        async function loadStoresAndDraw(targetMap) {
+          try {
+            const res = await fetch(`${API_BASE}${STORE_ENDPOINT}`);
+            if (!res.ok) throw new Error("load stores failed");
+
+            const json = await res.json();
+            const stores = Array.isArray(json) ? json : json.data || [];
+
+            stores.forEach((s) => addStoreMarker(targetMap, s));
+          } catch (err) {
+            console.error("가게 목록 불러오기 실패:", err);
+          }
+        }
 
         // 지도 클릭 시: 위치 선택 + 주소 채우기
         window.kakao.maps.event.addListener(map, "click", (mouseEvent) => {
@@ -159,7 +162,6 @@ export default function KakaoMap() {
           // "지도에서 위치 선택" 모드일 때: 한 번 찍으면 모달 다시 열기
           if (isPickingLocationRef.current) {
             setIsModalOpen(true);
-            setIsPickingLocation(false);
             isPickingLocationRef.current = false;
           }
         });
@@ -190,7 +192,7 @@ export default function KakaoMap() {
       console.log("[KAKAO] script loaded (from existing)");
       initMap();
     }
-  }, []);
+  }, []); // loadStoresAndDraw가 안 나오므로 ESLint 경고 없음
 
   // --------------------------
   // 모달 open / close
@@ -201,7 +203,6 @@ export default function KakaoMap() {
 
   const closeModal = () => {
     setIsModalOpen(false);
-    setIsPickingLocation(false);
     isPickingLocationRef.current = false;
     setForm({ categoryId: "", address: "", description: "" });
     setSelectedPos(null);
@@ -213,7 +214,6 @@ export default function KakaoMap() {
 
   // 모달 안 "지도에서 위치 선택하기" 버튼
   const handleStartPickLocation = () => {
-    setIsPickingLocation(true);
     isPickingLocationRef.current = true;
     setIsModalOpen(false); // 모달 잠깐 숨기고 지도 클릭 기다리기
   };
@@ -250,7 +250,7 @@ export default function KakaoMap() {
     };
 
     try {
-      const res = await fetch(`${API_BASE}/stores`, {
+      const res = await fetch(`${API_BASE}${STORE_ENDPOINT}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -258,9 +258,9 @@ export default function KakaoMap() {
       if (!res.ok) throw new Error("create store failed");
 
       const json = await res.json();
-      const saved = json.data; // ApiResponse<StoreResponse>
+      const saved = Array.isArray(json) ? json[0] : json.data || json;
 
-      if (mapInstanceRef.current) {
+      if (mapInstanceRef.current && saved) {
         addStoreMarker(mapInstanceRef.current, saved);
       }
 
@@ -320,10 +320,7 @@ export default function KakaoMap() {
 
       {/* 노점 등록 모달 */}
       {isModalOpen && (
-        <div
-          className="map-modal-backdrop"
-          onClick={closeModal}
-        >
+        <div className="map-modal-backdrop" onClick={closeModal}>
           <div
             className="map-modal"
             onClick={(e) => e.stopPropagation()}
@@ -389,10 +386,7 @@ export default function KakaoMap() {
                 >
                   취소
                 </button>
-                <button
-                  type="submit"
-                  className="map-btn-submit"
-                >
+                <button type="submit" className="map-btn-submit">
                   등록하기
                 </button>
               </div>

@@ -1,3 +1,4 @@
+// src/components/community/PostEditor.jsx
 import React, { useState } from "react";
 import "./Community.css";
 

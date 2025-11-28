@@ -1,3 +1,4 @@
+// src/App.jsx
 import React, { useState } from "react";
 import KakaoMap from "./components/KakaoMap";
 import CommunityPage from "./pages/CommunityPage";

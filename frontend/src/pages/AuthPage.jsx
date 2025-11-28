@@ -1,3 +1,4 @@
+// src/pages/AuthPage.jsx
 // 파일 이름: AuthPage.jsx (또는 상위 컴포넌트)
 
 import React, { useState } from "react";

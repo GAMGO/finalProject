@@ -1,3 +1,4 @@
+// src/pages/CommunityPage.jsx
 import React, { useState } from "react";
 import PostList from "../components/community/PostList";
 import PostEditor from "../components/community/PostEditor";

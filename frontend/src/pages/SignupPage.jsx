@@ -1,3 +1,4 @@
+// src/pages/SingupPage.jsx
 import React, { useState, useCallback } from "react"; // ⭐️ useCallback 추가
 import axios from "axios";
 //const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;

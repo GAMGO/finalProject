@@ -1,3 +1,4 @@
+// src/pages/FavoritePage.jsx
 import React, { useMemo, useState, useEffect } from "react";
 import "./FavoritePage.css";
 import { favoriteApi } from "../api/apiClient";
@@ -29,22 +30,27 @@ import favPojangmacha from "../assets/images/favorites/pojangmacha.jpg";
 
 /** KakaoMap 쪽 드롭다운이랑 맞춰 놓은 카테고리들 */
 const FILTERS = [
-  { key: "전체", label: "전체", icon: allIcon },
+  { key: "전체", label: "전체", icon: allIcon, iconScale: 1.7 },
 
-  { key: "통닭", label: "통닭", icon: chickenIcon },
-  { key: "타코야끼", label: "타코야끼", icon: takoyakiIcon },
-  { key: "순대곱창", label: "순대·곱창", icon: sundaeGopchangIcon },
-  { key: "붕어빵", label: "붕어빵", icon: bungebbangIcon },
-  { key: "군밤/고구마", label: "군밤/고구마", icon: chestnutSweetpotatoIcon },
-  { key: "닭꼬치", label: "닭꼬치", icon: skewersIcon },
+  { key: "통닭", label: "통닭", icon: chickenIcon, iconScale: 1.7 },
+  { key: "타코야끼", label: "타코야끼", icon: takoyakiIcon, iconScale: 1.7 },
+  { key: "순대곱창", label: "순대·곱창", icon: sundaeGopchangIcon, iconScale: 1.7 },
+  { key: "붕어빵", label: "붕어빵", icon: bungebbangIcon, iconScale: 1.7 },
+  { key: "분식", label: "분식", icon: ddeokbokkiIcon, iconScale: 1.7 },
 
-  { key: "분식", label: "분식", icon: ddeokbokkiIcon },
-  { key: "해산물", label: "해산물", icon: seafoodIcon },
-  { key: "뻥튀기", label: "뻥튀기", icon: bbeongtIcon },
-  { key: "계란빵", label: "계란빵", icon: eggbreadIcon },
-  { key: "옥수수", label: "옥수수", icon: cornIcon },
+  { key: "해산물", label: "해산물", icon: seafoodIcon, iconScale: 1.7 },
+  { key: "뻥튀기", label: "뻥튀기", icon: bbeongtIcon, iconScale: 1.7 },
+  { key: "계란빵", label: "계란빵", icon: eggbreadIcon, iconScale: 1.7 },
+  { key: "옥수수", label: "옥수수", icon: cornIcon, iconScale: 1.7 },
+  {
+    key: "군밤/고구마",
+    label: "군밤/고구마",
+    icon: chestnutSweetpotatoIcon,
+    iconScale: 1.7,
+  },
+  { key: "닭꼬치", label: "닭꼬치", icon: skewersIcon, iconScale: 1.7 },
 
-  { key: "기타", label: "기타", icon: etcIcon },
+  { key: "기타", label: "기타", icon: etcIcon, iconScale: 1.7 },
 ];
 
 const CATEGORY_ALIAS = {
@@ -68,9 +74,20 @@ const getFallbackImage = (category) => {
   }
 };
 
+// 숫자 id 변환 유틸
+const toNumericId = (raw) => {
+  const n =
+    typeof raw === "number"
+      ? raw
+      : raw != null
+      ? Number(raw)
+      : NaN;
+  return Number.isFinite(n) && n > 0 ? n : null;
+};
+
 // 백엔드 DTO -> 프론트에서 쓰는 형태로 매핑
 const mapFromDto = (dto) => {
-  const id = dto.id ?? dto.idx ?? dto.IDX;
+  const id = toNumericId(dto.id ?? dto.idx ?? dto.IDX);
 
   const category = dto.category ?? dto.CATEGORY ?? "기타";
   const title = dto.title ?? dto.TITLE ?? "";
@@ -148,7 +165,7 @@ export default function FavoritePage() {
   const fetchFavorites = async () => {
     try {
       setIsLoading(true);
-      const list = await favoriteApi.getAll(); // ApiResponse 해제된 배열이라고 가정
+      const list = await favoriteApi.getAll(); // FavoriteResponse[] or ApiResponse.data
       const mapped = Array.isArray(list) ? list.map(mapFromDto) : [];
       setFavorites(mapped);
     } catch (error) {
@@ -285,15 +302,20 @@ export default function FavoritePage() {
 
   // ===== 즐겨찾기 삭제 (DB + 화면) =====
   const handleUnfavorite = async (id) => {
-    // confirm 싫으면 이 두 줄 지워도 됨
     if (!window.confirm("이 즐겨찾기를 해제할까요?")) return;
 
+    const numericId = toNumericId(id);
+    if (numericId == null) {
+      console.error("잘못된 즐겨찾기 id:", id);
+      return;
+    }
+
     try {
-      await favoriteApi.remove(id);
-      setFavorites((prev) => prev.filter((f) => f.id !== id));
+      await favoriteApi.remove(numericId);
+      setFavorites((prev) => prev.filter((f) => f.id !== numericId));
       setCropState((prev) => {
         const next = { ...prev };
-        delete next[id];
+        delete next[numericId];
         return next;
       });
     } catch (error) {
@@ -345,18 +367,16 @@ export default function FavoritePage() {
 
     const url = URL.createObjectURL(file);
 
-    // 사진/영상 통합: 파일 타입에 따라 imageUrl / videoUrl 채우기
     if (file.type.startsWith("video/")) {
       setFormState((prev) => ({
         ...prev,
         imageUrl: "",
-        videoUrl: url, // blob: → MediaEmbed에서 video로 처리
+        videoUrl: url,
       }));
     } else {
       setFormState((prev) => ({
         ...prev,
         imageUrl: url,
-        // 사진만 올린 경우 기존 videoUrl은 유지 (온라인 링크 썼을 수도 있음)
       }));
     }
   };
@@ -439,11 +459,13 @@ export default function FavoritePage() {
     const trimmedTitle = formState.title.trim();
     if (!trimmedTitle) return;
 
+    const numericId = toNumericId(formState.id);
+
     const baseImage =
       formState.imageUrl ||
-      (formState.id == null
+      (numericId == null
         ? getFallbackImage(formState.category)
-        : favorites.find((f) => f.id === formState.id)?.image ||
+        : favorites.find((f) => f.id === numericId)?.image ||
           getFallbackImage(formState.category));
 
     const trimmedVideoUrl =
@@ -452,11 +474,10 @@ export default function FavoritePage() {
         : formState.videoUrl || "";
 
     const payload = {
-      // FAVORITE 테이블 구조에 맞춘 필드들 (엔티티/DTO에 맞게 일부는 무시돼도 됨)
-      idx: formState.id ?? null,
-      id: formState.id ?? null, // 혹시 id 필드를 쓰는 경우 대비
-      customer_id: 1, // TODO: 로그인 붙으면 토큰에서 꺼내서 백엔드에서 세팅하는 쪽이 베스트
-      favoriteStoreIdx: null, // 아직 STORE랑 연동 안 하니까 NULL
+      idx: numericId,
+      id: numericId,
+      customerIdx: 1, // 지금은 서비스에서 1L 쓰고 있다 했으니 그대로 둠
+      favoriteStoreIdx: null,
 
       category: formState.category,
       title: trimmedTitle,
@@ -470,14 +491,14 @@ export default function FavoritePage() {
     try {
       setIsSaving(true);
 
-      if (formState.id == null) {
-        // 신규 등록
+      if (numericId == null) {
+        // 새 등록
         const createdDto = await favoriteApi.create(payload);
         const created = mapFromDto(createdDto);
         setFavorites((prev) => [...prev, created]);
       } else {
         // 수정
-        const updatedDto = await favoriteApi.update(formState.id, payload);
+        const updatedDto = await favoriteApi.update(numericId, payload);
         const updated = mapFromDto(updatedDto);
         setFavorites((prev) =>
           prev.map((fav) => (fav.id === updated.id ? updated : fav))
@@ -505,7 +526,7 @@ export default function FavoritePage() {
     setIsFormOpen(false);
   };
 
-  // 필터 칩 2행으로 나누기 (위 절반 / 아래 절반)
+  // 필터 칩 2행으로 나누기
   const mid = Math.ceil(FILTERS.length / 2);
   const topRowFilters = FILTERS.slice(0, mid);
   const bottomRowFilters = FILTERS.slice(mid);
@@ -513,13 +534,17 @@ export default function FavoritePage() {
   const renderFilterChip = (f) => (
     <button
       key={f.key}
+      data-key={f.key} // CSS에서 행 맞추기 위해 data-key 추가
       className={filter === f.key ? "fav-chip fav-chip-active" : "fav-chip"}
       type="button"
       onClick={() => setFilter(f.key)}
       title={f.label}
     >
       {f.icon && (
-        <span className="fav-chip-icon">
+        <span
+          className="fav-chip-icon"
+          style={f.iconScale ? { "--fav-icon-scale": f.iconScale } : undefined}
+        >
           <img src={f.icon} alt={f.label} />
         </span>
       )}

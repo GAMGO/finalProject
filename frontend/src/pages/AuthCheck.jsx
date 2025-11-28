@@ -1,3 +1,4 @@
+// src/pages/AuthCheck.jsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 // import jwt_decode from 'jwt-decode'; // 실제 프로젝트에서 사용될 라이브러리

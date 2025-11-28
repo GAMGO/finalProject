@@ -1,41 +1,71 @@
-// 기존에 만들어 둔 axios 인스턴스
+// src/api/apiClient.js
 import axios from "axios";
 
+// 팀 프로젝트 백엔드 : 8080
+// baseURL 을 /api 까지 잡고, 나머지는 전부 /favorites, /profile 이런 식으로만 호출
 const apiClient = axios.create({
-  baseURL: "http://localhost:8081/api",
+  baseURL: "http://localhost:8080/api",
+  timeout: 5000,
 });
 
-// ===== 프로필 =====
+// ================= JWT 자동 실어 보내기 =================
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("jwtToken");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// ApiResponse 래핑 여부 상관없이 data 뽑는 도우미
+const unwrap = (res) => {
+  const data = res.data;
+  if (data && typeof data === "object" && "data" in data) {
+    return data.data;
+  }
+  return data;
+};
+
+// ================= 프로필 API =================
 export async function fetchUserProfile() {
+  // GET http://localhost:8080/api/profile
   const res = await apiClient.get("/profile");
-  // 래핑 없이 바로 DTO 리턴하니까
-  return res.data;
+  return unwrap(res);
 }
 
 export async function saveUserProfile(profile) {
+  // POST http://localhost:8080/api/profile
   const res = await apiClient.post("/profile", profile);
-  return res.data;
+  return unwrap(res);
 }
 
-// 즐겨찾기 API
+// ================= 즐겨찾기 API =================
 export const favoriteApi = {
   async getAll() {
-    const res = await apiClient.get('/favorites');
-    // 백엔드에서 ApiResponse<T> 쓰면 보통 { status, message, data } 구조일 거라서
-    return res.data.data ?? res.data;  // 둘 중 프로젝트 구조에 맞는 쪽으로 쓰이면 된다.
+    // GET http://localhost:8080/api/favorites
+    const res = await apiClient.get("/favorites");
+    return unwrap(res) ?? [];
   },
 
   async create(favorite) {
-    const res = await apiClient.post('/favorites', favorite);
-    return res.data.data ?? res.data;
+    // POST http://localhost:8080/api/favorites
+    const res = await apiClient.post("/favorites", favorite);
+    return unwrap(res);
   },
 
   async update(id, favorite) {
+    // PUT http://localhost:8080/api/favorites/{id}
     const res = await apiClient.put(`/favorites/${id}`, favorite);
-    return res.data.data ?? res.data;
+    return unwrap(res);
   },
 
   async remove(id) {
+    // DELETE http://localhost:8080/api/favorites/{id}
     await apiClient.delete(`/favorites/${id}`);
   },
 };
+
+export default apiClient;
