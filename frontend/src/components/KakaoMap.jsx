@@ -4,7 +4,7 @@ import plusIcon from "../assets/plus.svg";
 import "./KakaoMap.css";
 
 const APP_KEY = "bdd84bdbed2db3bc5d8b90cd6736a995";
-const API_BASE = "http://localhost:8080/api";
+const API_BASE = "http://localhost:8080/";
 
 // FOOD_INFO.IDX 기준
 const CATEGORIES = [
@@ -84,7 +84,7 @@ export default function KakaoMap() {
 
   const loadStoresAndDraw = async (map) => {
     try {
-      const res = await fetch(`${API_BASE}/stores`);
+      const res = await fetch(`${API_BASE}api/stores`);
       if (!res.ok) throw new Error("load stores failed");
 
       const json = await res.json();
