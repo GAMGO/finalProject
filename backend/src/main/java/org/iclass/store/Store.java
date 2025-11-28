@@ -2,7 +2,7 @@ package org.iclass.store;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import org.iclass.finalproject.customer.entity.CustomersEntity;;
+import org.iclass.customer.entity.CustomersEntity;;
 
 @Entity
 @Table(name = "STORE")
