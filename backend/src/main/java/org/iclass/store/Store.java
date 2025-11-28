@@ -34,8 +34,6 @@ public class Store {
     @Column(name = "LNG", nullable = false)
     private Double lng;
 
-    public Store() {}
-
     // ===== Getter / Setter =====
 
     public Long getIdx() { return idx; }

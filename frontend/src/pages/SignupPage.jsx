@@ -179,7 +179,6 @@ const SignupPage = ({ onToggleMode }) => {
     display: "block",
     letterSpacing: "2px",
     ...textShadowStyle,
-    color: white,
   };
   const inputStyle = {
     width: "100%",
