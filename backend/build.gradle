@@ -27,14 +27,13 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     // .env 파일 로드
     implementation 'io.github.cdimascio:java-dotenv:5.2.2'
-
     // Devtools
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
-
+    // MySQL
     runtimeOnly 'com.mysql:mysql-connector-j'
-
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+    // PostgreSQL
+    //implementation 'org.postgresql:postgresql'
+    //runtimeOnly 'org.postgresql:postgresql'
     // Lombok
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
@@ -55,9 +54,17 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
-
+// JAR 파일의 최종 이름을 'app.jar'로 설정
+jar {
+    enabled = false // 💡 일반 JAR 파일 생성을 비활성화하여 혼동 방지
+}
+// 또는 Spring Boot의 bootJar 태스크를 사용 (권장)
+bootJar {
+    archiveFileName = 'app.jar'
+}
 /*
  * [파일 설명]
  * - Spring Boot + JPA + Security + Validation + MySQL 사용하는 Gradle 빌드 설정.
  * - 팀원이 어떤 라이브러리 쓰는지, 자바 버전/부트 버전이 뭔지 한눈에 볼 수 있음.
+ *
  */
