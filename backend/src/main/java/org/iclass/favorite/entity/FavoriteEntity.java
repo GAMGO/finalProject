@@ -20,6 +20,9 @@ public class FavoriteEntity {
     @Column(name = "customer_idx")
     private Long customerIdx;
 
+    @Column(name = "FAVORITE_STORE_IDX")
+    private Long favoriteStoreIdx;
+
     @Column(nullable = false, length = 50)
     private String category;
 
