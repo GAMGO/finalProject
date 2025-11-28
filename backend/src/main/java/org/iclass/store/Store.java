@@ -2,6 +2,7 @@ package org.iclass.store;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import org.iclass.finalproject.customer.entity.CustomersEntity;;
 
 @Entity
 @Table(name = "STORE")
@@ -34,6 +35,24 @@ public class Store {
     @Column(name = "LNG", nullable = false)
     private Double lng;
 
+    @Column(name = "INITIAL_RATING")
+    private Integer initialRating; // 등록 시 입력하는 별점 (1~5)
+
+    @Column(name = "INITIAL_REVIEW_TITLE", length = 255)
+    private String initialReviewTitle; // 등록 시 리뷰 제목
+
+    @Lob
+    @Column(name = "INITIAL_REVIEW")
+    private String initialReview; // 등록 시 리뷰 내용
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "INITIAL_REVIEW_BY")
+    private CustomersEntity initialReviewBy; // 등록자 (고객 FK 참조)
+
+    @Column(name = "INITIAL_REVIEWED_AT")
+    private LocalDateTime initialReviewedAt; // 리뷰 작성 시간
+
+
     public Store() {}
 
     // ===== Getter / Setter =====
@@ -61,4 +80,19 @@ public class Store {
 
     public Double getLng() { return lng; }
     public void setLng(Double lng) { this.lng = lng; }
+
+    public Integer getInitialRating() { return initialRating; }
+    public void setInitialRating(Integer initialRating) { this.initialRating = initialRating; }
+
+    public String getInitialReviewTitle() { return initialReviewTitle; }
+    public void setInitialReviewTitle(String initialReviewTitle) { this.initialReviewTitle = initialReviewTitle; }
+
+    public String getInitialReview() { return initialReview; }
+    public void setInitialReview(String initialReview) { this.initialReview = initialReview; }
+
+    public CustomersEntity getInitialReviewBy() { return initialReviewBy; }
+    public void setInitialReviewBy(CustomersEntity initialReviewBy) { this.initialReviewBy = initialReviewBy; }
+
+    public LocalDateTime getInitialReviewedAt() { return initialReviewedAt; }
+    public void setInitialReviewedAt(LocalDateTime initialReviewedAt) { this.initialReviewedAt = initialReviewedAt; }
 }
