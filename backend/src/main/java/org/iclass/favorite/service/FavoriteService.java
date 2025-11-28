@@ -22,13 +22,13 @@ public class FavoriteService {
     }
 
     // TODO: 나중에 팀원이 로그인 붙이면 여기만 수정
-    private Long getCurrentCustomerIdx() {
+    private Long getcustomerIdx() {
         return 1L;  // 임시 하드코딩
     }
 
     public List<FavoriteResponse> getMyFavorites() {
-        Long customerId = getCurrentCustomerIdx();
-        return favoriteRepository.findByCustomerIdOrderByCreatedAtDesc(customerId)
+        Long customerIdx = getcustomerIdx();
+        return favoriteRepository.findBycustomerIdxOrderByCreatedAtDesc(customerIdx)
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
@@ -36,7 +36,7 @@ public class FavoriteService {
 
     public FavoriteResponse createFavorite(FavoriteRequest req) {
         FavoriteEntity entity = new FavoriteEntity();
-        entity.setCustomerIdx(getCurrentCustomerIdx());
+        entity.setCustomerIdx(getcustomerIdx());
         entity.setCategory(req.getCategory());
         entity.setTitle(req.getTitle());
         entity.setAddress(req.getAddress());

@@ -7,7 +7,7 @@ const SignupPage = ({ onToggleMode }) => {
   // ------------------------------------
   // 1. 상태 관리
   // ------------------------------------
-  const [customerId, setCustomerId] = useState("");
+  const [customer_id, setcustomer_id] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [email, setEmail] = useState("");
@@ -65,7 +65,7 @@ const SignupPage = ({ onToggleMode }) => {
 
   const handleRegister = async () => {
     if (
-      !customerId ||
+      !customer_id ||
       !password ||
       !confirmPassword ||
       !email ||
@@ -81,7 +81,7 @@ const SignupPage = ({ onToggleMode }) => {
     }
     // API 호출 데이터 준비
     const registerData = {
-      id: customerId,
+      id: customer_id,
       password: password,
       email: email,
       birth: birthDate,
@@ -230,16 +230,16 @@ const SignupPage = ({ onToggleMode }) => {
         </div>
         {/* 1. ID 입력 필드 */}
         <div style={inputGroupStyle}>
-          <label htmlFor="reg_customerId" style={labelStyle}>
+          <label htmlFor="reg_customer_id" style={labelStyle}>
             ID
           </label>
           <input
             type="text"
-            id="reg_customerId"
+            id="reg_customer_id"
             placeholder="사용할 아이디를 입력하세요"
             style={inputStyle}
-            value={customerId}
-            onChange={createHandleChange(setCustomerId)} // ⭐️ useCallback 함수 적용
+            value={customer_id}
+            onChange={createHandleChange(setcustomer_id)} // ⭐️ useCallback 함수 적용
           />
         </div>
 

@@ -9,14 +9,14 @@ const LoginPage = ({ onToggleMode }) => {
   // ------------------------------------
   // 1. 상태 관리
   // ------------------------------------
-  const [customerId, setCustomerId] = useState("");
+  const [customer_id, setcustomer_id] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
   // ------------------------------------
   // 2. 상태 설정 함수 (useCallback)
   // ------------------------------------
   const handleIdChange = useCallback((e) => {
-    setCustomerId(e.target.value);
+    setcustomer_id(e.target.value);
   }, []);
 
   const handlePasswordChange = useCallback((e) => {
@@ -29,14 +29,14 @@ const LoginPage = ({ onToggleMode }) => {
   const handleLogin = async () => {
 
   // ... 기존 로그인 로직 유지 ...
-  if (!customerId || !password) {
+  if (!customer_id || !password) {
     alert("아이디와 비밀번호를 모두 입력해주세요.");
     return;
   }
   
   // ⭐️ API 호출 데이터 준비
   const loginData = {
-    id: customerId, // ⚠️ 인풋 필드에서 값을 가져오는 변수명인지 확인하세요.
+    id: customer_id, // ⚠️ 인풋 필드에서 값을 가져오는 변수명인지 확인하세요.
     password: password      
   };
 
@@ -180,15 +180,15 @@ const LoginPage = ({ onToggleMode }) => {
 
         {/* ID 입력 필드 */}
         <div style={inputGroupStyle}>
-          <label htmlFor="customerId" style={labelStyle}>
+          <label htmlFor="customer_ix" style={labelStyle}>
             ID
           </label>
           <input
             type="text"
-            id="customerId"
+            id="customer_id"
             placeholder="아이디를 입력하세요"
             style={inputStyle}
-            value={customerId}
+            value={customer_id}
             onChange={handleIdChange}
           />
         </div>

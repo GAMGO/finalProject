@@ -3,7 +3,7 @@ import "./UserProfilePage.css";
 
 export default function UserProfilePage() {
   const [form, setForm] = useState({
-    customerId: "testuser",
+    customer_id: "testuser",
     email: "test@example.com",
     name: "익명",
     birthDate: "1999-01-01",
@@ -42,7 +42,7 @@ export default function UserProfilePage() {
         <form className="profile-card" onSubmit={onSubmit}>
           <div className="profile-row">
             <label>아이디</label>
-            <input name="customerId" value={form.customerId} disabled />
+            <input name="customer_id" value={form.customer_id} disabled />
           </div>
 
           <div className="profile-row">

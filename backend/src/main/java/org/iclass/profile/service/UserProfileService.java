@@ -17,17 +17,17 @@ public class UserProfileService {
     }
 
     // TODO: 나중에 인증 붙으면 여기만 바꾸면 됨
-    private Long getCurrentCustomerIdx() {
+    private Long getcustomerIdx() {
         return 1L;
     }
 
     public UserProfileDto getMyProfile() {
-        Long customerId = getCurrentCustomerIdx();
+        Long customerIdx = getcustomerIdx();
 
-        UserProfileEntity entity = userProfileRepository.findByCustomerId(customerId)
+        UserProfileEntity entity = userProfileRepository.findBycustomerIdx(customerIdx)
                 .orElseGet(() -> {
                     UserProfileEntity e = new UserProfileEntity();
-                    e.setCustomerId(customerId);
+                    e.setCustomerIdx(customerIdx);
                     return userProfileRepository.save(e);
                 });
 
@@ -35,12 +35,12 @@ public class UserProfileService {
     }
 
     public UserProfileDto saveMyProfile(UserProfileDto dto) {
-        Long customerId = getCurrentCustomerIdx();
+        Long customerIdx = getcustomerIdx();
 
-        UserProfileEntity entity = userProfileRepository.findByCustomerId(customerId)
+        UserProfileEntity entity = userProfileRepository.findBycustomerIdx(customerIdx)
                 .orElseGet(() -> {
                     UserProfileEntity e = new UserProfileEntity();
-                    e.setCustomerId(customerId);
+                    e.setCustomerIdx(customerIdx);
                     return e;
                 });
 
