@@ -1,8 +1,13 @@
 package org.iclass.profile.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "USER_PROFILE_PAGE")   // 실제 테이블 이름에 맞게 바꿔
 public class UserProfileEntity {
@@ -13,7 +18,7 @@ public class UserProfileEntity {
 
     // TODO: 나중에 인증 붙으면 CUSTOMERS 외래키
     @Column(name = "customer_idx")
-    private Long customer_idx;
+    private Long customerIdx;
 
     @Column(length = 50)
     private String nickname;
@@ -47,77 +52,77 @@ public class UserProfileEntity {
         this.updatedAt = LocalDateTime.now();
     }
 
-    // --- getter / setter ---
+    // // --- getter / setter ---
 
-    public Long getIdx() {
-        return idx;
-    }
+    // public Long getIdx() {
+    //     return idx;
+    // }
 
-    public void setIdx(Long idx) {
-        this.idx = idx;
-    }
+    // public void setIdx(Long idx) {
+    //     this.idx = idx;
+    // }
 
-    public Long getCustomerIdx() {
-        return customer_idx;
-    }
+    // public Long getcustomerIdx() {
+    //     return customerIdx;
+    // }
 
-    public void setCustomerIdx(Long customer_idx) {
-        this.customer_idx = customer_idx;
-    }
+    // public void setcustomerIdx(Long customerIdx) {
+    //     this.customerIdx = customerIdx;
+    // }
 
-    public String getNickname() {
-        return nickname;
-    }
+    // public String getNickname() {
+    //     return nickname;
+    // }
 
-    public void setNickname(String nickname) {
-        this.nickname = nickname;
-    }
+    // public void setNickname(String nickname) {
+    //     this.nickname = nickname;
+    // }
 
-    public String getIntro() {
-        return intro;
-    }
+    // public String getIntro() {
+    //     return intro;
+    // }
 
-    public void setIntro(String intro) {
-        this.intro = intro;
-    }
+    // public void setIntro(String intro) {
+    //     this.intro = intro;
+    // }
 
-    public String getAvatarUrl() {
-        return avatarUrl;
-    }
+    // public String getAvatarUrl() {
+    //     return avatarUrl;
+    // }
 
-    public void setAvatarUrl(String avatarUrl) {
-        this.avatarUrl = avatarUrl;
-    }
+    // public void setAvatarUrl(String avatarUrl) {
+    //     this.avatarUrl = avatarUrl;
+    // }
 
-    public String getFavoriteFood() {
-        return favoriteFood;
-    }
+    // public String getFavoriteFood() {
+    //     return favoriteFood;
+    // }
 
-    public void setFavoriteFood(String favoriteFood) {
-        this.favoriteFood = favoriteFood;
-    }
+    // public void setFavoriteFood(String favoriteFood) {
+    //     this.favoriteFood = favoriteFood;
+    // }
 
-    public String getLocation() {
-        return location;
-    }
+    // public String getLocation() {
+    //     return location;
+    // }
 
-    public void setLocation(String location) {
-        this.location = location;
-    }
+    // public void setLocation(String location) {
+    //     this.location = location;
+    // }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
+    // public LocalDateTime getCreatedAt() {
+    //     return createdAt;
+    // }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
+    // public void setCreatedAt(LocalDateTime createdAt) {
+    //     this.createdAt = createdAt;
+    // }
 
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
+    // public LocalDateTime getUpdatedAt() {
+    //     return updatedAt;
+    // }
 
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
+    // public void setUpdatedAt(LocalDateTime updatedAt) {
+    //     this.updatedAt = updatedAt;
+    // }
 }
