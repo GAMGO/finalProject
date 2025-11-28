@@ -455,11 +455,7 @@ export default function FavoritePage() {
       // FAVORITE 테이블 구조에 맞춘 필드들 (엔티티/DTO에 맞게 일부는 무시돼도 됨)
       idx: formState.id ?? null,
       id: formState.id ?? null, // 혹시 id 필드를 쓰는 경우 대비
-<<<<<<< HEAD
       customer_idx: 1, // TODO: 로그인 붙으면 토큰에서 꺼내서 백엔드에서 세팅하는 쪽이 베스트
-=======
-      customer_id: 1, // TODO: 로그인 붙으면 토큰에서 꺼내서 백엔드에서 세팅하는 쪽이 베스트
->>>>>>> lms
       favoriteStoreIdx: null, // 아직 STORE랑 연동 안 하니까 NULL
 
       category: formState.category,
