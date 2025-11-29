@@ -1,0 +1,90 @@
+/* ===== 공통 테마 변수 ===== */
+:root {
+  --color-side-bg: #78266a;     /* 왼쪽 보라색 */
+  --color-page-bg: #f3f4f6;     /* 오른쪽 전체 배경 */
+  --color-card-bg: #ffffff;
+  --color-text-main: #111827;
+  --color-text-muted: #6b7280;
+}
+
+/* ===== 기본 리셋 ===== */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  background: var(--color-page-bg);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  color: var(--color-text-main);
+}
+
+/* ===== 전체 앱 레이아웃 (사이드바 + 메인) ===== */
+
+.app {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;                 /* 왼쪽 사이드, 오른쪽 메인 가로 배치 */
+  background: var(--color-page-bg);
+}
+
+/* ----- 왼쪽 보라색 사이드바 ----- */
+
+.side-bar {
+  width: 200px;
+  background: var(--color-side-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 16px;
+  flex-shrink: 0;
+}
+
+/* 로고 */
+.side-logo {
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* 사이드바 안 커뮤니티 버튼 */
+.side-nav-btn {
+  margin-top: 24px;
+  width: calc(100% - 32px);
+  padding: 10px 0;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: transparent;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.side-nav-btn:hover {
+  background: #ffffff;
+  color: var(--color-side-bg);
+}
+
+/* ----- 오른쪽 메인 영역 ----- */
+
+.main-content {
+  flex: 1;
+  min-height: 100vh;
+  background: var(--color-page-bg);
+  /* ✅ 여기서는 flex 안 씀 – 커뮤니티가 전체를 다 씀 */
+  display: block;
+}
+

@@ -1,25 +1,65 @@
-# Logs
+# ------------------------------------
+# 1. 환경 및 빌드 설정 (Environment & Build)
+# ------------------------------------
+# Python 가상 환경 폴더
+venv
+# Python 캐시 파일
+__pycache__/
+# 환경 변수 파일
 .env
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+# Gradle 빌드 폴더 및 로그
+.gradle
+build/
+# Gradle Wrapper JAR 파일은 커밋에 포함 (느낌표 !)
+!gradle/wrapper/gradle-wrapper.jar
+# 프로젝트를 컴파일하거나 학습 시 생성되는 파일
+*.pt
+<<<<<<< HEAD
+.env
+=======
+HELP.md
 
-node_modules
-dist
-dist-ssr
-*.local
+# ------------------------------------
+# 2. IDE/편집기 특정 파일 (IDE/Editor Specific)
+# ------------------------------------
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+# out/ 폴더 내 src/main/ 및 src/test/ 내부의 out/ 폴더는 무시
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### STS / Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+# bin/ 폴더 내 src/main/ 및 src/test/ 내부의 bin/ 폴더는 무시
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+# ------------------------------------
+# 3. 추가 빌드 아티팩트 (Additional Build Artifacts)
+# ------------------------------------
+# 빌드 폴더 내 src/main/ 및 src/test/ 내부의 build/ 폴더는 무시
+!**/src/main/**/build/
+!**/src/test/**/build/
+>>>>>>> main

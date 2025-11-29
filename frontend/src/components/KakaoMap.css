@@ -1,0 +1,116 @@
+/* 모달 배경 */
+.map-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+/* 모달 박스 */
+.map-modal {
+  width: 380px;
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 20px 22px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+}
+
+.map-modal-title {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* 라벨 */
+.map-label {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+/* 공통 입력 필드 스타일 */
+.map-select,
+.map-input,
+.map-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 13px;
+  margin-bottom: 10px;
+  background-color: #f5f5f5; /* 밝은 배경 */
+  color: #222222;            /* 진한 글씨 */
+}
+
+/* textarea 전용 */
+.map-textarea {
+  resize: vertical;
+}
+
+/* placeholder 색 */
+.map-input::placeholder,
+.map-textarea::placeholder {
+  color: #777777;
+}
+
+/* 드롭다운 옵션 색 커스터마이징 */
+.map-select option {
+  background-color: #333333; /* 리스트 열렸을 때 기본 배경 */
+  color: #ffffff;
+}
+
+/* 선택된 옵션(하이라이트) 색을 반대로 */
+.map-select option:checked {
+  background-color: #f5f5f5;
+  color: #222222;
+}
+
+/* 지도에서 위치 선택 버튼 */
+.map-pick-row {
+  font-size: 11px;
+  color: #555555;
+  margin-bottom: 12px;
+  margin-top: 4px;
+}
+
+.map-pick-button {
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid #78266a;
+  background: #ffffff;
+  color: #78266a;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+/* 하단 버튼 영역 */
+.map-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.map-btn-cancel {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid #dddddd;
+  background: #f5f5f5;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.map-btn-submit {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: none;
+  background: #78266a;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
