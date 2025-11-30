@@ -2,20 +2,8 @@
 import axios from "axios";
 
 const apiClient = axios.create({
-  baseURL: "http://localhost:8081/api",
+  baseURL: "http://localhost:8080/",
 });
-
-// ===== 프로필 =====
-export async function fetchUserProfile() {
-  const res = await apiClient.get("/profile");
-  // 래핑 없이 바로 DTO 리턴하니까
-  return res.data;
-}
-
-export async function saveUserProfile(profile) {
-  const res = await apiClient.post("/profile", profile);
-  return res.data;
-}
 
 // 즐겨찾기 API
 export const favoriteApi = {
