@@ -1,24 +1,32 @@
 package org.iclass.dish;
 
+import lombok.Getter;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+
+/**
+ * Dish 응답 DTO
+ * - 클라이언트에게 전달할 데이터 전용
+ * - setter 없음 (불변 객체)
+ */
+@Getter
+@AllArgsConstructor
+@Builder
 public class DishResponse {
-    private Long idx;
-    private String name;
-    private String description;
-    private int price;
+    private final Long idx;
+    private final String name;
+    private final String description;
+    private final int price;
 
-    public DishResponse(Long idx, String name, String description, int price) {
-        this.idx = idx;
-        this.name = name;
-        this.description = description;
-        this.price = price;
-    }
-
-    public Long getIdx() { return idx; }
-    public String getName() { return name; }
-    public String getDescription() { return description; }
-    public int getPrice() { return price; }
-
+    /**
+     * Entity → DTO 변환 메서드
+     */
     public static DishResponse from(Dish dish) {
-        return new DishResponse(dish.getIdx(), dish.getName(), dish.getDescription(), dish.getPrice());
+        return DishResponse.builder()
+                .idx(dish.getIdx())
+                .name(dish.getName())
+                .description(dish.getDescription())
+                .price(dish.getPrice())
+                .build();
     }
 }
