@@ -1,21 +1,17 @@
-# app/repositories/stall_repository.py
+# ai/repositories/stall_repository.py
 from app.config.database import get_db_connection
 
-def get_all_stalls():
-    """
-    stalls 테이블 전체 가져오기
-    """
+def get_nearby_stores(lat, lng, radius_km=3):
     conn = get_db_connection()
     try:
         with conn.cursor() as cur:
             cur.execute("""
-                SELECT idx, name, lat, lng, stall_category_id,
-                       rating_avg, rating_count_log,
-                       sentiment_score, price_level, hour_sin,
-                       user_id
-                FROM stalls
-            """)
-            rows = cur.fetchall()
-            return rows
+                SELECT 
+                    idx, store_name, lat, lng, food_type, rating
+                FROM store
+                WHERE lat BETWEEN %s - 0.03 AND %s + 0.03
+                  AND lng BETWEEN %s - 0.03 AND %s + 0.03
+            """, (lat, lat, lng, lng))
+            return cur.fetchall()
     finally:
         conn.close()
