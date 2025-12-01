@@ -1,4 +1,4 @@
-package org.iclass.store;
+package org.iclass.store.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;

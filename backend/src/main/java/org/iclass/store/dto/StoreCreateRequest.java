@@ -1,12 +1,17 @@
 package org.iclass.store.dto;
 
+import java.time.LocalDateTime;
+
 public class StoreCreateRequest {
 
-    private String storeName;   // 노점 이름/간단 설명
-    private Long foodTypeId;    // FOOD_INFO.IDX
+    private String storeName;
+    private Long foodTypeId;
     private String storeAddress;
     private Double lat;
     private Double lng;
+
+    private LocalDateTime openTime;
+    private LocalDateTime closeTime;
 
     public StoreCreateRequest() {}
 
@@ -24,4 +29,10 @@ public class StoreCreateRequest {
 
     public Double getLng() { return lng; }
     public void setLng(Double lng) { this.lng = lng; }
+
+    public LocalDateTime getOpenTime() { return openTime; }
+    public void setOpenTime(LocalDateTime openTime) { this.openTime = openTime; }
+
+    public LocalDateTime getCloseTime() { return closeTime; }
+    public void setCloseTime(LocalDateTime closeTime) { this.closeTime = closeTime; }
 }

@@ -1,8 +1,10 @@
 package org.iclass.review.entity;
 
 import jakarta.persistence.*;
-import org.iclass.store.Store; 
+
 import java.time.LocalDateTime;
+
+import org.iclass.store.entity.Store;
 
 @Entity
 @Table(name = "store_reviews",
