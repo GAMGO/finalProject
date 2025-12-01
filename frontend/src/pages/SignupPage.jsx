@@ -3,7 +3,7 @@ import axios from "axios";
 //const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const API_BASE_URL = "http://localhost:8080";
 // 'onToggleMode' 프롭을 받아 로그인 버튼 클릭 시 모드를 전환하도록 합니다.
-const SignupPage = ({ onToggleMode }) => {
+const SignupPage = ({ onToggleMode, onSignupSuccess }) => {
   // ------------------------------------
   // 1. 상태 관리
   // ------------------------------------
@@ -69,8 +69,7 @@ const SignupPage = ({ onToggleMode }) => {
       !password ||
       !confirmPassword ||
       !email ||
-      !birthDate ||
-      gender === null
+      !birthDate
     ) {
       alert("모든 필드를 입력해주세요.");
       return;
@@ -79,7 +78,6 @@ const SignupPage = ({ onToggleMode }) => {
       alert("비밀번호 확인이 일치하지 않습니다.");
       return;
     }
-    // API 호출 데이터 준비
     const registerData = {
       id: customer_id,
       password: password,
@@ -97,13 +95,10 @@ const SignupPage = ({ onToggleMode }) => {
         { withCredentials: true }
       );
 
-      // ⭐️ 회원가입 성공 처리
-      alert("회원가입이 성공적으로 완료되었습니다! 로그인해 주세요.");
-      console.log("회원가입 응답 데이터:", response.data);
-
-      navigate("/login");
+      // ⭐️ 회원가입 성공 처리 -> 이메일 인증 바로 진행
+      alert("회원가입이 성공적으로 완료되었습니다! 이메일로 전송된 인증 코드를 입력해주세요.");
+      onSignupSuccess(email);
     } catch (error) {
-      // ⭐️ 서버 연결 또는 실패 처리
       if (error.response) {
         // 서버 응답 (예: 409 Conflict - 이미 존재하는 사용자)
         alert(
@@ -141,6 +136,7 @@ const SignupPage = ({ onToggleMode }) => {
     }
   `;
   const textShadowStyle = { textShadow: `4px 4px 2px ${darkPurple}` };
+  const textRoundStyle = { textShadow: `-2px 0 ${darkPurple}, 0 2px ${darkPurple}, 2px 0 ${darkPurple}, 0 -2px ${darkPurple}` };
   const containerStyle = {
     display: "flex",
     justifyContent: "center",
@@ -162,13 +158,13 @@ const SignupPage = ({ onToggleMode }) => {
   const inputGroupStyle = { marginBottom: "20px", textAlign: "left" };
 
   const labelStyle = {
-    fontSize: "18px",
+    fontSize: "20px",
     fontWeight: "0",
     color: white,
     marginBottom: "5px",
     display: "block",
     letterSpacing: "2px",
-    ...textShadowStyle,
+    ...textRoundStyle,
   };
 
   const titleStyle = {
@@ -198,7 +194,7 @@ const SignupPage = ({ onToggleMode }) => {
     backgroundColor: white,
     color: darkPurple,
     padding: "10px 30px",
-    fontSize: "18px",
+    fontSize: "15px",
     fontWeight: "100",
     borderRadius: "20px",
     border: `2px solid ${darkPurple}`,
@@ -340,11 +336,11 @@ const SignupPage = ({ onToggleMode }) => {
         {/* 버튼 영역 */}
         <div>
           <button type="button" style={buttonStyle} onClick={handleRegister}>
-            회원가입 완료
+            회원가입 완료 및 이메일 인증하기
           </button>
 
           <button type="button" style={buttonStyle} onClick={onToggleMode}>
-            로그인 페이지로
+            이미 계정이 있으신가요? 로그인 페이지로
           </button>
         </div>
       </div>

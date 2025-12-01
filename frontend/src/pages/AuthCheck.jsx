@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom"; // ✅ useNavigate 대신 Navigate import
+import { Navigate } from "react-router-dom";
+//import jwt_decode from 'jwt-decode'; // 실제 프로젝트에서 사용될 라이브러리
 
 // [임시 함수] JWT 토큰의 Payload를 Base64 디코딩하여 JSON 객체로 반환합니다.
 // 실제 환경에서는 'jwt-decode'와 같은 라이브러리를 사용해야 안정적입니다.
