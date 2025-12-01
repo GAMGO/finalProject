@@ -53,14 +53,24 @@ public class SecurityConfig {
                                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                                 .requestMatchers(PUBLIC_WHITELIST).permitAll()
                                                 .requestMatchers("/api/email/**","/api/stores").permitAll() // 이메일 인증, 가게목록 명시적 허용
-                                                .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/signup", "/api/recover/send-code","/api/email/verify","/api/recover/reset","/api/recover/find-id")
+                                                .requestMatchers(HttpMethod.POST,"/api/auth/login","/api/recover/send-code","/api/email/verify","/api/recover/reset","/api/recover/find-id")
                                                 .permitAll()
                                                 .requestMatchers("/api/auth/logout","/api/posts","/api/favorites","/api/profile")
                                                 .authenticated()
                                                 .anyRequest().authenticated())
+                                                
                                 // 폼/베이직 로그인 비활성
                                 .httpBasic(b -> b.disable())
-                                .formLogin(f -> f.disable());
+                                .formLogin(f -> f.disable())
+                                .logout(l -> l
+                                    // 기본 로그아웃 URL을 사용하지 않도록 처리
+                                    .logoutUrl("/non-existent-logout") 
+                                    // 로그아웃 성공 시 리다이렉션 방지 (REST API에서는 중요)
+                                    .logoutSuccessHandler((request, response, authentication) -> {})
+                                    // 세션 기반이 아니므로 세션 무효화는 필요 없음
+                                    .invalidateHttpSession(false) 
+                                    .clearAuthentication(false)
+                                    .permitAll()); // 로그아웃 처리는 PUBLIC_WHITELIST에서 이미 허용됨
 
                 return http.build();
         }

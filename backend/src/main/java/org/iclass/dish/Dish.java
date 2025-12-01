@@ -2,7 +2,11 @@ package org.iclass.dish;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "dish")
 public class Dish {
@@ -28,13 +32,4 @@ public class Dish {
         this.description = description;
         this.price = price;
     }
-
-    public Long getIdx() { return idx; }
-    public String getName() { return name; }
-    public String getDescription() { return description; }
-    public int getPrice() { return price; }
-
-    public void setName(String name) { this.name = name; }
-    public void setDescription(String description) { this.description = description; }
-    public void setPrice(int price) { this.price = price; }
 }
