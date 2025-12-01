@@ -1,7 +1,9 @@
+// src/main/java/org/iclass/review/service/StoreReviewService.java
 package org.iclass.review.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.iclass.review.dto.StoreReviewListWithStatsResponse;
 import org.iclass.review.dto.StoreReviewRequest;
 import org.iclass.review.dto.StoreReviewResponse;
 import org.iclass.review.dto.StoreReviewStatsResponse;
@@ -37,7 +39,7 @@ public class StoreReviewService {
 
         // 정책: 같은 가게에 동일 사용자의 중복 리뷰 방지
         if (customerIdx != null &&
-            reviewRepository.existsByStore_IdxAndCustomerIdx(storeIdx, customerIdx)) {
+                reviewRepository.existsByStore_IdxAndCustomerIdx(storeIdx, customerIdx)) {
             throw new IllegalStateException("이미 이 가게에 작성한 리뷰가 있습니다.");
         }
 
@@ -90,7 +92,7 @@ public class StoreReviewService {
     }
 
     /**
-     * 가게별 리뷰 목록 조회
+     * 가게별 리뷰 목록 조회 (Page)
      */
     public Page<StoreReviewResponse> list(Long storeIdx, Pageable pageable) {
         Page<StoreReview> p = reviewRepository
@@ -126,6 +128,19 @@ public class StoreReviewService {
                 ? "{}"
                 : (s.getRatingHistogram() == null ? "{}" : s.getRatingHistogram());
 
+        return dto;
+    }
+
+    /**
+     * 가게별 리뷰 + 통계 한 번에 조회 (with-stats)
+     */
+    public StoreReviewListWithStatsResponse listWithStats(Long storeIdx, Pageable pageable) {
+        Page<StoreReviewResponse> page = list(storeIdx, pageable);
+        StoreReviewStatsResponse statsDto = stats(storeIdx);
+
+        StoreReviewListWithStatsResponse dto = new StoreReviewListWithStatsResponse();
+        dto.stats = statsDto;
+        dto.reviews = page.getContent();
         return dto;
     }
 }
