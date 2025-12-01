@@ -1,40 +1,41 @@
 package org.iclass.review.service;
 
 import jakarta.persistence.EntityNotFoundException;
-import org.iclass.review.dto.*;
+import lombok.RequiredArgsConstructor;
+import org.iclass.review.dto.StoreReviewRequest;
+import org.iclass.review.dto.StoreReviewResponse;
+import org.iclass.review.dto.StoreReviewStatsResponse;
 import org.iclass.review.entity.StoreReview;
 import org.iclass.review.entity.StoreReviewStats;
-import org.iclass.review.repository.*;
-import org.iclass.review.repository.*;
+import org.iclass.review.repository.StoreReviewRepository;
+import org.iclass.review.repository.StoreReviewStatsRepository;
 import org.iclass.store.Store;
 import org.iclass.store.StoreRepository;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
 @Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class StoreReviewService {
 
     private final StoreRepository storeRepository;
     private final StoreReviewRepository reviewRepository;
     private final StoreReviewStatsRepository statsRepository;
 
-    public StoreReviewService(StoreRepository storeRepository,
-                              StoreReviewRepository reviewRepository,
-                              StoreReviewStatsRepository statsRepository) {
-        this.storeRepository = storeRepository;
-        this.reviewRepository = reviewRepository;
-        this.statsRepository = statsRepository;
-    }
-
+    /**
+     * 리뷰 생성
+     */
     @Transactional
     public Long create(Long storeIdx, Long customerIdx, StoreReviewRequest req) {
         Store store = storeRepository.findById(storeIdx)
-                .orElseThrow(() -> new EntityNotFoundException("Store not found"));
+                .orElseThrow(() -> new EntityNotFoundException("가게 정보를 찾을 수 없습니다."));
 
-        // 정책: 같은 가게에 동일 사용자의 중복 리뷰 방지(원치 않으면 제거)
+        // 정책: 같은 가게에 동일 사용자의 중복 리뷰 방지
         if (customerIdx != null &&
             reviewRepository.existsByStore_IdxAndCustomerIdx(storeIdx, customerIdx)) {
             throw new IllegalStateException("이미 이 가게에 작성한 리뷰가 있습니다.");
@@ -45,38 +46,52 @@ public class StoreReviewService {
         r.setCustomerIdx(customerIdx);
         r.setRating(req.rating);
         r.setReviewText(req.reviewText);
-        r.setCreatedAt(LocalDateTime.now()); // DB DEFAULT 있지만 명시 저장도 OK
+        r.setCreatedAt(LocalDateTime.now());   // DB DEFAULT 있어도 명시 저장 OK
         r.setAiTopics(req.aiTopics);
 
-        return reviewRepository.save(r).getId(); // 트리거가 통계 갱신
+        return reviewRepository.save(r).getId();   // 트리거가 통계 갱신
     }
 
+    /**
+     * 리뷰 수정
+     */
     @Transactional
     public void update(Long reviewId, Long customerIdx, StoreReviewRequest req, boolean isAdmin) {
         StoreReview r = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new EntityNotFoundException("Review not found"));
+                .orElseThrow(() -> new EntityNotFoundException("리뷰를 찾을 수 없습니다."));
 
+        // 본인 리뷰만 수정 가능 (관리자는 예외)
         if (!isAdmin && r.getCustomerIdx() != null && !r.getCustomerIdx().equals(customerIdx)) {
             throw new SecurityException("본인 리뷰만 수정할 수 있습니다.");
         }
+
         r.setRating(req.rating);
         r.setReviewText(req.reviewText);
-        if (req.aiTopics != null) r.setAiTopics(req.aiTopics);
+        if (req.aiTopics != null) {
+            r.setAiTopics(req.aiTopics);
+        }
         // 저장 시 트리거가 통계 자동 반영 (AFTER UPDATE)
     }
 
+    /**
+     * 리뷰 삭제
+     */
     @Transactional
     public void delete(Long reviewId, Long customerIdx, boolean isAdmin) {
         StoreReview r = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new EntityNotFoundException("Review not found"));
+                .orElseThrow(() -> new EntityNotFoundException("리뷰를 찾을 수 없습니다."));
 
+        // 본인 리뷰만 삭제 가능 (관리자는 예외)
         if (!isAdmin && r.getCustomerIdx() != null && !r.getCustomerIdx().equals(customerIdx)) {
             throw new SecurityException("본인 리뷰만 삭제할 수 있습니다.");
         }
-        reviewRepository.delete(r); // AFTER DELETE 트리거가 통계 갱신
+
+        reviewRepository.delete(r);    // AFTER DELETE 트리거가 통계 갱신
     }
 
-    @Transactional(readOnly = true)
+    /**
+     * 가게별 리뷰 목록 조회
+     */
     public Page<StoreReviewResponse> list(Long storeIdx, Pageable pageable) {
         Page<StoreReview> p = reviewRepository
                 .findByStore_IdxOrderByCreatedAtDesc(storeIdx, pageable);
@@ -89,20 +104,28 @@ public class StoreReviewService {
             d.rating = r.getRating();
             d.reviewText = r.getReviewText();
             d.blocked = r.getBlocked();
-            d.createdAt = r.getCreatedAt() == null ? null : r.getCreatedAt().toString();
+            d.createdAt = (r.getCreatedAt() == null) ? null : r.getCreatedAt().toString();
             d.aiTopics = r.getAiTopics();
             return d;
         });
     }
 
-    @Transactional(readOnly = true)
+    /**
+     * 가게별 리뷰 통계 조회
+     */
     public StoreReviewStatsResponse stats(Long storeIdx) {
         StoreReviewStats s = statsRepository.findById(storeIdx).orElse(null);
+
         StoreReviewStatsResponse dto = new StoreReviewStatsResponse();
         dto.storeIdx = storeIdx;
-        dto.ratingCount = s == null ? 0 : s.getRatingCount();
-        dto.avgRating = s == null ? 0.0 : s.getAvgRating();
-        dto.ratingHistogram = s == null ? "{}" : (s.getRatingHistogram() == null ? "{}" : s.getRatingHistogram());
+        dto.ratingCount = (s == null) ? 0 : s.getRatingCount();
+        dto.avgRating = (s == null || s.getAvgRating() == null)
+                ? 0.0
+                : s.getAvgRating().doubleValue();
+        dto.ratingHistogram = (s == null)
+                ? "{}"
+                : (s.getRatingHistogram() == null ? "{}" : s.getRatingHistogram());
+
         return dto;
     }
 }
