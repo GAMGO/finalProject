@@ -1,7 +1,7 @@
 package org.iclass.store.dto;
 
 import org.iclass.store.FoodCategory;
-import org.iclass.store.Store;
+import org.iclass.store.entity.Store;
 
 public class StoreResponse {
 
