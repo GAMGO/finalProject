@@ -4,7 +4,7 @@ import plusIcon from "../assets/plus.svg";
 import "./KakaoMap.css";
 
 const APP_KEY = "bdd84bdbed2db3bc5d8b90cd6736a995";
-const API_BASE = "http://localhost:8080"; // 뒤에 / 없음
+const API_BASE = "http://localhost:8080";
 
 // FOOD_INFO / FoodCategory 기준
 const CATEGORIES = [
@@ -25,66 +25,108 @@ export default function KakaoMap() {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const geocoderRef = useRef(null);
-  const tempMarkerRef = useRef(null); // 위치 선택 중 임시 마커
-  const markersRef = useRef([]); // 등록된 가게 마커들
+  const tempMarkerRef = useRef(null);
+  const markersRef = useRef([]);
 
-  // ===== 노점 등록 모달 상태 =====
+  // ===== 노점 등록 모달 =====
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedPos, setSelectedPos] = useState(null); // { lat, lng }
+  const [selectedPos, setSelectedPos] = useState(null);
   const [form, setForm] = useState({
     categoryId: "",
     address: "",
-    description: "", // 백엔드 storeName 으로 보낼 값
+    description: "",
   });
   const [isPickingLocation, setIsPickingLocation] = useState(false);
   const isPickingLocationRef = useRef(false);
 
-  // ===== 가게 상세 + 리뷰 모달 상태 =====
+  // ===== 상세 + 리뷰 모달 =====
   const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [selectedStore, setSelectedStore] = useState(null); // StoreResponse
-  const [reviews, setReviews] = useState([]); // StoreReviewResponse[]
-  const [reviewStats, setReviewStats] = useState(null); // { ratingCount, avgRating, ... }
+  const [selectedStore, setSelectedStore] = useState(null);
+  const [reviews, setReviews] = useState([]);
+  const [reviewStats, setReviewStats] = useState(null);
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewForm, setReviewForm] = useState({
     rating: 5,
     text: "",
   });
+  const [hoverRating, setHoverRating] = useState(0);
 
-  // --------------------------
-  // 리뷰 불러오기
-  // --------------------------
+  // ==========================
+  // 유틸
+  // ==========================
+  const formatDateTime = (str) => {
+    if (!str) return "";
+    return str.replace("T", " ").slice(0, 16);
+  };
+
+  const getAvgRatingText = () => {
+    if (!reviewStats || reviewStats.avgRating == null) return "0.0";
+    const n =
+      typeof reviewStats.avgRating === "number"
+        ? reviewStats.avgRating
+        : Number(reviewStats.avgRating);
+    if (Number.isNaN(n)) return "0.0";
+    return n.toFixed(1);
+  };
+
+  const renderStars = (value) => {
+    const num = typeof value === "number" ? value : Number(value || 0);
+    const rounded = Math.round(num);
+
+    return (
+      <span style={{ fontSize: 18, color: "#facc15" }}>
+        {[1, 2, 3, 4, 5].map((i) => (
+          <span key={i}>{i <= rounded ? "★" : "☆"}</span>
+        ))}
+      </span>
+    );
+  };
+
+  // ==========================
+  // 리뷰 + 통계 불러오기 (/with-stats 사용)
+  // ==========================
   const loadReviews = async (storeIdx) => {
     if (!storeIdx) return;
+
     setReviewsLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/api/stores/${storeIdx}/reviews`);
+      const res = await fetch(
+        `${API_BASE}/api/stores/${storeIdx}/reviews/with-stats?page=0&size=20`
+      );
       const text = await res.text();
-      console.log("GET /api/stores/{id}/reviews:", res.status, text);
+      console.log(
+        "GET /api/stores/{id}/reviews/with-stats:",
+        res.status,
+        text
+      );
 
       if (!res.ok) {
-        console.error("리뷰 목록 불러오기 실패:", res.status, text);
+        console.error("리뷰+통계 불러오기 실패:", res.status, text);
+        setReviews([]);
+        setReviewStats(null);
         return;
       }
 
       const json = JSON.parse(text);
-      const data = json.data || {};
+      const data = json.data ?? json; // ApiResponse 래퍼 고려
+
       setReviewStats(data.stats || null);
-      setReviews(data.reviews || []);
+      setReviews(Array.isArray(data.reviews) ? data.reviews : []);
     } catch (err) {
-      console.error("리뷰 목록 불러오기 에러:", err);
+      console.error("리뷰+통계 불러오기 에러:", err);
+      setReviews([]);
+      setReviewStats(null);
     } finally {
       setReviewsLoading(false);
     }
   };
 
-  // --------------------------
-  // 마커 클릭 → 상세 모달 열기
-  // --------------------------
   const handleMarkerClick = (store) => {
     setSelectedStore(store);
     setIsDetailOpen(true);
     setReviewForm({ rating: 5, text: "" });
+    setHoverRating(0);
     loadReviews(store.idx);
   };
 
@@ -94,11 +136,12 @@ export default function KakaoMap() {
     setReviews([]);
     setReviewStats(null);
     setReviewForm({ rating: 5, text: "" });
+    setHoverRating(0);
   };
 
-  // --------------------------
-  // 기존 가게 불러오기 + 마커
-  // --------------------------
+  // ==========================
+  // 가게 / 마커
+  // ==========================
   const addStoreMarker = (map, store) => {
     if (!window.kakao || !map) return;
 
@@ -147,7 +190,7 @@ export default function KakaoMap() {
       if (!res.ok) throw new Error("load stores failed");
 
       const json = JSON.parse(text);
-      const stores = json.data || []; // ApiResponse<List<StoreResponse>>
+      const stores = json.data || [];
 
       stores.forEach((s) => addStoreMarker(map, s));
     } catch (err) {
@@ -155,9 +198,9 @@ export default function KakaoMap() {
     }
   };
 
-  // --------------------------
+  // ==========================
   // 지도 초기화
-  // --------------------------
+  // ==========================
   useEffect(() => {
     const scriptId = "kakao-map-sdk";
 
@@ -178,10 +221,8 @@ export default function KakaoMap() {
         const map = new window.kakao.maps.Map(mapRef.current, options);
         mapInstanceRef.current = map;
 
-        // 주소 변환용 Geocoder
         geocoderRef.current = new window.kakao.maps.services.Geocoder();
 
-        // 지도 클릭 시: 위치 선택 + 주소 채우기
         window.kakao.maps.event.addListener(map, "click", (mouseEvent) => {
           const latlng = mouseEvent.latLng;
           const lat = latlng.getLat();
@@ -189,7 +230,6 @@ export default function KakaoMap() {
 
           setSelectedPos({ lat, lng });
 
-          // 임시 마커
           if (!tempMarkerRef.current) {
             tempMarkerRef.current = new window.kakao.maps.Marker({
               position: latlng,
@@ -199,7 +239,6 @@ export default function KakaoMap() {
             tempMarkerRef.current.setPosition(latlng);
           }
 
-          // 좌표 → 주소
           if (geocoderRef.current) {
             geocoderRef.current.coord2Address(
               lng,
@@ -215,7 +254,6 @@ export default function KakaoMap() {
             );
           }
 
-          // "지도에서 위치 선택" 모드일 때: 한 번 찍으면 모달 다시 열기
           if (isPickingLocationRef.current) {
             setIsModalOpen(true);
             setIsPickingLocation(false);
@@ -224,8 +262,6 @@ export default function KakaoMap() {
         });
 
         console.log("[KAKAO] map created", map);
-
-        // 기존 가게 마커들
         await loadStoresAndDraw(map);
       });
     };
@@ -251,9 +287,9 @@ export default function KakaoMap() {
     }
   }, []);
 
-  // --------------------------
-  // 노점 등록 모달 open / close
-  // --------------------------
+  // ==========================
+  // 노점 등록 모달
+  // ==========================
   const openModal = () => {
     setIsModalOpen(true);
   };
@@ -270,24 +306,17 @@ export default function KakaoMap() {
     }
   };
 
-  // 지도에서 위치 선택하기
   const handleStartPickLocation = () => {
     setIsPickingLocation(true);
     isPickingLocationRef.current = true;
-    setIsModalOpen(false); // 모달 숨기고 지도 클릭 기다리기
+    setIsModalOpen(false);
   };
 
-  // --------------------------
-  // 입력값 변경
-  // --------------------------
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // --------------------------
-  // 노점 등록
-  // --------------------------
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -324,7 +353,7 @@ export default function KakaoMap() {
       }
 
       const json = JSON.parse(text);
-      const saved = json.data; // ApiResponse<StoreResponse>
+      const saved = json.data;
 
       if (mapInstanceRef.current) {
         addStoreMarker(mapInstanceRef.current, saved);
@@ -337,17 +366,14 @@ export default function KakaoMap() {
     }
   };
 
-  // --------------------------
-  // 리뷰 입력 변경
-  // --------------------------
+  // ==========================
+  // 리뷰 작성
+  // ==========================
   const handleReviewFormChange = (e) => {
     const { name, value } = e.target;
     setReviewForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // --------------------------
-  // 리뷰 작성
-  // --------------------------
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
     if (!selectedStore) return;
@@ -392,8 +418,8 @@ export default function KakaoMap() {
         return;
       }
 
-      // 성공하면 폼 초기화 + 목록 새로 불러오기
       setReviewForm({ rating: 5, text: "" });
+      setHoverRating(0);
       await loadReviews(selectedStore.idx);
     } catch (err) {
       console.error("리뷰 작성 에러:", err);
@@ -403,21 +429,9 @@ export default function KakaoMap() {
     }
   };
 
-  // --------------------------
-  // 별점 렌더링 유틸
-  // --------------------------
-  const renderStars = (value) => {
-    if (!value) value = 0;
-    const rounded = Math.round(value);
-    return (
-      <span style={{ fontSize: 18, color: "#facc15" }}>
-        {[1, 2, 3, 4, 5].map((i) => (
-          <span key={i}>{i <= rounded ? "★" : "☆"}</span>
-        ))}
-      </span>
-    );
-  };
-
+  // ==========================
+  // 렌더
+  // ==========================
   return (
     <>
       {/* 지도 */}
@@ -437,7 +451,7 @@ export default function KakaoMap() {
         />
       </div>
 
-      {/* 오른쪽 아래 + 버튼 (노점 추가) */}
+      {/* 오른쪽 아래 + 버튼 */}
       <button
         type="button"
         style={{
@@ -468,14 +482,10 @@ export default function KakaoMap() {
       {/* 노점 등록 모달 */}
       {isModalOpen && (
         <div className="map-modal-backdrop" onClick={closeModal}>
-          <div
-            className="map-modal"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="map-modal" onClick={(e) => e.stopPropagation()}>
             <h3 className="map-modal-title">노점 추가</h3>
 
             <form onSubmit={handleSubmit}>
-              {/* 카테고리 */}
               <label className="map-label">카테고리</label>
               <select
                 name="categoryId"
@@ -491,7 +501,6 @@ export default function KakaoMap() {
                 ))}
               </select>
 
-              {/* 주소 */}
               <label className="map-label">주소 (직접 수정 가능)</label>
               <input
                 type="text"
@@ -502,7 +511,6 @@ export default function KakaoMap() {
                 className="map-input"
               />
 
-              {/* 설명 */}
               <label className="map-label">노점 설명</label>
               <textarea
                 name="description"
@@ -513,7 +521,6 @@ export default function KakaoMap() {
                 className="map-textarea"
               />
 
-              {/* 지도에서 위치 선택하기 버튼 */}
               <div className="map-pick-row">
                 <button
                   type="button"
@@ -524,7 +531,6 @@ export default function KakaoMap() {
                 </button>
               </div>
 
-              {/* 하단 버튼 */}
               <div className="map-modal-actions">
                 <button
                   type="button"
@@ -542,7 +548,7 @@ export default function KakaoMap() {
         </div>
       )}
 
-      {/* 가게 상세 + 리뷰 모달 */}
+      {/* 상세 + 리뷰 모달 */}
       {isDetailOpen && selectedStore && (
         <div className="map-modal-backdrop" onClick={closeDetail}>
           <div
@@ -550,6 +556,7 @@ export default function KakaoMap() {
             onClick={(e) => e.stopPropagation()}
             style={{ maxWidth: 520 }}
           >
+            {/* 헤더 */}
             <div
               style={{
                 display: "flex",
@@ -601,7 +608,7 @@ export default function KakaoMap() {
               </div>
             )}
 
-            {/* 평점 섹션 */}
+            {/* 평균 별점 */}
             <div
               style={{
                 padding: "10px 12px",
@@ -614,52 +621,97 @@ export default function KakaoMap() {
               }}
             >
               <div>
-                <div style={{ fontSize: 13, color: "#6b7280" }}>평균 별점</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ fontSize: 13, color: "#6b7280" }}>
+                  평균 별점
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                  }}
+                >
                   {renderStars(reviewStats?.avgRating)}
-                  <span style={{ fontWeight: 600, fontSize: 16 }}>
-                    {reviewStats?.avgRating?.toFixed
-                      ? reviewStats.avgRating.toFixed(1)
-                      : reviewStats?.avgRating || "0.0"}
+                  <span
+                    style={{ fontWeight: 600, fontSize: 16 }}
+                  >
+                    {getAvgRatingText()}
                   </span>
-                  <span style={{ fontSize: 12, color: "#6b7280" }}>
+                  <span
+                    style={{ fontSize: 12, color: "#6b7280" }}
+                  >
                     ({reviewStats?.ratingCount || 0}개)
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* 리뷰 작성 폼 */}
+            {/* 리뷰 작성 */}
             <form onSubmit={handleReviewSubmit} style={{ marginBottom: 16 }}>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  marginBottom: 8,
-                }}
-              >
-                <label style={{ fontSize: 13, fontWeight: 600 }}>
-                  별점
-                </label>
-                <select
-                  name="rating"
-                  value={reviewForm.rating}
-                  onChange={handleReviewFormChange}
+              {/* 별점 선택 (별 클릭) */}
+              <div style={{ marginBottom: 8 }}>
+                <div
                   style={{
-                    padding: "4px 8px",
-                    borderRadius: 6,
-                    border: "1px solid #d1d5db",
-                    fontSize: 13,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
                   }}
                 >
-                  {[5, 4, 3, 2, 1].map((v) => (
-                    <option key={v} value={v}>
-                      {v}점
-                    </option>
-                  ))}
-                </select>
+                  <label
+                    style={{ fontSize: 13, fontWeight: 600 }}
+                  >
+                    별점
+                  </label>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                    }}
+                  >
+                    {[1, 2, 3, 4, 5].map((star) => {
+                      const current =
+                        hoverRating || reviewForm.rating;
+                      const filled = star <= current;
+                      return (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() =>
+                            setReviewForm((prev) => ({
+                              ...prev,
+                              rating: star,
+                            }))
+                          }
+                          onMouseEnter={() => setHoverRating(star)}
+                          onMouseLeave={() => setHoverRating(0)}
+                          style={{
+                            border: "none",
+                            background: "transparent",
+                            padding: 0,
+                            cursor: "pointer",
+                            fontSize: 24,
+                            lineHeight: 1,
+                            color: "#facc15",
+                          }}
+                        >
+                          {filled ? "★" : "☆"}
+                        </button>
+                      );
+                    })}
+                    <span
+                      style={{
+                        fontSize: 13,
+                        color: "#374151",
+                        marginLeft: 4,
+                      }}
+                    >
+                      {reviewForm.rating}점
+                    </span>
+                  </div>
+                </div>
               </div>
+
               <textarea
                 name="text"
                 value={reviewForm.text}
@@ -685,7 +737,10 @@ export default function KakaoMap() {
               >
                 <button
                   type="button"
-                  onClick={() => setReviewForm({ rating: 5, text: "" })}
+                  onClick={() => {
+                    setReviewForm({ rating: 5, text: "" });
+                    setHoverRating(0);
+                  }}
                   style={{
                     padding: "6px 10px",
                     borderRadius: 999,
@@ -736,7 +791,7 @@ export default function KakaoMap() {
               ) : (
                 reviews.map((r) => (
                   <div
-                    key={r.idx}
+                    key={r.id}
                     style={{
                       padding: "8px 0",
                       borderBottom: "1px solid #f3f4f6",
@@ -750,9 +805,19 @@ export default function KakaoMap() {
                         marginBottom: 2,
                       }}
                     >
-                      <div style={{ fontSize: 12, color: "#6b7280" }}>
+                      <div
+                        style={{
+                          fontSize: 12,
+                          color: "#6b7280",
+                        }}
+                      >
                         {renderStars(r.rating)}
-                        <span style={{ marginLeft: 4, fontWeight: 600 }}>
+                        <span
+                          style={{
+                            marginLeft: 4,
+                            fontWeight: 600,
+                          }}
+                        >
                           {r.rating}점
                         </span>
                       </div>
@@ -763,7 +828,7 @@ export default function KakaoMap() {
                           whiteSpace: "nowrap",
                         }}
                       >
-                        {r.createdAt || ""}
+                        {formatDateTime(r.createdAt)}
                       </div>
                     </div>
                     <div

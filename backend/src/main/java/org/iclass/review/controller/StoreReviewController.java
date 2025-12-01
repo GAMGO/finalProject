@@ -1,16 +1,17 @@
+// src/main/java/org/iclass/review/controller/StoreReviewController.java
 package org.iclass.review.controller;
 
 import jakarta.validation.Valid;
+import org.iclass.common.ApiResponse;
+import org.iclass.customer.repository.CustomersRepository;
 import org.iclass.review.dto.*;
 import org.iclass.review.service.StoreReviewService;
 import org.springframework.data.domain.*;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import org.iclass.customer.repository.CustomersRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/stores/{storeIdx}/reviews")
@@ -77,6 +78,7 @@ public class StoreReviewController {
         return ResponseEntity.noContent().build();
     }
 
+    // 기존: Page 자체 내려주는 목록
     @GetMapping
     public ResponseEntity<Page<StoreReviewResponse>> list(@PathVariable Long storeIdx,
                                                           @RequestParam(defaultValue = "0") int page,
@@ -86,8 +88,22 @@ public class StoreReviewController {
         return ResponseEntity.ok(result);
     }
 
+    // 기존: 통계만
     @GetMapping("/stats")
     public ResponseEntity<StoreReviewStatsResponse> stats(@PathVariable Long storeIdx) {
         return ResponseEntity.ok(service.stats(storeIdx));
+    }
+
+    // 🔥 신규: 리뷰 + 통계 한 방에 (프론트에서 이거 씀)
+    @GetMapping("/with-stats")
+    public ResponseEntity<ApiResponse<StoreReviewListWithStatsResponse>> listWithStats(
+            @PathVariable Long storeIdx,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        StoreReviewListWithStatsResponse body =
+                service.listWithStats(storeIdx, PageRequest.of(page, size));
+
+        return ResponseEntity.ok(ApiResponse.success(body));
     }
 }

@@ -16,7 +16,8 @@ public class StoreReviewStats {
     private Integer ratingCount;
 
     // 0.0 ~ 5.0 범위, 소수점 1자리 예: 4.5
-    @Column(name = "avg_rating", nullable = false, precision = 3, scale = 1)
+    // ➜ precision/scale 제거해서 Hibernate 6 + MySQLDialect 에러 방지
+    @Column(name = "avg_rating", nullable = false)
     private BigDecimal avgRating;
 
     // JSON 히스토그램 { "1": n1, "2": n2, ... }
