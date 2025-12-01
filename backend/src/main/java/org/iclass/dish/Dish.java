@@ -13,9 +13,9 @@ import lombok.Builder;
 @Table(name = "dish")
 @Getter
 @Setter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)  // JPA용 기본 생성자 보호
-@AllArgsConstructor                                 // 모든 필드 생성자 (필요 시)
-@Builder                                           
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // JPA용 기본 생성자 보호
+@AllArgsConstructor // 모든 필드 생성자 (필요 시)
+@Builder
 public class Dish {
 
     @Id

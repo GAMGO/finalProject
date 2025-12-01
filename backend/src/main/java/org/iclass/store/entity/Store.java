@@ -1,8 +1,12 @@
 package org.iclass.store.entity;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+import lombok.Getter;
+import lombok.Setter;
 
+import java.time.LocalDateTime;
+@Getter
+@Setter
 @Entity
 @Table(name = "STORE")
 public class Store {
@@ -33,30 +37,4 @@ public class Store {
 
     @Column(name = "LNG", nullable = false)
     private Double lng;
-
-    // ===== Getter / Setter =====
-
-    public Long getIdx() { return idx; }
-    public void setId(Long idx) { this.idx = idx; }
-
-    public String getStoreName() { return storeName; }
-    public void setStoreName(String storeName) { this.storeName = storeName; }
-
-    public LocalDateTime getOpenTime() { return openTime; }
-    public void setOpenTime(LocalDateTime openTime) { this.openTime = openTime; }
-
-    public LocalDateTime getCloseTime() { return closeTime; }
-    public void setCloseTime(LocalDateTime closeTime) { this.closeTime = closeTime; }
-
-    public String getStoreAddress() { return storeAddress; }
-    public void setStoreAddress(String storeAddress) { this.storeAddress = storeAddress; }
-
-    public Long getFoodTypeId() { return foodTypeId; }
-    public void setFoodTypeId(Long foodTypeId) { this.foodTypeId = foodTypeId; }
-
-    public Double getLat() { return lat; }
-    public void setLat(Double lat) { this.lat = lat; }
-
-    public Double getLng() { return lng; }
-    public void setLng(Double lng) { this.lng = lng; }
 }
