@@ -3,9 +3,10 @@ import torch
 import torch.nn.functional as F
 import pandas as pd
 from app.models.model_infer import predict_scores
-
-
-
+from typing import List, Dict, Any, Optional
+from app.services.llm_reason_service import generate_recommend_reason
+from app.utils.distance import calculate_distance
+from app.models.model_infer import predict_scores
 
 
 def weighted_recommend(df, model, user_id, user2idx, cat2idx, top_k=5, temperature=0.7):
@@ -45,37 +46,48 @@ def recommend_by_user_and_candidates(user_id: int, candidate_stores: list[dict],
     candidate_stores.sort(key=lambda s: s["reco_score"], reverse=True)
     return candidate_stores[:top_k]
 
-
-def recommend_near_point(user_id: int, stores: list, top_k: int = 5):
-    """
-    특정 지점 근처의 상점 리스트(stores)를 받아
-    개인화 추천 점수를 계산하여 top_k 반환하는 함수.
-
-    stores 구조 예:
-    [
-        {
-            "idx": 123,
-            "lat": 37.12,
-            "lng": 127.22,
-            "sentiment_score": 0.8,
-            "rating": 4.2,
-            "distance": 120.0,
-            "hour_sin": 0.5,
-        },
-        ...
-    ]
-    """
-
+def recommend_near_point(user_id, stores, lat, lng, point_type, limit=5):
     if not stores:
         return []
 
-    scores = predict_scores(user_id, stores)
+    ml_scores = predict_scores(user_id, stores)
 
-    # 점수 저장
-    for s, sc in zip(stores, scores):
-        s["reco_score"] = sc
+    for s, ml in zip(stores, ml_scores):
+        s["ml_score"] = ml
 
-    # 점수 높은 순으로 top_k 추천
-    stores.sort(key=lambda x: x["reco_score"], reverse=True)
+        sentiment = float(s.get("sentiment_score", 0.0))
+        rating = float(s.get("rating", 0.0))
+        distance_m = float(s.get("distance_m", 0.0))
 
-    return stores[:top_k]
+        s["base_score"] = (
+            ml * 0.4
+            + sentiment * 0.1
+            + (1 / (1 + distance_m)) * 0.1
+            + (rating / 5.0) * 0.3
+        )
+
+    stores_sorted = sorted(stores, key=lambda x: x["base_score"], reverse=True)
+    top_items = stores_sorted[:limit]
+
+    # 🔥 추천 기준: rating ≥ 2.0
+    for s in top_items:
+        rating = float(s.get("rating", 0.0))
+        s["recommended"] = s["base_score"] >= 0.6
+
+    return top_items
+
+def strip_reason_for_unrecommended(stores):
+    for s in stores:
+        try:
+            rating_val = float(s.get("rating", 0.0))
+        except:
+            rating_val = 0.0
+
+        is_recommended = bool(s.get("recommended", True))  # 🔥 recommended 없으면 True 처리
+
+        ok = (rating_val >= 3.0) and is_recommended
+
+        if not ok:
+            s.pop("reason", None)
+
+    return stores
