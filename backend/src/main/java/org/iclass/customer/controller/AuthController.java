@@ -86,11 +86,9 @@ public class AuthController {
         } catch (BadCredentialsException e) {
             // >>> [ADDED] 로그인 실패 시 401 + 명확한 메시지(JSON) 반환
             return ResponseEntity.status(401).body(
-                Map.of(
-                    "error", "invalid_credentials",
-                    "message", "아이디 또는 비밀번호가 올바르지 않습니다."
-                )
-            );
+                    Map.of(
+                            "error", "invalid_credentials",
+                            "message", "아이디 또는 비밀번호가 올바르지 않습니다."));
         }
     }
 
@@ -99,6 +97,7 @@ public class AuthController {
             @Parameter(in = ParameterIn.HEADER, name = HttpHeaders.AUTHORIZATION, description = "Bearer <JWT>", required = false) @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization,
             @AuthenticationPrincipal UserDetails user,
             HttpServletRequest request) {
+
         // 전역 Authorize가 안 붙거나 프록시에서 빠질 수 있어 추가 확인
         if (!StringUtils.hasText(authorization)) {
             authorization = request.getHeader(HttpHeaders.AUTHORIZATION);

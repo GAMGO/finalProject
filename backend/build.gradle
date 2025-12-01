@@ -1,4 +1,4 @@
-plugins {
+plugins{
     id 'java'
     id 'org.springframework.boot' version '3.3.0'
     id 'io.spring.dependency-management' version '1.1.5'
@@ -68,3 +68,5 @@ bootJar {
  * - 팀원이 어떤 라이브러리 쓰는지, 자바 버전/부트 버전이 뭔지 한눈에 볼 수 있음.
  *
  */
+
+ 
