@@ -28,6 +28,10 @@ export default function KakaoMap() {
   const tempMarkerRef = useRef(null);
   const markersRef = useRef([]);
 
+  // ✅ 길찾기용
+  const routeLineRef = useRef(null);
+  const placesRef = useRef(null);
+
   // ===== 노점 등록 모달 =====
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPos, setSelectedPos] = useState(null);
@@ -51,6 +55,11 @@ export default function KakaoMap() {
     text: "",
   });
   const [hoverRating, setHoverRating] = useState(0);
+
+  // ===== 길찾기 상태 =====
+  const [routeForm, setRouteForm] = useState({ from: "", to: "" });
+  const [routeLoading, setRouteLoading] = useState(false);
+  const [routeError, setRouteError] = useState("");
 
   // ==========================
   // 유틸
@@ -222,6 +231,9 @@ export default function KakaoMap() {
         mapInstanceRef.current = map;
 
         geocoderRef.current = new window.kakao.maps.services.Geocoder();
+
+        // ✅ 장소 검색 객체 생성 (길찾기에서 사용)
+        placesRef.current = new window.kakao.maps.services.Places();
 
         window.kakao.maps.event.addListener(map, "click", (mouseEvent) => {
           const latlng = mouseEvent.latLng;
@@ -430,6 +442,129 @@ export default function KakaoMap() {
   };
 
   // ==========================
+  // 길찾기 (출발/도착 입력 → 경로 그리기)
+  // ==========================
+  const handleRouteChange = (e) => {
+    const { name, value } = e.target;
+    setRouteForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const clearRoute = () => {
+    setRouteForm({ from: "", to: "" });
+    setRouteError("");
+    setRouteLoading(false);
+    if (routeLineRef.current) {
+      routeLineRef.current.setMap(null);
+      routeLineRef.current = null;
+    }
+  };
+
+  const handleRouteSearch = async (e) => {
+    e.preventDefault();
+    if (!mapInstanceRef.current || !window.kakao) return;
+
+    const { from, to } = routeForm;
+    if (!from || !to) {
+      setRouteError("출발지와 도착지를 모두 입력해 주세요.");
+      return;
+    }
+
+    const places = placesRef.current;
+    if (!places) {
+      setRouteError("카카오 장소 검색을 초기화하지 못했습니다.");
+      return;
+    }
+
+    const searchKeyword = (keyword) =>
+      new Promise((resolve, reject) => {
+        places.keywordSearch(keyword, (data, status) => {
+          if (
+            status === window.kakao.maps.services.Status.OK &&
+            data &&
+            data.length > 0
+          ) {
+            resolve(data[0]);
+          } else {
+            reject(new Error(`주소 변환 실패: ${keyword}`));
+          }
+        });
+      });
+
+    try {
+      setRouteLoading(true);
+      setRouteError("");
+
+      const [fromPlace, toPlace] = await Promise.all([
+        searchKeyword(from),
+        searchKeyword(to),
+      ]);
+
+      const fromPoint = {
+        lat: parseFloat(fromPlace.y),
+        lng: parseFloat(fromPlace.x),
+      };
+      const toPoint = {
+        lat: parseFloat(toPlace.y),
+        lng: parseFloat(toPlace.x),
+      };
+
+      // ✅ 백엔드에 경로 요청 (엔드포인트는 /api/routes 라고 가정)
+      const res = await fetch(`${API_BASE}/api/routes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          from: fromPoint,
+          to: toPoint,
+        }),
+      });
+
+      const text = await res.text();
+      console.log("POST /api/routes:", res.status, text);
+
+      if (!res.ok) {
+        throw new Error(`길찾기 실패 (${res.status})`);
+      }
+
+      const json = JSON.parse(text);
+      const data = json.data ?? json;
+      const points = Array.isArray(data?.points) ? data.points : [];
+
+      if (!points.length) {
+        throw new Error("경로 데이터가 비어 있습니다.");
+      }
+
+      // 기존 경로 제거
+      if (routeLineRef.current) {
+        routeLineRef.current.setMap(null);
+        routeLineRef.current = null;
+      }
+
+      const path = points.map(
+        (p) => new window.kakao.maps.LatLng(p.lat, p.lng)
+      );
+      const polyline = new window.kakao.maps.Polyline({
+        path,
+        strokeWeight: 5,
+        strokeColor: "#2563eb",
+        strokeOpacity: 0.9,
+        strokeStyle: "solid",
+      });
+      polyline.setMap(mapInstanceRef.current);
+      routeLineRef.current = polyline;
+
+      // 지도를 경로 전체로 맞추기
+      const bounds = new window.kakao.maps.LatLngBounds();
+      path.forEach((latlng) => bounds.extend(latlng));
+      mapInstanceRef.current.setBounds(bounds);
+    } catch (err) {
+      console.error("길찾기 에러:", err);
+      setRouteError(err.message || "길찾기 중 에러가 발생했습니다.");
+    } finally {
+      setRouteLoading(false);
+    }
+  };
+
+  // ==========================
   // 렌더
   // ==========================
   return (
@@ -449,6 +584,113 @@ export default function KakaoMap() {
             height: "100%",
           }}
         />
+      </div>
+
+      {/* 오른쪽 위 길찾기 패널 */}
+      <div
+        style={{
+          position: "fixed",
+          top: "16px",
+          right: "24px",
+          zIndex: 10000,
+          background: "rgba(255,255,255,0.96)",
+          borderRadius: 12,
+          boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
+          padding: "10px 12px",
+          width: 260,
+          fontSize: 12,
+        }}
+      >
+        <div
+          style={{
+            fontSize: 13,
+            fontWeight: 600,
+            marginBottom: 6,
+          }}
+        >
+          길찾기
+        </div>
+        <form onSubmit={handleRouteSearch}>
+          <div style={{ marginBottom: 6 }}>
+            <div style={{ marginBottom: 2 }}>출발</div>
+            <input
+              name="from"
+              value={routeForm.from}
+              onChange={handleRouteChange}
+              placeholder="예: 서울역"
+              style={{
+                width: "100%",
+                borderRadius: 8,
+                border: "1px solid #d1d5db",
+                padding: "4px 8px",
+              }}
+            />
+          </div>
+          <div style={{ marginBottom: 6 }}>
+            <div style={{ marginBottom: 2 }}>도착</div>
+            <input
+              name="to"
+              value={routeForm.to}
+              onChange={handleRouteChange}
+              placeholder="예: 시청역"
+              style={{
+                width: "100%",
+                borderRadius: 8,
+                border: "1px solid #d1d5db",
+                padding: "4px 8px",
+              }}
+            />
+          </div>
+          {routeError && (
+            <div
+              style={{
+                color: "#dc2626",
+                fontSize: 11,
+                marginBottom: 4,
+                whiteSpace: "pre-wrap",
+              }}
+            >
+              {routeError}
+            </div>
+          )}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: 6,
+              marginTop: 4,
+            }}
+          >
+            <button
+              type="button"
+              onClick={clearRoute}
+              style={{
+                borderRadius: 999,
+                border: "1px solid #e5e7eb",
+                background: "#fff",
+                padding: "4px 10px",
+                cursor: "pointer",
+              }}
+            >
+              초기화
+            </button>
+            <button
+              type="submit"
+              disabled={routeLoading}
+              style={{
+                borderRadius: 999,
+                border: "none",
+                background: routeLoading ? "#9ca3af" : "#2563eb",
+                color: "#fff",
+                padding: "4px 10px",
+                fontWeight: 600,
+                cursor: routeLoading ? "default" : "pointer",
+              }}
+            >
+              {routeLoading ? "검색 중..." : "길찾기"}
+            </button>
+          </div>
+        </form>
       </div>
 
       {/* 오른쪽 아래 + 버튼 */}
@@ -632,14 +874,10 @@ export default function KakaoMap() {
                   }}
                 >
                   {renderStars(reviewStats?.avgRating)}
-                  <span
-                    style={{ fontWeight: 600, fontSize: 16 }}
-                  >
+                  <span style={{ fontWeight: 600, fontSize: 16 }}>
                     {getAvgRatingText()}
                   </span>
-                  <span
-                    style={{ fontSize: 12, color: "#6b7280" }}
-                  >
+                  <span style={{ fontSize: 12, color: "#6b7280" }}>
                     ({reviewStats?.ratingCount || 0}개)
                   </span>
                 </div>
@@ -670,8 +908,7 @@ export default function KakaoMap() {
                     }}
                   >
                     {[1, 2, 3, 4, 5].map((star) => {
-                      const current =
-                        hoverRating || reviewForm.rating;
+                      const current = hoverRating || reviewForm.rating;
                       const filled = star <= current;
                       return (
                         <button
