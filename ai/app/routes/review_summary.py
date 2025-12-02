@@ -1,3 +1,5 @@
+# app/routers/store_summary_router.py
+
 from fastapi import APIRouter
 from app.services.review_service import get_reviews
 from app.services.summarizer import summarize_reviews
@@ -8,12 +10,6 @@ router = APIRouter()
 def get_summary(store_idx: int):
 
     reviews = get_reviews(store_idx)
-
-    if len(reviews) == 0:
-        return {
-            "store_id": store_idx,
-            "summary": "아직 리뷰가 없습니다."
-        }
 
     summary = summarize_reviews(reviews)
 

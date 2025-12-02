@@ -3,14 +3,15 @@ import torch
 from torch.utils.data import Dataset
 
 class StallTrainDataset(Dataset):
-    def __init__(self, df, store_col):
+    def __init__(self, df, user_col: str, store_col: str):
         """
         df: DataFrame
-        store_col: store idx 컬럼명
+        user_col: 연속 인덱스로 매핑된 user index 컬럼명
+        store_col: 연속 인덱스로 매핑된 store index 컬럼명
         """
 
-        # Long indices
-        self.user_id = torch.tensor(df["user_id"].values, dtype=torch.long)
+        # Long indices (이미 0 ~ N-1 로 매핑된 값)
+        self.user_id = torch.tensor(df[user_col].values, dtype=torch.long)
         self.store_id = torch.tensor(df[store_col].values, dtype=torch.long)
 
         # Float features

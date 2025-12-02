@@ -29,6 +29,16 @@
             "projectName": "backend",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-FinalprojectApplication<finalProject-backend>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "org.iclass.FinalprojectApplication",
+            "projectName": "finalProject-backend",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
         }
     ]
 }
