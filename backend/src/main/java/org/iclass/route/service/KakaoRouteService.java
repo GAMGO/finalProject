@@ -4,8 +4,10 @@ package org.iclass.route.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.cdimascio.dotenv.Dotenv;
+import org.iclass.route.dto.LatLngDto;
 import org.iclass.route.dto.RoutePoint;
 import org.iclass.route.dto.RouteResponse;
+import org.iclass.route.dto.RouteSummaryResponse;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -26,9 +28,9 @@ public class KakaoRouteService {
     /**
      * ✅ 기본 생성자 (Spring이 이걸로 빈 생성함)
      * - KAKAO_REST_API_KEY는
-     *   1) 시스템 환경변수
+     *   1) OS 환경변수
      *   2) .env (java-dotenv)
-     *   두 군데 중 하나에서 가져옴.
+     *   두 곳 중 하나에서 가져옴.
      */
     public KakaoRouteService() {
         this.restTemplate = new RestTemplate();
@@ -49,7 +51,7 @@ public class KakaoRouteService {
                     key = fromEnv;
                 }
             } catch (Exception ignore) {
-                // .env가 없거나 해도 그냥 무시
+                // .env가 없거나 오류여도 그냥 무시
             }
         }
 
@@ -64,18 +66,14 @@ public class KakaoRouteService {
     }
 
     /**
-     * 길찾기 요청
-     * @param originLat  출발지 위도
-     * @param originLng  출발지 경도
-     * @param destLat    도착지 위도
-     * @param destLng    도착지 경도
+     * 🔹 카카오 내비 API에서 원본 경로 정보 받아오기 (내부용)
      */
     public RouteResponse getRoute(double originLat,
                                   double originLng,
                                   double destLat,
                                   double destLng) {
 
-        // 카카오 내비는 "경도,위도" 순서
+        // 카카오 내비는 "경도,위도" (lng,lat) 순서
         String originParam = originLng + "," + originLat;
         String destParam   = destLng + "," + destLat;
 
@@ -149,5 +147,32 @@ public class KakaoRouteService {
         } catch (Exception e) {
             throw new IllegalStateException("Kakao directions 응답 파싱 실패", e);
         }
+    }
+
+    /**
+     * 🔹 프론트에서 쓰기 좋은 형태로 변환해서 리턴하는 메서드
+     *   (Controller 에서 이 메서드를 호출)
+     */
+    public RouteSummaryResponse searchRoute(double originLat,
+                                            double originLng,
+                                            double destLat,
+                                            double destLng) {
+
+        RouteResponse raw = getRoute(originLat, originLng, destLat, destLng);
+
+        RouteSummaryResponse summary = new RouteSummaryResponse();
+        summary.setDistance((int) Math.round(raw.getDistance()));   // m
+        summary.setDuration((int) Math.round(raw.getDuration()));   // sec
+        summary.setTaxiFare(raw.getTaxiFare());
+        summary.setTollFare(null); // 유료도로 요금은 지금은 사용 안 함
+
+        if (raw.getPath() != null) {
+            List<LatLngDto> path = raw.getPath().stream()
+                    .map(p -> new LatLngDto(p.getLat(), p.getLng()))
+                    .toList();
+            summary.setPath(path);
+        }
+
+        return summary;
     }
 }
