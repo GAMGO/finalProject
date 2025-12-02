@@ -1,4 +1,4 @@
-# ai/train_stall_recommender.py
+ #ai/train_stall_recommender.py
 import torch
 from torch.utils.data import DataLoader
 import torch.nn as nn
@@ -14,13 +14,13 @@ from app.models.stall_recommender import StallRecommender
 # --------------------------------------------------------
 def find_store_id_column(df):
     """DataFrame에서 store id 컬럼을 자동으로 탐지한다."""
-    candidates = ["store_idx", "store_id", "storeId", "idx", 
+    candidates = ["store_idx", "store_id", "storeId", "idx",
                   "STORE_IDX", "STORE_ID", "STOREID"]
     for col in candidates:
         if col in df.columns:
             return col
     raise KeyError("❌ DataFrame에 store id 컬럼이 없습니다.")
-    
+
 
 # --------------------------------------------------------
 # 학습 메인 함수
@@ -38,14 +38,32 @@ def main():
     store_col = find_store_id_column(df)
     print(f"★ Detected store id column: {store_col}")
 
-    # --- user/store embedding 크기 계산 ---
-    num_users = int(df["user_id"].max()) + 1
-    num_stores = int(df[store_col].max()) + 1
+    # --- user/store PK null 제거 + int 캐스팅 ---
+    df = df.dropna(subset=["user_id", store_col])
+    df["user_id"] = df["user_id"].astype(int)
+    df[store_col] = df[store_col].astype(int)
+
+    # --------------------------------------------------------
+    # 1) PK → 연속 인덱스로 매핑 (user2idx, store2idx)
+    # --------------------------------------------------------
+    unique_users = sorted(df["user_id"].unique())
+    user2idx = {int(u): i for i, u in enumerate(unique_users)}
+
+    unique_stores = sorted(df[store_col].unique())
+    store2idx = {int(s): i for i, s in enumerate(unique_stores)}
+
+    df["user_idx"] = df["user_id"].map(user2idx)
+    df["store_idx_mapped"] = df[store_col].map(store2idx)
+
+    num_users = len(user2idx)
+    num_stores = len(store2idx)
 
     print(f"num_users={num_users}, num_stores={num_stores}")
+    print("예시 매핑 user2idx:", list(user2idx.items())[:5])
+    print("예시 매핑 store2idx:", list(store2idx.items())[:5])
 
     # --- Dataset / DataLoader ---
-    dataset = StallTrainDataset(df, store_col)
+    dataset = StallTrainDataset(df, user_col="user_idx", store_col="store_idx_mapped")
     loader = DataLoader(dataset, batch_size=256, shuffle=True)
 
     # --- Model ---
@@ -80,8 +98,16 @@ def main():
 
         print(f"📌 Epoch {epoch+1}/5 | Loss: {total_loss:.4f}")
 
-    torch.save(model.state_dict(), "stall_recommender.pt")
-    print("🎉 모델 저장 완료 → stall_recommender.pt")
+    # --------------------------------------------------------
+    # 2) state_dict + 매핑을 같이 저장
+    # --------------------------------------------------------
+    ckpt = {
+        "state_dict": model.state_dict(),
+        "user2idx": user2idx,
+        "store2idx": store2idx,
+    }
+    torch.save(ckpt, "stall_recommender.pt")
+    print("🎉 모델 & 매핑 저장 완료 → stall_recommender.pt")
 
 
 if __name__ == "__main__":

@@ -1,12 +1,20 @@
 파이썬 3.11 설치
 
 cd ai
-
+#{username}에 컴퓨터 이름 복붙
 "C:\Users\{username}\AppData\Local\Programs\Python\Python311\python.exe" -m venv venv
 
 venv\Scripts\activate.bat
 
 pip install -r requirements.txt
+
+더미데이터 추가
+
+학습 전 database.py의 cursorclass 주석처리
+
+python train_stall_recommender.py
+
+학습 후 database.py의 cursorclass 주석풀기
 
 uvicorn main:app --reload
 
