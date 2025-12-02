@@ -57,30 +57,29 @@ public class SecurityConfig {
                     .requestMatchers(PUBLIC_WHITELIST).permitAll()
 
                     // 이메일 인증, 가게 목록 (POST 포함 전체) 허용
-                    .requestMatchers("/api/email/**", "/api/stores").permitAll()
+                    .requestMatchers("/api/email/**", "/api/stores/**","/api/stores/{storeIdx}/reviews").permitAll()
 
-                    // ====== 🔥 리뷰 관련 추가 ======
-                    // 리뷰 조회는 누구나 (with-stats 포함)
-                    .requestMatchers(
-                            HttpMethod.GET,
-                            "/api/stores/*/reviews",
-                            "/api/stores/*/reviews/**"
-                    ).permitAll()
+                //     // ====== 🔥 리뷰 관련 추가 ======
+                //     // 리뷰 조회는 누구나 (with-stats 포함)
+                //     .requestMatchers(
+                //             HttpMethod.GET,
+                //             "/api/stores/*/reviews/**"
+                //     ).permitAll()
 
-                    // 리뷰 작성/수정/삭제는 로그인 필요
-                    .requestMatchers(
-                            HttpMethod.POST,
-                            "/api/stores/*/reviews"
-                    ).authenticated()
-                    .requestMatchers(
-                            HttpMethod.PUT,
-                            "/api/stores/*/reviews/*"
-                    ).authenticated()
-                    .requestMatchers(
-                            HttpMethod.DELETE,
-                            "/api/stores/*/reviews/*"
-                    ).authenticated()
-                    // ====== 여기까지 리뷰 ======
+                //     // 리뷰 작성/수정/삭제는 로그인 필요
+                //     .requestMatchers(
+                //             HttpMethod.POST,
+                //             "/api/stores/*/reviews"
+                //     ).authenticated()
+                //     .requestMatchers(
+                //             HttpMethod.PUT,
+                //             "/api/stores/*/reviews/*"
+                //     ).authenticated()
+                //     .requestMatchers(
+                //             HttpMethod.DELETE,
+                //             "/api/stores/*/reviews/*"
+                //     ).authenticated()
+                //     // ====== 여기까지 리뷰 ======
 
                     // 로그인/비번찾기 POST는 허용
                     .requestMatchers(
@@ -89,7 +88,8 @@ public class SecurityConfig {
                             "/api/recover/send-code",
                             "/api/email/verify",
                             "/api/recover/reset",
-                            "/api/recover/find-id"
+                            "/api/recover/find-id",
+                            "/api/stores/{storeIdx}/reviews"
                     ).permitAll()
 
                     // 나머지 일부 API는 로그인 필요

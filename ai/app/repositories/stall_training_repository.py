@@ -15,7 +15,6 @@ def get_stall_training_data() -> pd.DataFrame:
                 SELECT
                     r.customer_idx AS user_id,
                     r.store_idx AS store_idx,              -- ⭐ 반드시 포함
-                    s.food_type AS food_type,
                     s.lat AS latitude,
                     s.lng AS longitude,
                     0 AS distance_from_route,              -- 학습 중에는 0
@@ -39,7 +38,6 @@ def get_stall_training_data() -> pd.DataFrame:
         columns=[
             "user_id",
             "store_idx",              # ⭐ 추가됨
-            "food_type",
             "latitude",
             "longitude",
             "distance_from_route",
