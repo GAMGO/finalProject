@@ -1,36 +1,49 @@
 package org.iclass.favorite.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.time.LocalDateTime;
-@Getter
-@Setter
+
 @Entity
-@Table(name = "FAVORITE")   // 실제 테이블명 다르면 여기만 바꾸면 됨
+@Table(name = "FAVORITE")
 public class FavoriteEntity {
 
+    public Long getIdx() { return idx; }
+    public void setIdx(Long idx) { this.idx = idx; }
 
+    public Long getCustomerIdx() { return customerIdx; }
+    public void setCustomerIdx(Long customerIdx) { this.customerIdx = customerIdx; }
+
+    public Long getFavoriteStoreIdx() { return favoriteStoreIdx; }
+    public void setFavoriteStoreIdx(Long favoriteStoreIdx) { this.favoriteStoreIdx = favoriteStoreIdx; }
+
+    public String getNote() { return note; }
+    public void setNote(String note) { this.note = note; }
+
+    public Double getRating() { return rating; }
+    public void setRating(Double rating) { this.rating = rating; }
+
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+
+    public String getVideoUrl() { return videoUrl; }
+    public void setVideoUrl(String videoUrl) { this.videoUrl = videoUrl; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    /* ========================= Fields ========================= */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idx;
 
-    // TODO: 로그인 붙으면 CUSTOMER_ID 외래키로 교체
     @Column(name = "customer_idx")
     private Long customerIdx;
 
     @Column(name = "FAVORITE_STORE_IDX")
     private Long favoriteStoreIdx;
-
-    @Column(nullable = false, length = 50)
-    private String category;
-
-    @Column(nullable = false, length = 200)
-    private String title;
-
-    @Column(length = 255)
-    private String address;
 
     @Column(columnDefinition = "TEXT")
     private String note;

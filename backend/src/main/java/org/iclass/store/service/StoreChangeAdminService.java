@@ -54,27 +54,24 @@ public class StoreChangeAdminService {
                 store.setStoreName(c.getNewStoreName());
             }
             if (c.getNewOpenTime() != null) {
-                store.setOpenTime(c.getNewOpenTime());
+                store.setOpenTime(c.getNewOpenTime());     // VARCHAR(5) 매핑된 String
             }
             if (c.getNewCloseTime() != null) {
-                store.setCloseTime(c.getNewCloseTime());
+                store.setCloseTime(c.getNewCloseTime());   // VARCHAR(5) 매핑된 String
             }
             if (c.getNewStoreAddress() != null) {
                 store.setStoreAddress(c.getNewStoreAddress());
             }
-            if (c.getNewFoodTypeId() != null) {
-                store.setFoodTypeId(c.getNewFoodTypeId());
-            }
+      
             if (c.getNewLat() != null) {
                 store.setLat(c.getNewLat());
             }
             if (c.getNewLng() != null) {
                 store.setLng(c.getNewLng());
             }
-            // JPA dirty checking으로 UPDATE 자동 반영됨
+            // JPA dirty checking으로 UPDATE 자동 반영
 
         } else if (c.getType() == StoreChangeType.DELETE) {
-            // 현재 Store 엔티티에 deleted 필드가 없으므로 하드 삭제
             storeRepository.delete(store);
         }
 
