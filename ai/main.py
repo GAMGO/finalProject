@@ -9,3 +9,9 @@ app.include_router(route_recommend_router, prefix="/recommend")
 @app.get("/")
 def root():
     return {"status": "ok"}
+
+# ✅ Spring이 통계 갱신 요청할 엔드포인트
+@app.post("/reviews/recompute")
+def recompute(store_idx: int = Query(..., description="가게 ID")):
+    print(f"[FastAPI] Recomputing review stats for store {store_idx}")
+    return {"ok": True, "store_idx": store_idx}

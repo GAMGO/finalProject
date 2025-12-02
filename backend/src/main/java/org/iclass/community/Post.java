@@ -8,7 +8,9 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Entity
-@Getter @Setter
+@Getter 
+@Setter
+@Table(name = "community")
 public class Post {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

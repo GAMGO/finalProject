@@ -1,4 +1,3 @@
-// src/main/java/org/iclass/review/service/StoreReviewService.java
 package org.iclass.review.service;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -17,8 +16,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -48,8 +45,8 @@ public class StoreReviewService {
         r.setCustomerIdx(customerIdx);
         r.setRating(req.rating);
         r.setReviewText(req.reviewText);
-        r.setCreatedAt(LocalDateTime.now());   // DB DEFAULT 있어도 명시 저장 OK
         r.setAiTopics(req.aiTopics);
+        // r.setCreatedAt(LocalDateTime.now());    // [REMOVED] @PrePersist가 처리
 
         return reviewRepository.save(r).getId();   // 트리거가 통계 갱신
     }
