@@ -2,9 +2,8 @@ import React, { useState } from "react";
 import LoginPage from "./LoginPage";
 import SignupPage from "./SignupPage";
 import EmailAuth from "./EmailAuth";
-import App from "../App";
 
-const AuthPage = () => {
+const AuthPage = ({ onLoginSuccess }) => {
   // 🌟 이 상태가 로그인/회원가입 모드를 결정합니다.
   const [authMode, setAuthMode] = useState('login');
   const [registeredEmail, setRegisteredEmail] = useState('');
@@ -29,7 +28,7 @@ const AuthPage = () => {
       switch (authMode) {
           case 'login':
               // LoginPage가 onToggleMode를 통해 signup으로 이동합니다.
-              return <LoginPage onToggleMode={toggleMode} key="login" />; 
+              return <LoginPage onToggleMode={toggleMode} onLoginSuccess={onLoginSuccess} key="login" />; 
           case 'signup':
               return (
                   // SignupPage에 다음 단계 전환 함수 전달
@@ -49,9 +48,6 @@ const AuthPage = () => {
                       key="EmailAuth"
                   />
               );
-          case 'app':
-              // LoginPage가 onToggleMode를 통해 signup으로 이동합니다.
-              return navigate('/');
           default:
               return null;
       }
