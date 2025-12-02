@@ -5,6 +5,9 @@ import lombok.Data;
 
 import java.util.List;
 
+/**
+ * 카카오 내비 원본 응답을 담는 DTO (서비스 내부용)
+ */
 @Data
 public class RouteResponse {
     private double distance;     // m

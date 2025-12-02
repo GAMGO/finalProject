@@ -48,10 +48,10 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<SignupResponse> signup(@Valid @RequestBody SignupRequest request) {
-        log.info("[SIGNUP] request id = {}, age = {}, gender = {}, birth = {}, address = {}", request.getId(),
-                request.getBirth(), request.getAge(), request.getGender(), request.getAddress()); // log 확인
+        //log.info("[SIGNUP] request id = {}, age = {}, gender = {}, birth = {}, address = {}", request.getId(),
+                //request.getBirth(), request.getAge(), request.getGender(), request.getAddress()); // log 확인
         CustomersEntity saved = customersService.signup(request);
-        log.info("[SIGNUP] saved id = {}", saved.getId()); // log 확인
+        //log.info("[SIGNUP] saved id = {}", saved.getId()); // log 확인
 
         // 지금까지는 CustomersEntity를 그대로 반환해서 비밀번호 같은 민감한 정보가 노출됐음
         // 응답 전용 DTO(SignupResponse)로 변환해서 필요한 데이터만 반환
