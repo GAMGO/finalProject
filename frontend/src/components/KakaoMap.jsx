@@ -6,7 +6,7 @@ import "./KakaoMap.css";
 const APP_KEY = "bdd84bdbed2db3bc5d8b90cd6736a995";
 const API_BASE = "http://localhost:8080";
 
-// FOOD_INFO / FoodCategory 기준
+// FOOD_INFO / FoodCategory 기준 (백엔드에 아직 안 쓰여도 프론트용)
 const CATEGORIES = [
   { id: 1, label: "통닭" },
   { id: 2, label: "타코야끼" },
@@ -20,6 +20,18 @@ const CATEGORIES = [
   { id: 10, label: "계란빵" },
   { id: 11, label: "옥수수" },
 ];
+
+// ✅ Store 객체에서 PK 꺼내는 공통 헬퍼 (idx / id / storeIdx 아무거나 올 수 있음)
+const getStoreIdx = (store) => {
+  if (!store) return null;
+  return (
+    store.idx ??
+    store.id ??
+    store.storeIdx ??
+    store.store_id ??
+    null
+  );
+};
 
 export default function KakaoMap() {
   const mapRef = useRef(null);
@@ -96,7 +108,10 @@ export default function KakaoMap() {
   // 리뷰 + 통계 불러오기 (/with-stats 사용)
   // ==========================
   const loadReviews = async (storeIdx) => {
-    if (!storeIdx) return;
+    if (!storeIdx) {
+      console.warn("loadReviews: storeIdx가 없습니다.", storeIdx);
+      return;
+    }
 
     setReviewsLoading(true);
     try {
@@ -132,11 +147,13 @@ export default function KakaoMap() {
   };
 
   const handleMarkerClick = (store) => {
+    const storeIdx = getStoreIdx(store);
+    console.log("marker click store:", store, "idx:", storeIdx);
     setSelectedStore(store);
     setIsDetailOpen(true);
     setReviewForm({ rating: 5, text: "" });
     setHoverRating(0);
-    loadReviews(store.idx);
+    loadReviews(storeIdx);
   };
 
   const closeDetail = () => {
@@ -152,29 +169,43 @@ export default function KakaoMap() {
   // 가게 / 마커
   // ==========================
   const addStoreMarker = (map, store) => {
-    if (!window.kakao || !map) return;
+    if (!window.kakao || !map || !store) return;
 
-    const position = new window.kakao.maps.LatLng(
-      store.latitude,
-      store.longitude
-    );
+    // ✅ DTO(StoreResponse) latitude/longitude + 엔티티 lat/lng 둘 다 지원
+    const lat = store.latitude ?? store.lat;
+    const lng = store.longitude ?? store.lng;
+
+    if (lat == null || lng == null) {
+      console.warn("마커 좌표 없음, store:", store);
+      return;
+    }
+
+    const position = new window.kakao.maps.LatLng(lat, lng);
 
     const marker = new window.kakao.maps.Marker({
       position,
       map,
     });
 
+    const categoryText = store.category ?? "";
+    const nameText = store.storeName ?? store.name ?? "";
+    const addressText = store.address ?? store.storeAddress ?? "";
+
     const content = `
       <div style="padding:8px 12px;font-size:12px;max-width:220px;">
-        <div style="font-weight:600;margin-bottom:4px;">${store.category ?? ""}</div>
         ${
-          store.storeName
-            ? `<div style="margin-bottom:4px;">${store.storeName}</div>`
+          categoryText
+            ? `<div style="font-weight:600;margin-bottom:4px;">${categoryText}</div>`
             : ""
         }
         ${
-          store.address
-            ? `<div style="font-size:11px;color:#555;">${store.address}</div>`
+          nameText
+            ? `<div style="margin-bottom:4px;">${nameText}</div>`
+            : ""
+        }
+        ${
+          addressText
+            ? `<div style="font-size:11px;color:#555;">${addressText}</div>`
             : ""
         }
       </div>
@@ -196,11 +227,21 @@ export default function KakaoMap() {
       const text = await res.text();
       console.log("GET /api/stores:", res.status, text);
 
-      if (!res.ok) throw new Error("load stores failed");
+      if (!res.ok) {
+        console.error("가게 목록 불러오기 실패:", res.status, text);
+        return;
+      }
 
-      const json = JSON.parse(text);
-      const stores = json.data || [];
+      let json;
+      try {
+        json = JSON.parse(text);
+      } catch (e) {
+        console.error("가게 목록 JSON 파싱 실패:", e);
+        return;
+      }
 
+      // ✅ 배열 그대로 오거나, { data: [...] } 래핑된 경우 둘 다 처리
+      const stores = Array.isArray(json) ? json : json.data || [];
       stores.forEach((s) => addStoreMarker(map, s));
     } catch (err) {
       console.error("가게 목록 불러오기 실패:", err);
@@ -336,14 +377,9 @@ export default function KakaoMap() {
       alert("지도를 클릭해서 위치를 먼저 선택해줘요");
       return;
     }
-    if (!form.categoryId) {
-      alert("카테고리를 선택해줘!");
-      return;
-    }
 
     const payload = {
-      storeName: form.description || "",
-      foodTypeId: Number(form.categoryId),
+      storeName: form.description || "이름 없는 노점",
       storeAddress: form.address || "",
       lat: selectedPos.lat,
       lng: selectedPos.lng,
@@ -364,11 +400,29 @@ export default function KakaoMap() {
         return;
       }
 
-      const json = JSON.parse(text);
-      const saved = json.data;
+      let savedId = null;
+      try {
+        const json = JSON.parse(text);
+        if (typeof json === "number") {
+          savedId = json;
+        } else if (json && typeof json === "object") {
+          if (typeof json.data === "number") savedId = json.data;
+          else if (typeof json.id === "number") savedId = json.id;
+        }
+      } catch {
+        const n = Number(text);
+        if (!Number.isNaN(n)) savedId = n;
+      }
 
       if (mapInstanceRef.current) {
-        addStoreMarker(mapInstanceRef.current, saved);
+        const newStoreForMarker = {
+          idx: savedId,
+          storeName: payload.storeName,
+          storeAddress: payload.storeAddress,
+          lat: payload.lat,
+          lng: payload.lng,
+        };
+        addStoreMarker(mapInstanceRef.current, newStoreForMarker);
       }
 
       closeModal();
@@ -388,9 +442,24 @@ export default function KakaoMap() {
 
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
-    if (!selectedStore) return;
+    if (!selectedStore) {
+      alert("선택된 노점이 없습니다.");
+      return;
+    }
 
-    const token = localStorage.getItem("jwtToken");
+    const storeIdx = getStoreIdx(selectedStore);
+    if (!storeIdx) {
+      alert("가게 ID를 찾을 수 없어서 리뷰를 저장할 수 없습니다.");
+      console.error("handleReviewSubmit: storeIdx 없음", selectedStore);
+      return;
+    }
+
+    // 토큰 키 여러 개 중 하나라도 있으면 사용
+    const token =
+      localStorage.getItem("jwtToken") ||
+      localStorage.getItem("accessToken") ||
+      localStorage.getItem("token");
+
     if (!token) {
       alert("로그인 후 리뷰를 작성할 수 있어요.");
       return;
@@ -410,7 +479,7 @@ export default function KakaoMap() {
     setReviewSubmitting(true);
     try {
       const res = await fetch(
-        `${API_BASE}/api/stores/${selectedStore.idx}/reviews`,
+        `${API_BASE}/api/stores/${storeIdx}/reviews`,
         {
           method: "POST",
           headers: {
@@ -426,13 +495,15 @@ export default function KakaoMap() {
 
       if (!res.ok) {
         console.error("리뷰 작성 실패:", res.status, text);
-        alert("리뷰 등록에 실패했어 ㅠㅠ");
+        alert(
+          `리뷰 등록에 실패했어 ㅠㅠ\n(status: ${res.status})\n콘솔 로그도 한 번 봐줘.`
+        );
         return;
       }
 
       setReviewForm({ rating: 5, text: "" });
       setHoverRating(0);
-      await loadReviews(selectedStore.idx);
+      await loadReviews(storeIdx);
     } catch (err) {
       console.error("리뷰 작성 에러:", err);
       alert("리뷰 등록 중 에러가 발생했어 ㅠㅠ");
@@ -508,7 +579,6 @@ export default function KakaoMap() {
         lng: parseFloat(toPlace.x),
       };
 
-      // ✅ 백엔드에 경로 요청 (엔드포인트는 /api/routes 라고 가정)
       const res = await fetch(`${API_BASE}/api/routes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -533,7 +603,6 @@ export default function KakaoMap() {
         throw new Error("경로 데이터가 비어 있습니다.");
       }
 
-      // 기존 경로 제거
       if (routeLineRef.current) {
         routeLineRef.current.setMap(null);
         routeLineRef.current = null;
@@ -552,7 +621,6 @@ export default function KakaoMap() {
       polyline.setMap(mapInstanceRef.current);
       routeLineRef.current = polyline;
 
-      // 지도를 경로 전체로 맞추기
       const bounds = new window.kakao.maps.LatLngBounds();
       path.forEach((latlng) => bounds.extend(latlng));
       mapInstanceRef.current.setBounds(bounds);
@@ -693,7 +761,7 @@ export default function KakaoMap() {
         </form>
       </div>
 
-      {/* 오른쪽 아래 + 버튼 */}
+      {/* 오른쪽 아래 플로팅 버튼 */}
       <button
         type="button"
         style={{
@@ -838,7 +906,7 @@ export default function KakaoMap() {
             </div>
 
             {/* 주소 */}
-            {selectedStore.address && (
+            {selectedStore.address || selectedStore.storeAddress ? (
               <div
                 style={{
                   fontSize: 13,
@@ -846,9 +914,9 @@ export default function KakaoMap() {
                   marginBottom: 12,
                 }}
               >
-                📍 {selectedStore.address}
+                📍 {selectedStore.address || selectedStore.storeAddress}
               </div>
-            )}
+            ) : null}
 
             {/* 평균 별점 */}
             <div

@@ -39,38 +39,80 @@ public class SecurityConfig {
             "/api/email/**"     // 이메일 인증 관련 엔드포인트
     };
 
-        @Bean
-        public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                        JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
-                http
-                                // corsConfig 빈에서 가져온 설정을 직접 사용
-                                .cors(cors -> cors.configurationSource(corsConfig.corsConfigurationSource()))
-                                .csrf(csrf -> csrf.disable())
-                                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                                .authorizeHttpRequests(auth -> auth
-                                                .requestMatchers(SWAGGER_WHITELIST).permitAll()
-                                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                                                .requestMatchers(PUBLIC_WHITELIST).permitAll()
-                                                .requestMatchers("/api/email/**","/api/stores").permitAll() // 이메일 인증, 가게목록 명시적 허용
-                                                .requestMatchers(HttpMethod.POST,"/api/auth/login","/api/recover/send-code","/api/email/verify","/api/recover/reset","/api/recover/find-id")
-                                                .permitAll()
-                                                .requestMatchers("/api/auth/logout","/api/posts","/api/favorites","/api/profile")
-                                                .authenticated()
-                                                .anyRequest().authenticated())
-                                                
-                                // 폼/베이직 로그인 비활성
-                                .httpBasic(b -> b.disable())
-                                .formLogin(f -> f.disable())
-                                .logout(l -> l
-                                    // 기본 로그아웃 URL을 사용하지 않도록 처리
-                                    .logoutUrl("/non-existent-logout") 
-                                    // 로그아웃 성공 시 리다이렉션 방지 (REST API에서는 중요)
-                                    .logoutSuccessHandler((request, response, authentication) -> {})
-                                    // 세션 기반이 아니므로 세션 무효화는 필요 없음
-                                    .invalidateHttpSession(false) 
-                                    .clearAuthentication(false)
-                                    .permitAll()); // 로그아웃 처리는 PUBLIC_WHITELIST에서 이미 허용됨
+    @Bean
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            JwtAuthenticationFilter jwtAuthenticationFilter
+    ) throws Exception {
+
+        http
+            .cors(cors -> cors.configurationSource(corsConfig.corsConfigurationSource()))
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            .authorizeHttpRequests(auth -> auth
+                    // swagger, preflight, 공개 엔드포인트
+                    .requestMatchers(SWAGGER_WHITELIST).permitAll()
+                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                    .requestMatchers(PUBLIC_WHITELIST).permitAll()
+
+                    // 이메일 인증, 가게 목록 (POST 포함 전체) 허용
+                    .requestMatchers("/api/email/**", "/api/stores").permitAll()
+
+                    // ====== 🔥 리뷰 관련 추가 ======
+                    // 리뷰 조회는 누구나 (with-stats 포함)
+                    .requestMatchers(
+                            HttpMethod.GET,
+                            "/api/stores/*/reviews",
+                            "/api/stores/*/reviews/**"
+                    ).permitAll()
+
+                    // 리뷰 작성/수정/삭제는 로그인 필요
+                    .requestMatchers(
+                            HttpMethod.POST,
+                            "/api/stores/*/reviews"
+                    ).authenticated()
+                    .requestMatchers(
+                            HttpMethod.PUT,
+                            "/api/stores/*/reviews/*"
+                    ).authenticated()
+                    .requestMatchers(
+                            HttpMethod.DELETE,
+                            "/api/stores/*/reviews/*"
+                    ).authenticated()
+                    // ====== 여기까지 리뷰 ======
+
+                    // 로그인/비번찾기 POST는 허용
+                    .requestMatchers(
+                            HttpMethod.POST,
+                            "/api/auth/login",
+                            "/api/recover/send-code",
+                            "/api/email/verify",
+                            "/api/recover/reset",
+                            "/api/recover/find-id"
+                    ).permitAll()
+
+                    // 나머지 일부 API는 로그인 필요
+                    .requestMatchers(
+                            "/api/auth/logout",
+                            "/api/posts",
+                            "/api/favorites",
+                            "/api/profile"
+                    ).authenticated()
+
+                    // 그 외 전부 인증 필요
+                    .anyRequest().authenticated()
+            )
+            // 폼/베이직 로그인 비활성
+            .httpBasic(b -> b.disable())
+            .formLogin(f -> f.disable())
+            .logout(l -> l
+                    .logoutUrl("/non-existent-logout")
+                    .logoutSuccessHandler((request, response, authentication) -> {})
+                    .invalidateHttpSession(false)
+                    .clearAuthentication(false)
+                    .permitAll()
+            );
 
         return http.build();
     }
