@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from "react"; // ⭐️ useCallback 추가
 import axios from "axios";
-const API_VITE_BASE_URL = process.env.VITE_BASE_URL;
+const API_VITE_BASE_URL = import.meta.env.VITE_BASE_URL;
 const SignupPage = ({ onToggleMode, onSignupSuccess }) => {
   // ------------------------------------
   // 1. 상태 관리
