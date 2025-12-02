@@ -63,7 +63,7 @@ const AuthCheck = ({ children }) => {
 
   // 2. 인증 실패 → /auth로 리다이렉트
   if (!isAuthenticated) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   // 3. 인증 성공 → children 렌더링

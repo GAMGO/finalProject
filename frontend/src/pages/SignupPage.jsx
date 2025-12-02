@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from "react"; // ⭐️ useCallback 추가
 import axios from "axios";
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
-// 'onToggleMode' 프롭을 받아 로그인 버튼 클릭 시 모드를 전환하도록 합니다.
 const SignupPage = ({ onToggleMode, onSignupSuccess }) => {
   // ------------------------------------
   // 1. 상태 관리

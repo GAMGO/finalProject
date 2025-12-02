@@ -11,10 +11,10 @@ createRoot(document.getElementById("root")).render(
     <BrowserRouter>
       <Routes>
         {/* 1. 인증 경로: 토큰이 없을 때 접근 (보호되지 않음) */}
-        <Route path="/auth" element={<AuthPage />} />
+        <Route path="/login" element={<AuthPage />} />
         
         {/* 2. 메인 애플리케이션 경로: 루트 '/'와 그 하위 모든 경로를 처리합니다. */}
-        {/* Check(AuthCheck) 컴포넌트가 내부의 <App /> 렌더링을 허용하거나 /auth로 리디렉션합니다. */}
+        {/* Check(AuthCheck) 컴포넌트가 내부의 <App /> 렌더링을 허용하거나 /login으로 리디렉션합니다. */}
         <Route 
             path="/*" 
             element={
