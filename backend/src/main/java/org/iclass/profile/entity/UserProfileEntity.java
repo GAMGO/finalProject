@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Entity
-@Table(name = "USER_PROFILE_PAGE")   // 실제 테이블 이름에 맞게 바꿔
+@Table(name = "user_profile_page")  
 public class UserProfileEntity {
 
     @Id

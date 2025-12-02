@@ -1,9 +1,7 @@
 package org.iclass.review.entity;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
-
 import org.iclass.store.entity.Store;
 
 @Entity
@@ -44,7 +42,6 @@ public class StoreReview {
     @Column(name = "ai_topics", columnDefinition = "JSON")
     private String aiTopics;
 
-    // ✅ 감정 분석 결과 컬럼 추가
     @Column(name = "sentiment_score", columnDefinition = "FLOAT")
     private Float sentimentScore; // 감정 점수 (NULL 허용)
 
@@ -80,4 +77,14 @@ public class StoreReview {
 
     public String getSentimentLabel() { return sentimentLabel; }
     public void setSentimentLabel(String sentimentLabel) { this.sentimentLabel = sentimentLabel; }
+
+    @PrePersist
+    protected void onCreate() {
+        if (this.createdAt == null) {              // 생성 시점 자동 세팅
+            this.createdAt = LocalDateTime.now();
+        }
+        if (this.blocked == null) {                // null 방지(안전장치)
+            this.blocked = false;
+        }
+    }
 }
