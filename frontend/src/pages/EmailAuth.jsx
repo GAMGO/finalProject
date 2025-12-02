@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 
 // API 기본 URL 설정 (SignupPage와 동일해야 합니다)
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+const API_VITE_BASE_URL = process.env.VITE_BASE_URL;
 
 // ----------------------------------------------------------------------
 // 1. 공통 스타일 정의 (AuthPage의 스타일과 일치하도록)
@@ -142,7 +142,7 @@ const EmailAuthPage = ({ registeredEmail, onAuthSuccess, onRestartSignup }) => {
 
       // ⭐️ API 경로를 /api/email/verify로 수정 (수정 2)
       await axios.post(
-        `${API_BASE_URL}/api/email/verify`, 
+        `${API_VITE_BASE_URL}/api/email/verify`, 
         verifyData,
         { withCredentials: true }
       );
@@ -171,7 +171,7 @@ const EmailAuthPage = ({ registeredEmail, onAuthSuccess, onRestartSignup }) => {
     try {
       // ⭐️ API 경로 /api/email/resend 호출 (POST, @RequestParam)
       await axios.post(
-        `${API_BASE_URL}/api/email/resend?email=${registeredEmail}`, 
+        `${API_VITE_BASE_URL}/api/email/resend?email=${registeredEmail}`, 
         null, // @RequestParam 이므로 body는 null
         { withCredentials: true }
       );

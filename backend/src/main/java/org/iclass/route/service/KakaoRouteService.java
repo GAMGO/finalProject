@@ -23,7 +23,7 @@ public class KakaoRouteService {
     private final ObjectMapper objectMapper;
     private final String kakaoApiKey;
 
-    private static final String BASE_URL = "https://apis-navi.kakaomobility.com/v1/directions";
+    private static final String VITE_BASE_URL = "https://apis-navi.kakaomobility.com/v1/directions";
 
     /**
      * ✅ 기본 생성자 (Spring이 이걸로 빈 생성함)
@@ -78,7 +78,7 @@ public class KakaoRouteService {
         String destParam   = destLng + "," + destLat;
 
         String url = UriComponentsBuilder
-                .fromHttpUrl(BASE_URL)
+                .fromHttpUrl(VITE_BASE_URL)
                 .queryParam("origin", originParam)
                 .queryParam("destination", destParam)
                 .queryParam("priority", "RECOMMEND")

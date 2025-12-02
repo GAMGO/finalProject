@@ -4,12 +4,12 @@ from pydantic_settings import BaseSettings
 from pydantic import Field
 load_dotenv()
 
-database_url: str = Field(..., env="DATABASE_URL")
+dataVITE_BASE_URL: str = Field(..., env="DATAVITE_BASE_URL")
 openai_api_key: str = Field(..., env="OPENAI_API_KEY")
     
 class Settings(BaseSettings):
     
-    database_url: str  # ⭐ 반드시 필요
+    dataVITE_BASE_URL: str  # ⭐ 반드시 필요
 
  
     

@@ -3,7 +3,7 @@ import axios from 'axios';
 import dishLogo from "../assets/DISH_LOGO.png"; // ✅ 로고 이미지 import
 import { useNavigate } from 'react-router-dom';
 import { setAuthToken } from '../api/apiClient';
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+const API_VITE_BASE_URL = process.env.VITE_BASE_URL;
 // 'onToggleMode' 프롭을 받아 회원가입 버튼 클릭 시 모드를 전환하도록 합니다.
 const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
   // ------------------------------------
@@ -43,7 +43,7 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
     try {
       const response = await axios.post(
         // ⭐️ 백엔드 로그인 엔드포인트: https://api.dishinside.shop/api/auth/login
-        `${API_BASE_URL}/api/auth/login`,
+        `${API_VITE_BASE_URL}/api/auth/login`,
         loginData,
         { withCredentials: true }
       );

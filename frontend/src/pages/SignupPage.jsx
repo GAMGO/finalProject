@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from "react"; // ⭐️ useCallback 추가
 import axios from "axios";
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+const API_VITE_BASE_URL = process.env.VITE_BASE_URL;
 const SignupPage = ({ onToggleMode, onSignupSuccess }) => {
   // ------------------------------------
   // 1. 상태 관리
@@ -88,7 +88,7 @@ const SignupPage = ({ onToggleMode, onSignupSuccess }) => {
     try {
       const response = await axios.post(
         // ⭐️ 백엔드 회원가입 엔드포인트: https://api.dishinside.shop/api/auth/signup
-        `${API_BASE_URL}/api/auth/signup`,
+        `${API_VITE_BASE_URL}/api/auth/signup`,
         registerData,
         { withCredentials: true }
       );
