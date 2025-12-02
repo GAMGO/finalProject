@@ -61,16 +61,7 @@ public class SecurityConfig {
                                                 
                                 // 폼/베이직 로그인 비활성
                                 .httpBasic(b -> b.disable())
-                                .formLogin(f -> f.disable())
-                                .logout(l -> l
-                                    // 기본 로그아웃 URL을 사용하지 않도록 처리
-                                    .logoutUrl("/non-existent-logout") 
-                                    // 로그아웃 성공 시 리다이렉션 방지 (REST API에서는 중요)
-                                    .logoutSuccessHandler((request, response, authentication) -> {})
-                                    // 세션 기반이 아니므로 세션 무효화는 필요 없음
-                                    .invalidateHttpSession(false) 
-                                    .clearAuthentication(false)
-                                    .permitAll()); // 로그아웃 처리는 PUBLIC_WHITELIST에서 이미 허용됨
+                                .formLogin(f -> f.disable());
 
         return http.build();
     }

@@ -3,53 +3,28 @@ import axios from "axios";
 import KakaoMap from "./components/KakaoMap";
 import CommunityPage from "./pages/CommunityPage";
 import UserProfilePage from "./pages/UserProfilePage";
+import AuthPage from "./pages/AuthPage"
 import FavoritePage from "./pages/FavoritePage";
 import apiClient, { setAuthToken, clearAuthToken } from "./api/apiClient";
 import "./App.css";
 import "./SidebarPatch.css";
 const API_BASE_URL = "http://localhost:8080";
 
-// ⭐️ 로그인 화면 컴포넌트 (로그아웃 시 전체 화면 대체)
-const LoginPage = ({ onLoginSuccess }) => (
-    <div className="login-page-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', width: '100%', backgroundColor: '#f0f0f0' }}>
-        <div className="login-card" style={{ backgroundColor: 'white', padding: '40px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', textAlign: 'center', width: '350px' }}>
-            <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '20px', color: '#3f51b5' }}>로그인 필요</h1>
-            <p style={{ marginBottom: '30px', color: '#555' }}>로그아웃 상태입니다. 서비스를 이용하려면 로그인해 주세요.</p>
-            <button 
-                onClick={() => {
-                    // ⭐️ 실제 로그인 API 호출 후 토큰을 받아서 onLoginSuccess(token)을 호출해야 합니다.
-                    // 현재는 데모를 위해 임시 토큰을 사용합니다.
-                    const mockToken = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ6eGMxMjMiLCJpc3MiOiJjb20uZXhhbXBsZSIsImlhdCI6MTc2NDU2NDQ5MywiZXhwIjoxNzY0NjUwODkzfQ.JRzFU54tzCAqHIrvBdcASsuI8-1a2JlfHFioiXv9Aofp5g9y1vYKwLMe66ZE2ni9xfQONktSyg13rEMpDWrjMg"; 
-                    onLoginSuccess(mockToken); 
-                }}
-                style={{ width: '100%', backgroundColor: '#3f51b5', color: 'white', fontWeight: 'bold', padding: '12px', borderRadius: '8px', border: 'none', cursor: 'pointer', transition: 'background-color 0.2s' }}
-            >
-                로그인하기 (클릭하여 앱 재시작)
-            </button>
-        </div>
-    </div>
-);
 const Logout = ({ onLogoutSuccess }) => {
     const [message, setMessage] = useState("로그아웃을 시도 중...");
-
     useEffect(() => {
         const handleLogout = async () => {
             try {
-                // ⭐️ 3. apiClient 사용: /api/auth/logout 엔드포인트에 요청합니다.
-                // apiClient의 인터셉터가 Authorization 헤더를 자동으로 추가합니다.
+                //apiClient 사용: /api/auth/logout 엔드포인트에 요청합니다. apiClient의 인터셉터가 Authorization 헤더를 자동으로 추가합니다.
                 await apiClient.post(
                     `/api/auth/logout`,
                     {}
-                    // withCredentials 등의 설정은 apiClient 인스턴스에 이미 포함되어 있습니다.
                 );
-
                 setMessage("로그아웃에 성공했습니다. 잠시 후 로그인 화면으로 돌아갑니다.");
-
                 // 성공 시 onLogoutSuccess 호출 -> App 컴포넌트에서 토큰 삭제 및 isLoggedIn=false 처리
                 setTimeout(() => {
                     onLogoutSuccess();
                 }, 1500);
-
             } catch (error) {
                 console.error("Logout API Error:", error);
                 // 서버에서 로그아웃 처리가 실패했더라도, 클라이언트 상태는 로그아웃으로 전환합니다.
@@ -97,7 +72,7 @@ export default function App() {
     // isLoggedIn이 false일 경우 전체 화면을 LoginPage로 대체
     return (
       <div className="h-screen w-full">
-        <LoginPage onLoginSuccess={handleLoginSuccess} />
+        <AuthPage onLoginSuccess={handleLoginSuccess}/>
       </div>
     );
   }
