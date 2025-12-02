@@ -2,9 +2,9 @@ package org.iclass.store.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-
 import org.iclass.store.dto.StoreCreateRequest;
 import org.iclass.store.dto.StoreUpdateRequest;
+import org.iclass.store.dto.StoreResponse;
 import org.iclass.store.entity.Store;
 import org.iclass.store.entity.StoreChangeRequest;
 import org.iclass.store.enums.StoreChangeStatus;
@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +26,14 @@ public class StoreService {
 
     private final StoreRepository storeRepository;
     private final StoreChangeRequestRepository changeRepository;
+
+    // ✅ 점포 목록 조회 (READ 전용)
+    public List<StoreResponse> listStores() {
+        return storeRepository.findAll()
+                .stream()
+                .map(StoreResponse::from)   // Store -> StoreResponse
+                .toList();
+    }
 
     // "HH:mm" 변환 유틸 (DTO가 LocalDateTime 을 주는 경우 대응)
     private static final DateTimeFormatter HHMM = DateTimeFormatter.ofPattern("HH:mm");
@@ -36,9 +45,6 @@ public class StoreService {
 
     /**
      * 점포 최초 등록: 바로 반영
-     * StoreCreateRequest 필드: storeName, openTime(LocalDateTime), closeTime(LocalDateTime),
-     *                          storeAddress, lat, lng
-     *  - foodTypeId 는 스키마 변경으로 제거됨
      */
     @Transactional
     public Long createStore(StoreCreateRequest req, Long ownerId) {
@@ -46,7 +52,7 @@ public class StoreService {
 
         store.setStoreName(req.getStoreName());
         store.setOpenTime(toTime5(req.getOpenTime()));     // "HH:mm" 문자열로 저장
-        store.setCloseTime(toTime5(req.getCloseTime()));   // "
+        store.setCloseTime(toTime5(req.getCloseTime()));
         store.setStoreAddress(req.getStoreAddress());
         store.setLat(req.getLat());
         store.setLng(req.getLng());
@@ -66,8 +72,8 @@ public class StoreService {
                 .requestedBy(requesterId)
                 .requestedAt(LocalDateTime.now())
                 .newStoreName(req.getStoreName())
-                .newOpenTime(toTime5(req.getOpenTime()))     // String("HH:mm") 필요
-                .newCloseTime(toTime5(req.getCloseTime()))   // "
+                .newOpenTime(toTime5(req.getOpenTime()))
+                .newCloseTime(toTime5(req.getCloseTime()))
                 .newStoreAddress(req.getStoreAddress())
                 .newLat(req.getLat())
                 .newLng(req.getLng())

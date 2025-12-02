@@ -1,9 +1,11 @@
 // src/pages/CommunityPage.jsx
 import React, { useState } from "react";
 import "../components/community/Community.css";
+import PostEditor from "../components/community/PostEditor";
+import writeFabIcon from "../assets/write-icon.svg"; // ← 네 아이콘 경로로 수정
 
-// ✅ 노점 목데이터 (DCinside 스타일)
-const stallPosts = [
+// ✅ 기본 노점 목데이터
+const INITIAL_POSTS = [
   {
     id: 1,
     title: "시청 앞 통닭 트럭 오늘 7시에 온대요",
@@ -81,22 +83,47 @@ const stallPosts = [
   },
 ];
 
+const DEFAULT_THUMB =
+  "https://images.pexels.com/photos/461198/pexels-photo-461198.jpeg?auto=compress&cs=tinysrgb&w=400";
+
+/** PostEditor에서 넘어오는 형식을 DC 리스트용으로 매핑 */
+function mapEditorPostToCommunity(editorPost) {
+  return {
+    id: Date.now(),
+    title: editorPost.title || "(제목 없음)",
+    writer: editorPost.writer || "익명",
+    board: editorPost.storeCategory || "노점",
+    time: "방금 전",
+    commentCount: 0,
+    views: 0,
+    category: editorPost.type || "제보",
+    location: editorPost.locationText || "",
+    thumbnail: editorPost.imageUrl || DEFAULT_THUMB,
+    content: editorPost.content || "",
+  };
+}
+
 export default function CommunityPage() {
-  // 리스트 / 상세 보기 상태
+  // view: list / detail / write
+  const [view, setView] = useState("list");
+  const [posts, setPosts] = useState(INITIAL_POSTS);
   const [selectedPostId, setSelectedPostId] = useState(null);
 
   // 댓글 상태: { [postId]: [{ id, author, text, createdAt }] }
   const [commentsByPost, setCommentsByPost] = useState({});
 
-  const selectedPost = stallPosts.find((p) => p.id === selectedPostId) || null;
+  const selectedPost =
+    posts.find((p) => p.id === selectedPostId) || null;
 
   const handleOpenPost = (postId) => {
     setSelectedPostId(postId);
+    setView("detail");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleBackToList = () => {
     setSelectedPostId(null);
+    setView("list");
   };
 
   const handleAddComment = (postId, text) => {
@@ -116,27 +143,61 @@ export default function CommunityPage() {
     });
   };
 
+  const handleOpenWrite = () => {
+    setView("write");
+  };
+
+  const handleCreatePost = (newPostFromEditor) => {
+    const mapped = mapEditorPostToCommunity(newPostFromEditor);
+    setPosts((prev) => [mapped, ...prev]);
+    setSelectedPostId(mapped.id);
+    setView("detail");
+  };
+
+  const handleCloseEditor = () => {
+    setView("list");
+  };
+
   return (
     <div className="community-root">
-      {/* 상단 중앙 보라색 입력창 (검색/글쓰기 느낌) */}
-      <div className="community-input-wrapper">
-        <input
-          className="community-main-input"
-          type="text"
-          placeholder="노점 제보, 후기, 장소를 입력해 보세요"
-        />
-      </div>
+      {/* 리스트 화면에서만 상단 입력창 + 리스트 + 플로팅 버튼 보임 */}
+      {view === "list" && (
+        <>
+          <div className="community-input-wrapper">
+            <input
+              className="community-main-input"
+              type="text"
+              placeholder="노점 제보, 후기, 장소를 입력해 보세요"
+            />
+          </div>
 
-      {/* 리스트 / 상세 모드 분기 */}
-      {!selectedPost ? (
-        <CommunityList posts={stallPosts} onOpenPost={handleOpenPost} />
-      ) : (
+          <CommunityList posts={posts} onOpenPost={handleOpenPost} />
+
+          {/* 오른쪽 하단 글쓰기 버튼 */}
+          <button
+            type="button"
+            className="community-fab"
+            onClick={handleOpenWrite}
+          >
+            <img src={writeFabIcon} alt="글쓰기" />
+          </button>
+        </>
+      )}
+
+      {view === "detail" && selectedPost && (
         <CommunityDetail
           post={selectedPost}
-          allPosts={stallPosts}
+          allPosts={posts}
           comments={commentsByPost[selectedPost.id] || []}
           onBack={handleBackToList}
           onAddComment={handleAddComment}
+        />
+      )}
+
+      {view === "write" && (
+        <PostEditor
+          onClose={handleCloseEditor}
+          onSubmit={handleCreatePost}
         />
       )}
     </div>
@@ -169,7 +230,9 @@ function CommunityList({ posts, onOpenPost }) {
                 </span>
               </div>
               <div className="community-row-meta">
-                <span className="community-row-writer">{post.writer}</span>
+                <span className="community-row-writer">
+                  {post.writer}
+                </span>
                 <span className="community-row-dot">·</span>
                 <span className="community-row-location">
                   {post.location}
@@ -211,7 +274,11 @@ function CommunityDetail({
 
   return (
     <div className="post-detail-wrapper">
-      <button type="button" className="post-detail-back" onClick={onBack}>
+      <button
+        type="button"
+        className="post-detail-back"
+        onClick={onBack}
+      >
         ◀ 목록으로
       </button>
 
@@ -238,18 +305,26 @@ function CommunityDetail({
       <div className="post-detail-layout-bottom">
         {/* 댓글 */}
         <section className="post-comments">
-          <h2 className="post-comments-title">댓글 {comments.length}</h2>
+          <h2 className="post-comments-title">
+            댓글 {comments.length}
+          </h2>
 
           <ul className="post-comments-list">
             {comments.length === 0 ? (
-              <li className="post-comments-empty">첫 댓글을 남겨보세요.</li>
+              <li className="post-comments-empty">
+                첫 댓글을 남겨보세요.
+              </li>
             ) : (
               comments.map((c) => (
                 <li key={c.id} className="post-comment-row">
                   <div className="post-comment-header">
-                    <span className="post-comment-author">{c.author}</span>
+                    <span className="post-comment-author">
+                      {c.author}
+                    </span>
                     <span className="post-comment-dot">·</span>
-                    <span className="post-comment-time">{c.createdAt}</span>
+                    <span className="post-comment-time">
+                      {c.createdAt}
+                    </span>
                   </div>
                   <div className="post-comment-text">{c.text}</div>
                 </li>
@@ -280,7 +355,9 @@ function CommunityDetail({
           </h3>
           <ul className="post-writer-more-list">
             {sameWriterPosts.length === 0 ? (
-              <li className="post-writer-more-empty">다른 글이 없습니다.</li>
+              <li className="post-writer-more-empty">
+                다른 글이 없습니다.
+              </li>
             ) : (
               sameWriterPosts.map((p) => (
                 <li key={p.id} className="post-writer-more-row">
