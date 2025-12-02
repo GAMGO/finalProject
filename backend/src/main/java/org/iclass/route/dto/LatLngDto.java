@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * 위도/경도 좌표 DTO
+ * 위도/경도 좌표 DTO (프론트로 내려줄 때 사용)
  */
 @Data
 @NoArgsConstructor
