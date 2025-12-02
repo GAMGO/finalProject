@@ -1,3 +1,4 @@
+// src/App.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import KakaoMap from "./components/KakaoMap";
@@ -8,6 +9,10 @@ import FavoritePage from "./pages/FavoritePage";
 import apiClient, { setAuthToken, clearAuthToken } from "./api/apiClient";
 import "./App.css";
 import "./SidebarPatch.css";
+
+// ✅ 로고 이미지
+import DISH_LOGO from "./assets/DISH_LOGO.png";
+
 const API_BASE_URL = "http://localhost:8080";
 
 const Logout = ({ onLogoutSuccess }) => {
@@ -35,63 +40,80 @@ const Logout = ({ onLogoutSuccess }) => {
             }
         };
 
-        handleLogout();
-    }, [onLogoutSuccess]);
+    handleLogout();
+  }, [onLogoutSuccess]);
 
-    return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', fontSize: '24px', fontWeight: 'bold', color: '#333' }}>
-            {message}
-        </div>
-    );
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "100%",
+        fontSize: "24px",
+        fontWeight: "bold",
+        color: "#333",
+      }}
+    >
+      {message}
+    </div>
+  );
 };
 
 export default function App() {
-  const [page, setPage] = useState("map"); // map / community / profile / favorite
-   // 초기 상태는 false로 설정하여, 로그인을 통해서만 접근 가능하도록 합니다.
-    const [isLoggedIn, setIsLoggedIn] = useState(false); 
-    
-    // 로그인 성공 콜백: 토큰을 받아 메모리에 저장합니다.
-    const handleLoginSuccess = (token) => { 
-        setAuthToken(token);
-        setIsLoggedIn(true);
-        setPage("map");
-    };
-    
-    // 로그아웃 성공 콜백
-    const handleLogoutSuccess = () => {
-        clearAuthToken();
-        setIsLoggedIn(false);
-    };
-  // 현재 활성화된 버튼 스타일
-  const getButtonClass = (targetPage) =>
-    `side-nav-btn ${page === targetPage ? 'active' : ''}`;
+  const [page, setPage] = useState("map"); // map / community / profile / favorite / logout
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
+  // 로그인 성공 콜백: 토큰을 받아 메모리에 저장합니다.
+  const handleLoginSuccess = (token) => {
+    setAuthToken(token);
+    setIsLoggedIn(true);
+    setPage("map");
+  };
+
+  // 로그아웃 성공 콜백
+  const handleLogoutSuccess = () => {
+    clearAuthToken();
+    setIsLoggedIn(false);
+  };
+
+  // 현재 활성화된 버튼 스타일 (원하면 나중에 사용)
+  const getButtonClass = (targetPage) =>
+    `side-nav-btn ${page === targetPage ? "active" : ""}`;
 
   // isLoggedIn 상태에 따른 조건부 렌더링
   if (!isLoggedIn) {
-    // isLoggedIn이 false일 경우 전체 화면을 LoginPage로 대체
     return (
       <div className="h-screen w-full">
         <AuthPage onLoginSuccess={handleLoginSuccess}/>
       </div>
     );
   }
+
   return (
     <div className="app">
       <aside className="side-bar">
+        {/* ✅ 왼쪽 상단 로고 */}
         <div className="side-logo" onClick={() => setPage("map")}>
+          <img
+            src={DISH_LOGO}
+            alt="DISHINSIDE 로고"
+            className="side-logo-img"
+          />
         </div>
 
         <button
           className="side-nav-btn"
+          // className={getButtonClass("community")}
           onClick={() => setPage("community")}
         >
           커뮤니티
         </button>
 
-        {/* ✅ 여기부터 “추가만” */}
         <button
           className="side-nav-btn"
+          // className={getButtonClass("profile")}
           onClick={() => setPage("profile")}
         >
           회원정보
@@ -99,27 +121,36 @@ export default function App() {
 
         <button
           className="side-nav-btn"
+          // className={getButtonClass("favorite")}
           onClick={() => setPage("favorite")}
         >
           즐겨찾기
         </button>
+
         <button
           className="side-nav-btn"
+          // className={getButtonClass("logout")}
           onClick={() => setPage("logout")}
         >
           로그아웃
         </button>
-        {/* ✅ 여기까지 */}
       </aside>
 
-<main className="main-content">
-          {page === "map" ? (<KakaoMap />) 
-          : page === "community" ? (<CommunityPage />) 
-          : page === "profile" ? (<UserProfilePage />) 
-          : page === "favorite"? (<FavoritePage />) 
-          : page === "logout" ? (<Logout onLogoutSuccess={handleLogoutSuccess} />) 
-          : (<p style={{color: 'red'}}>404 Page Not Found</p>)}
-        </main>
+      <main className="main-content">
+        {page === "map" ? (
+          <KakaoMap />
+        ) : page === "community" ? (
+          <CommunityPage />
+        ) : page === "profile" ? (
+          <UserProfilePage />
+        ) : page === "favorite" ? (
+          <FavoritePage />
+        ) : page === "logout" ? (
+          <Logout onLogoutSuccess={handleLogoutSuccess} />
+        ) : (
+          <p style={{ color: "red" }}>404 Page Not Found</p>
+        )}
+      </main>
     </div>
   );
 }

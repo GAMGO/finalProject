@@ -37,9 +37,6 @@ public class FavoriteService {
     public FavoriteResponse createFavorite(FavoriteRequest req) {
         FavoriteEntity entity = new FavoriteEntity();
         entity.setCustomerIdx(getcustomerIdx());
-        entity.setCategory(req.getCategory());
-        entity.setTitle(req.getTitle());
-        entity.setAddress(req.getAddress());
         entity.setNote(req.getNote());
         entity.setRating(req.getRating());
         entity.setImageUrl(req.getImageUrl());
@@ -52,10 +49,6 @@ public class FavoriteService {
     public FavoriteResponse updateFavorite(Long idx, FavoriteRequest req) {
         FavoriteEntity entity = favoriteRepository.findById(idx)
                 .orElseThrow(() -> new NoSuchElementException("즐겨찾기를 찾을 수 없음: " + idx));
-
-        entity.setCategory(req.getCategory());
-        entity.setTitle(req.getTitle());
-        entity.setAddress(req.getAddress());
         entity.setNote(req.getNote());
         entity.setRating(req.getRating());
         entity.setImageUrl(req.getImageUrl());
@@ -72,9 +65,6 @@ public class FavoriteService {
     private FavoriteResponse toResponse(FavoriteEntity entity) {
         FavoriteResponse dto = new FavoriteResponse();
         dto.setIdx(entity.getIdx());
-        dto.setCategory(entity.getCategory());
-        dto.setTitle(entity.getTitle());
-        dto.setAddress(entity.getAddress());
         dto.setNote(entity.getNote());
         dto.setRating(entity.getRating());
         dto.setImageUrl(entity.getImageUrl());

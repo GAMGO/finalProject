@@ -1,21 +1,25 @@
-def chunk_reviews(reviews, max_chars=2000):
+def chunk_reviews(reviews, chunk_size=10):
     """
-    reviews: [{"review_text": "...", "rating": 5}, ...]
+    리뷰 리스트를 일정 크기로 청크 분리.
+    Review 객체 기준.
     """
     chunks = []
-    cur = ""
+    current = []
 
     for r in reviews:
-        text = (r.get("review_text") or "").strip()
+        review_text = (r.review_text or "").strip()
 
-        if len(cur) + len(text) > max_chars:
-            if cur:
-                chunks.append(cur)
-            cur = text
-        else:
-            cur += "\n" + text
+        # 중요: rating, sentiment_score, sentiment_label 포함
+        current.append(
+            f"- rating: {r.rating}, sentiment_score: {r.sentiment_score}, "
+            f"sentiment_label: {r.sentiment_label}, text: \"{review_text}\""
+        )
 
-    if cur:
-        chunks.append(cur)
+        if len(current) >= chunk_size:
+            chunks.append("\n".join(current))
+            current = []
+
+    if current:
+        chunks.append("\n".join(current))
 
     return chunks
