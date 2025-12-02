@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "FAVORITE")
+@Table(name = "favorite")
 public class FavoriteEntity {
 
     public Long getIdx() { return idx; }
