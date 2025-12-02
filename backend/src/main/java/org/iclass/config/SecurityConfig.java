@@ -54,8 +54,8 @@ public class SecurityConfig {
                     // swagger, preflight, 공개 엔드포인트
                     .requestMatchers(SWAGGER_WHITELIST).permitAll()
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                    .requestMatchers(PUBLIC_WHITELIST).permitAll()// 이메일 인증, 가게 목록 (POST 포함 전체) 허용
-                    .requestMatchers("/api/email/**", "/api/stores/**","/api/stores/{storeIdx}/reviews").permitAll()// 로그인/비번찾기 POST는 허용
+                    .requestMatchers(PUBLIC_WHITELIST).permitAll()
+                    .requestMatchers( "/api/stores/**","/api/stores/{storeIdx}/reviews").permitAll()
                     .requestMatchers(
                             HttpMethod.POST,
                             "/api/auth/login",
@@ -64,15 +64,13 @@ public class SecurityConfig {
                             "/api/recover/reset",
                             "/api/recover/find-id",
                             "/api/stores/{storeIdx}/reviews"
-                    ).permitAll()// 나머지 일부 API는 로그인 필요
+                    ).permitAll()
                     .requestMatchers(
                             "/api/auth/logout",
                             "/api/posts",
                             "/api/favorites",
                             "/api/profile"
-                    ).authenticated()
-                    // 그 외 전부 인증 필요
-                    .anyRequest().authenticated()
+                    ).authenticated().anyRequest().authenticated()
             )
             // 폼/베이직 로그인 비활성
             .httpBasic(b -> b.disable())
