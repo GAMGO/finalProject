@@ -2,12 +2,14 @@ package org.iclass.store.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-
 import org.iclass.store.dto.StoreCreateRequest;
 import org.iclass.store.dto.StoreUpdateRequest;
+import org.iclass.store.dto.StoreResponse;
 import org.iclass.store.service.StoreService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/stores")
@@ -15,6 +17,12 @@ import org.springframework.web.bind.annotation.*;
 public class StoreController {
 
     private final StoreService storeService;
+
+    // ✅ 0) 점포 전체 목록 조회 (카카오맵에서 사용)
+    @GetMapping
+    public ResponseEntity<List<StoreResponse>> list() {
+        return ResponseEntity.ok(storeService.listStores());
+    }
 
     // 1) 점포 최초 등록: 바로 반영
     @PostMapping
