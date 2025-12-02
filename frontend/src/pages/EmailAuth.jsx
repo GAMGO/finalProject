@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 
 // API 기본 URL 설정 (SignupPage와 동일해야 합니다)
-const API_BASE_URL = "http://localhost:8080";
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 // ----------------------------------------------------------------------
 // 1. 공통 스타일 정의 (AuthPage의 스타일과 일치하도록)
