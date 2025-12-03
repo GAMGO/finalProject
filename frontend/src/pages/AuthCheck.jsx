@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import jwt_decode from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode'
 // 실제 환경에서는 'jwt-decode'와 같은 라이브러리를 사용해야 안정적입니다.
 
 const AuthCheck = ({ children }) => {
@@ -15,7 +15,7 @@ const AuthCheck = ({ children }) => {
       if (token) {
         try {
           // ⭐️ (수정 1) token이 존재할 때만, useEffect 내부에서 디코딩합니다.
-          const decoded = jwt_decode(token);
+          const decoded = jwtDecode(token);
           if (decoded && decoded.exp) {
             const currentTime = Date.now() / 1000;
             if (decoded.exp > currentTime) {
