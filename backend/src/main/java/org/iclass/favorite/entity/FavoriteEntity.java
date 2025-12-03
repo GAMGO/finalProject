@@ -4,8 +4,10 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "favorite")
+@Table(name = "favorite")   // DDL 이 FAVORITE 여도 MySQL 기본 설정에선 대소문자 무시
 public class FavoriteEntity {
+
+    /* ========================= Getter / Setter ========================= */
 
     public Long getIdx() { return idx; }
     public void setIdx(Long idx) { this.idx = idx; }
@@ -15,6 +17,15 @@ public class FavoriteEntity {
 
     public Long getFavoriteStoreIdx() { return favoriteStoreIdx; }
     public void setFavoriteStoreIdx(Long favoriteStoreIdx) { this.favoriteStoreIdx = favoriteStoreIdx; }
+
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
+
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
+
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
 
     public String getNote() { return note; }
     public void setNote(String note) { this.note = note; }
@@ -35,6 +46,7 @@ public class FavoriteEntity {
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 
     /* ========================= Fields ========================= */
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idx;
@@ -44,6 +56,18 @@ public class FavoriteEntity {
 
     @Column(name = "FAVORITE_STORE_IDX")
     private Long favoriteStoreIdx;
+
+    // ☆ 카테고리
+    @Column(name = "CATEGORY", length = 50)
+    private String category;
+
+    // ☆ 상호 / 이름
+    @Column(name = "TITLE", length = 200)
+    private String title;
+
+    // ☆ 위치
+    @Column(name = "ADDRESS", length = 255)
+    private String address;
 
     @Column(columnDefinition = "TEXT")
     private String note;

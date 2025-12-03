@@ -2,34 +2,44 @@
 import axios from "axios";
 
 const apiClient = axios.create({
+  // 예: VITE_LOCAL_BASE_URL=http://localhost:8080
   baseURL: import.meta.env.VITE_LOCAL_BASE_URL,
 });
 
+// ======================
 // 즐겨찾기 API
+// ======================
 export const favoriteApi = {
+  // 전체 조회
   async getAll() {
-    const res = await apiClient.get("/favorites");
+    // ✅ 백엔드 매핑에 맞게 /api/favorites 로 고정
+    const res = await apiClient.get("/api/favorites");
     // 백엔드에서 ApiResponse<T> 쓰면 보통 { status, message, data } 구조일 거라서
     return res.data.data ?? res.data; // 둘 중 프로젝트 구조에 맞는 쪽으로 쓰이면 된다.
   },
 
+  // 생성
   async create(favorite) {
-    const res = await apiClient.post("/favorites", favorite);
+    const res = await apiClient.post("/api/favorites", favorite);
     return res.data.data ?? res.data;
   },
 
+  // 수정
   async update(id, favorite) {
-    const res = await apiClient.put(`/favorites/${id}`, favorite);
+    const res = await apiClient.put(`/api/favorites/${id}`, favorite);
     return res.data.data ?? res.data;
   },
 
+  // 삭제
   async remove(id) {
-    await apiClient.delete(`/favorites/${id}`);
+    await apiClient.delete(`/api/favorites/${id}`);
   },
 };
+
 // =================================================================
 // JWT 인증 및 토큰 관리 로직
 // =================================================================
+
 // 3. 🔑 전역 JWT 토큰 변수 (메모리 저장소 역할)
 let globalAccessToken = null;
 
@@ -37,10 +47,10 @@ export const setAuthToken = (token) => {
   // ⭐️ 메모리 저장소에 토큰 저장 (XSS 공격으로부터 localStorage보다 안전)
   globalAccessToken = token;
   console.log("Access Token 저장 완료");
-  //token.substring(0, 10) + "..."
+  // token.substring(0, 10) + "..."
 };
 
-//5. 토큰 관리 함수: 로그아웃 또는 토큰 만료 시 메모리 토큰을 제거합니다.
+// 5. 토큰 관리 함수: 로그아웃 또는 토큰 만료 시 메모리 토큰을 제거합니다.
 export const clearAuthToken = () => {
   globalAccessToken = null;
   console.log("Access Token 제거 완료.");
@@ -94,7 +104,7 @@ apiClient.interceptors.response.use(
         // 예: navigate('/login');
       }, 0);
 
-      // 에러 전파를 막아 다음 .catch() 블록이 실행되지 않게 합니다.
+      // 에러 전파
       return Promise.reject(error);
     }
 

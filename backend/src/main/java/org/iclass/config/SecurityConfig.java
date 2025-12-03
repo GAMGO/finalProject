@@ -55,7 +55,9 @@ public class SecurityConfig {
                     .requestMatchers(SWAGGER_WHITELIST).permitAll()
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers(PUBLIC_WHITELIST).permitAll()
-                    .requestMatchers( "/api/stores/**","/api/stores/{storeIdx}/reviews").permitAll()
+
+                    // 가게/리뷰 공개 조회
+                    .requestMatchers("/api/stores/**", "/api/stores/{storeIdx}/reviews").permitAll()
                     .requestMatchers(
                             HttpMethod.POST,
                             "/api/auth/login",
@@ -64,12 +66,18 @@ public class SecurityConfig {
                             "/api/recover/find-id",
                             "/api/stores/{storeIdx}/reviews"
                     ).permitAll()
+
+                    // ===== 로그인 필요 영역 =====
                     .requestMatchers(
                             "/api/auth/logout",
                             "/api/posts",
-                            "/api/favorites",
+                            "/api/favorites",      // 목록
+                            "/api/favorites/**",   // 개별 즐겨찾기 (수정/삭제 등)
                             "/api/profile"
-                    ).authenticated().anyRequest().authenticated()
+                    ).authenticated()
+
+                    // 그 외 전부 인증 필요
+                    .anyRequest().authenticated()
             )
             // 폼/베이직 로그인 비활성
             .httpBasic(b -> b.disable())
