@@ -9,7 +9,6 @@ const AuthPage = ({ onLoginSuccess }) => {
   // 🌟 이 상태가 로그인/회원가입 모드를 결정합니다.
   const [authMode, setAuthMode] = useState('login');
   const [registeredEmail, setRegisteredEmail] = useState('');
-
   // 🌟 이 함수를 자식 컴포넌트(LoginPage, SignupPage)에 onToggleMode로 전달합니다.
   const toggleMode = () => {
     setAuthMode(prev => prev === 'login' ? 'signup' : 'login');
@@ -24,7 +23,8 @@ const AuthPage = ({ onLoginSuccess }) => {
   const handleAuthSuccess = () => {
     setAuthMode('login'); 
     setRegisteredEmail('');
-    Navigate('/'); 
+
+    Navigate('/')
   };
   const renderContent = () => {
       switch (authMode) {
