@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import LoginPage from "./LoginPage";
 import SignupPage from "./SignupPage";
 import EmailAuth from "./EmailAuth";
-const baseURL = import.meta.env.VITE_LOCAL_BASE_URL;
+const baseURL = import.meta.env.VITE_BASE_URL;
 const AuthPage = ({ onLoginSuccess }) => {
   
   // 🌟 이 상태가 로그인/회원가입 모드를 결정합니다.

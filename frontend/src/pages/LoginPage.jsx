@@ -3,7 +3,7 @@ import axios from 'axios';
 import dishLogo from "../assets/DISH_LOGO.png"; // ✅ 로고 이미지 import
 import { useNavigate } from 'react-router-dom';
 import { setAuthToken } from '../api/apiClient';
-const baseURL = import.meta.env.VITE_LOCAL_BASE_URL;
+const baseURL = import.meta.env.VITE_BASE_URL;
 // 'onToggleMode' 프롭을 받아 회원가입 버튼 클릭 시 모드를 전환하도록 합니다.
 const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
   // ------------------------------------
