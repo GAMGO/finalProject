@@ -1,10 +1,11 @@
 import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import LoginPage from "./LoginPage";
 import SignupPage from "./SignupPage";
 import EmailAuth from "./EmailAuth";
 const baseURL = import.meta.env.VITE_BASE_URL;
 const AuthPage = ({ onLoginSuccess }) => {
-  
+  const navigate = useNavigate();
   // 🌟 이 상태가 로그인/회원가입 모드를 결정합니다.
   const [authMode, setAuthMode] = useState('login');
   const [registeredEmail, setRegisteredEmail] = useState('');
@@ -23,7 +24,7 @@ const AuthPage = ({ onLoginSuccess }) => {
   const handleAuthSuccess = () => {
     setAuthMode('login'); 
     setRegisteredEmail('');
-    // 여기에 최종 로그인/메인 페이지로 이동하는 로직을 추가합니다.
+    navigate('/')
   };
   const renderContent = () => {
       switch (authMode) {

@@ -1,103 +1,66 @@
-// import React, { useEffect, useState } from "react";
-// import { Navigate } from "react-router-dom";
-// import { jwtDecode } from 'jwt-decode'
-
-// const AuthCheck = ({ children }) => {
-//   const [isAuthenticated, setIsAuthenticated] = useState(false);
-//   const [isLoading, setIsLoading] = useState(true);
-
-//   useEffect(() => {
-//     // ⭐️ (개선 3) 토큰 확인 로직을 함수로 분리 (안정성 및 재사용성 확보)
-//     const checkAuthStatus = () => {
-//       const token = sessionStorage.getItem("jwtToken");
-//       let isValid = false;
-//       if (token) {
-//         try {
-//           // ⭐️ (수정 1) token이 존재할 때만, useEffect 내부에서 디코딩합니다.
-//           const decoded = jwtDecode(token);
-//           if (decoded && decoded.exp) {
-//             const currentTime = Date.now() / 1000;
-//             if (decoded.exp > currentTime) {
-//               isValid = true;
-//             } else {
-//               sessionStorage.removeItem("jwtToken");
-//             }
-//           } else {
-//             sessionStorage.removeItem("jwtToken");
-//           }
-//         } catch (error) {
-//           // 디코딩 오류 발생 시 토큰 제거
-//           console.error("JWT 디코딩 오류:", error);
-//           sessionStorage.removeItem("jwtToken");
-//         }
-//       }
-//       setIsAuthenticated(isValid);
-//       setIsLoading(false);
-//     };
-//     //초기 상태 확인
-//     checkAuthStatus();
-//     //storage 이벤트 리스너 추가 (상태 변경 감지)
-//     const handleStorageChange = () => checkAuthStatus();
-//     window.addEventListener('storage', handleStorageChange);
-//     return () => {
-//       window.removeEventListener('storage', handleStorageChange);
-//     };}, []);
-
-//   // 1. 로딩 중일 때
-//   if (isLoading) {
-//     return (
-//       <div className="flex justify-center items-center h-screen bg-gray-100">
-//         <div className="text-xl font-semibold text-gray-700">
-//           인증 상태 확인 중...
-//         </div>
-//       </div>
-//     );
-//   }
-
-//   // 2. 인증 실패 → /login로 리다이렉트
-//   if (!isAuthenticated) {
-//     return <Navigate to="/login" replace />;
-//   }
-
-//   // 3. 인증 성공 → children 렌더링
-//   return children;
-// };
-
-// export default AuthCheck;
 import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-// import { jwtDecode } from 'jwt-decode' // ⭐️ 라이브러리 제거
+import { jwtDecode } from 'jwt-decode'
 
-// ----------------------------------------------------
-// 🚨 AuthCheck 무력화: 토큰 유효성 검사 없이 무조건 통과
-// ----------------------------------------------------
 const AuthCheck = ({ children }) => {
-    // 로딩 상태를 빠르게 false로 설정하여 바로 통과시킵니다.
-    const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
-        // 실제 토큰 확인 로직을 건너뛰고 바로 통과 처리합니다.
-        // 토큰이 있든 없든, 만료되었든 아니든 무조건 인증 성공으로 간주합니다.
-        console.warn("경고: AuthCheck가 임시로 비활성화되어 토큰 검사를 건너뜁니다.");
-        setIsLoading(false);
-        
-        // storage 이벤트 리스너도 필요 없으므로 제거
-    }, []);
+  useEffect(() => {
+    // ⭐️ (개선 3) 토큰 확인 로직을 함수로 분리 (안정성 및 재사용성 확보)
+    const checkAuthStatus = () => {
+      const token = sessionStorage.getItem("jwtToken");
+      let isValid = false;
+      if (token) {
+        try {
+          // ⭐️ (수정 1) token이 존재할 때만, useEffect 내부에서 디코딩합니다.
+          const decoded = jwtDecode(token);
+          if (decoded && decoded.exp) {
+            const currentTime = Date.now() / 1000;
+            if (decoded.exp > currentTime) {
+              isValid = true;
+            } else {
+              sessionStorage.removeItem("jwtToken");
+            }
+          } else {
+            sessionStorage.removeItem("jwtToken");
+          }
+        } catch (error) {
+          // 디코딩 오류 발생 시 토큰 제거
+          console.error("JWT 디코딩 오류:", error);
+          sessionStorage.removeItem("jwtToken");
+        }
+      }
+      setIsAuthenticated(isValid);
+      setIsLoading(false);
+    };
+    //초기 상태 확인
+    checkAuthStatus();
+    //storage 이벤트 리스너 추가 (상태 변경 감지)
+    const handleStorageChange = () => checkAuthStatus();
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };}, []);
 
-    // 1. 로딩 중일 때 (매우 짧게 발생)
-    if (isLoading) {
-        return (
-            <div className="flex justify-center items-center h-screen bg-gray-100">
-                <div className="text-xl font-semibold text-gray-700">
-                    인증 상태 확인 중... (무력화 상태)
-                </div>
-            </div>
-        );
-    }
+  // 1. 로딩 중일 때
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen bg-gray-100">
+        <div className="text-xl font-semibold text-gray-700">
+          인증 상태 확인 중...
+        </div>
+      </div>
+    );
+  }
 
-    // 2. 인증 성공 → children 렌더링 (항상 이리로 이동)
-    // 🚨 주: 이제 이 컴포넌트는 항상 children을 반환합니다.
-    return children;
+  // 2. 인증 실패 → /login로 리다이렉트
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // 3. 인증 성공 → children 렌더링
+  return children;
 };
 
 export default AuthCheck;
