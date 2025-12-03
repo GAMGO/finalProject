@@ -65,8 +65,7 @@ public class SecurityConfig {
                             "/api/recover/send-code",
                             "/api/recover/reset",
                             "/api/recover/find-id",
-                            "/api/stores/{storeIdx}/reviews",
-                            "/api/routes"
+                            "/api/stores/{storeIdx}/reviews"
                     ).permitAll()
                     .requestMatchers(
                             "/api/auth/logout",
