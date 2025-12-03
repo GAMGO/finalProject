@@ -4,7 +4,7 @@ import plusIcon from "../assets/plus.svg";
 import "./KakaoMap.css";
 
 const APP_KEY = "bdd84bdbed2db3bc5d8b90cd6736a995";
-const API_BASE = import.meta.env.VITE_BASE_URL;
+const API_BASE = import.meta.env.VITE_LOCAL_BASE_URL;
 
 // FOOD_INFO / FoodCategory 기준 (백엔드에 아직 안 쓰여도 프론트용)
 const CATEGORIES = [
