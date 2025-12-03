@@ -55,8 +55,6 @@ public class SecurityConfig {
                     .requestMatchers(SWAGGER_WHITELIST).permitAll()
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers(PUBLIC_WHITELIST).permitAll()
-
-                    .requestMatchers( "/api/stores/**","/api/stores/{storeIdx}/reviews").permitAll()
                     // 이메일 인증, 가게 목록 (POST 포함 전체) 허용
                     .requestMatchers("/api/email/**", "/api/stores/**","/api/stores/{storeIdx}/reviews","/api/routes/**").permitAll()
                     .requestMatchers(
