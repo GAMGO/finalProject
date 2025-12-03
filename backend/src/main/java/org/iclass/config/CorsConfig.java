@@ -13,12 +13,11 @@ public class CorsConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration c = new CorsConfiguration();
-        c.addAllowedOriginPattern("www"); // lms리포지토리는 서버 구축중임 수정 금지.
-        c.addAllowedOriginPattern("dishinside.shop");
-        c.addAllowedOriginPattern("api.dishinside.shop");
-        c.addAllowedOriginPattern("*");
-        c.addAllowedOrigin("https://api.dishinside.shop");
-        c.addAllowedOrigin("https://dishinside.shop");
+        c.addAllowedOriginPattern("https://dishinside.shop");
+        c.addAllowedOriginPattern("https://api.dishinside.shop");
+        c.addAllowedOriginPattern("http://localhost:5173");  // Vite dev 서버
+        c.addAllowedOriginPattern("http://localhost:3000");  // 사용 시
+        c.addAllowedOriginPattern("http://localhost:*");     // 모든 로컬 포트 허용
         c.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         c.setAllowedHeaders(List.of("Content-Type", "Authorization"));
         c.setAllowCredentials(true);

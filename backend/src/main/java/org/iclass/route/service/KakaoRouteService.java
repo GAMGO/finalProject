@@ -23,7 +23,7 @@ public class KakaoRouteService {
     private final ObjectMapper objectMapper;
     private final String kakaoApiKey;
 
-    private static final String BASE_URL = "https://apis-navi.kakaomobility.com/v1/directions";
+    private static final String LOCAL_BASE_URL = "https://apis-navi.kakaomobility.com/v1/directions";
 
     public KakaoRouteService() {
         this.restTemplate = new RestTemplate();
@@ -68,7 +68,7 @@ public class KakaoRouteService {
         String destParam   = destLng + "," + destLat;
 
         String url = UriComponentsBuilder
-                .fromHttpUrl(BASE_URL)
+                .fromHttpUrl(LOCAL_BASE_URL)
                 .queryParam("origin", originParam)
                 .queryParam("destination", destParam)
                 .queryParam("priority", "RECOMMEND")

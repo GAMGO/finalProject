@@ -13,8 +13,6 @@ import "./SidebarPatch.css";
 // ✅ 로고 이미지
 import DISH_LOGO from "./assets/DISH_LOGO.png";
 
-const API_BASE_URL = "http://localhost:8080";
-
 const Logout = ({ onLogoutSuccess }) => {
     const [message, setMessage] = useState("로그아웃을 시도 중...");
     useEffect(() => {

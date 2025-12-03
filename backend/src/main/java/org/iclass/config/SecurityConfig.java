@@ -55,54 +55,21 @@ public class SecurityConfig {
                     .requestMatchers(SWAGGER_WHITELIST).permitAll()
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers(PUBLIC_WHITELIST).permitAll()
-
-                    // 이메일 인증, 가게 목록 (POST 포함 전체) 허용
-                    .requestMatchers("/api/email/**", "/api/stores/**","/api/stores/{storeIdx}/reviews","/api/routes/**").permitAll()
-
-                //     // ====== 🔥 리뷰 관련 추가 ======
-                //     // 리뷰 조회는 누구나 (with-stats 포함)
-                //     .requestMatchers(
-                //             HttpMethod.GET,
-                //             "/api/stores/*/reviews/**"
-                //     ).permitAll()
-
-                //     // 리뷰 작성/수정/삭제는 로그인 필요
-                //     .requestMatchers(
-                //             HttpMethod.POST,
-                //             "/api/stores/*/reviews"
-                //     ).authenticated()
-                //     .requestMatchers(
-                //             HttpMethod.PUT,
-                //             "/api/stores/*/reviews/*"
-                //     ).authenticated()
-                //     .requestMatchers(
-                //             HttpMethod.DELETE,
-                //             "/api/stores/*/reviews/*"
-                //     ).authenticated()
-                //     // ====== 여기까지 리뷰 ======
-
-                    // 로그인/비번찾기 POST는 허용
+                    .requestMatchers( "/api/stores/**","/api/stores/{storeIdx}/reviews").permitAll()
                     .requestMatchers(
                             HttpMethod.POST,
                             "/api/auth/login",
                             "/api/recover/send-code",
-                            "/api/email/verify",
                             "/api/recover/reset",
                             "/api/recover/find-id",
-                            "/api/stores/{storeIdx}/reviews",
-                            "/api/routes"
+                            "/api/stores/{storeIdx}/reviews"
                     ).permitAll()
-
-                    // 나머지 일부 API는 로그인 필요
                     .requestMatchers(
                             "/api/auth/logout",
                             "/api/posts",
                             "/api/favorites",
                             "/api/profile"
-                    ).authenticated()
-
-                    // 그 외 전부 인증 필요
-                    .anyRequest().authenticated()
+                    ).authenticated().anyRequest().authenticated()
             )
             // 폼/베이직 로그인 비활성
             .httpBasic(b -> b.disable())
