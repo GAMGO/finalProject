@@ -24,13 +24,7 @@ const CATEGORIES = [
 // ✅ Store 객체에서 PK 꺼내는 공통 헬퍼 (idx / id / storeIdx 아무거나 올 수 있음)
 const getStoreIdx = (store) => {
   if (!store) return null;
-  return (
-    store.idx ??
-    store.id ??
-    store.storeIdx ??
-    store.store_id ??
-    null
-  );
+  return store.idx ?? store.id ?? store.storeIdx ?? store.store_id ?? null;
 };
 
 export default function KakaoMap() {
@@ -70,6 +64,7 @@ export default function KakaoMap() {
 
   // ===== 길찾기 상태 =====
   const [routeForm, setRouteForm] = useState({ from: "", to: "" });
+  const [routeMode, setRouteMode] = useState("CAR"); // CAR / WALK / TRANSIT
   const [routeLoading, setRouteLoading] = useState(false);
   const [routeError, setRouteError] = useState("");
 
@@ -198,11 +193,7 @@ export default function KakaoMap() {
             ? `<div style="font-weight:600;margin-bottom:4px;">${categoryText}</div>`
             : ""
         }
-        ${
-          nameText
-            ? `<div style="margin-bottom:4px;">${nameText}</div>`
-            : ""
-        }
+        ${nameText ? `<div style="margin-bottom:4px;">${nameText}</div>` : ""}
         ${
           addressText
             ? `<div style="font-size:11px;color:#555;">${addressText}</div>`
@@ -524,6 +515,7 @@ export default function KakaoMap() {
     setRouteForm({ from: "", to: "" });
     setRouteError("");
     setRouteLoading(false);
+    setRouteMode("CAR");
     if (routeLineRef.current) {
       routeLineRef.current.setMap(null);
       routeLineRef.current = null;
@@ -585,6 +577,7 @@ export default function KakaoMap() {
         body: JSON.stringify({
           from: fromPoint,
           to: toPoint,
+          mode: routeMode, // 🔥 이동수단 같이 전송
         }),
       });
 
@@ -598,7 +591,6 @@ export default function KakaoMap() {
       const json = JSON.parse(text);
       const data = json.data ?? json;
 
-      // 🔥 여기서 path 읽기
       const points = Array.isArray(data?.path)
         ? data.path
         : Array.isArray(data?.points)
@@ -617,10 +609,18 @@ export default function KakaoMap() {
       const path = points.map(
         (p) => new window.kakao.maps.LatLng(p.lat, p.lng)
       );
+
+      const strokeColor =
+        routeMode === "WALK"
+          ? "#16a34a"
+          : routeMode === "TRANSIT"
+          ? "#a855f7"
+          : "#2563eb";
+
       const polyline = new window.kakao.maps.Polyline({
         path,
         strokeWeight: 5,
-        strokeColor: "#2563eb",
+        strokeColor,
         strokeOpacity: 0.9,
         strokeStyle: "solid",
       });
@@ -671,7 +671,7 @@ export default function KakaoMap() {
           borderRadius: 12,
           boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
           padding: "10px 12px",
-          width: 260,
+          width: 280,
           fontSize: 12,
         }}
       >
@@ -679,11 +679,55 @@ export default function KakaoMap() {
           style={{
             fontSize: 13,
             fontWeight: 600,
-            marginBottom: 6,
+            marginBottom: 8,
           }}
         >
           길찾기
         </div>
+
+        {/* 이동 수단 선택 */}
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            marginBottom: 6,
+            fontSize: 12,
+            alignItems: "center",
+          }}
+        >
+          <span style={{ color: "#6b7280", marginRight: 4 }}>이동 수단</span>
+          <label style={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <input
+              type="radio"
+              name="routeMode"
+              value="CAR"
+              checked={routeMode === "CAR"}
+              onChange={(e) => setRouteMode(e.target.value)}
+            />
+            차량
+          </label>
+          <label style={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <input
+              type="radio"
+              name="routeMode"
+              value="WALK"
+              checked={routeMode === "WALK"}
+              onChange={(e) => setRouteMode(e.target.value)}
+            />
+            도보
+          </label>
+          <label style={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <input
+              type="radio"
+              name="routeMode"
+              value="TRANSIT"
+              checked={routeMode === "TRANSIT"}
+              onChange={(e) => setRouteMode(e.target.value)}
+            />
+            대중교통
+          </label>
+        </div>
+
         <form onSubmit={handleRouteSearch}>
           <div style={{ marginBottom: 6 }}>
             <div style={{ marginBottom: 2 }}>출발</div>
