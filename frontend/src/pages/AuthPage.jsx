@@ -23,7 +23,7 @@ const AuthPage = ({ onLoginSuccess }) => {
   const handleAuthSuccess = () => {
     setAuthMode('login'); 
     setRegisteredEmail('');
-    // 여기에 최종 로그인/메인 페이지로 이동하는 로직을 추가합니다.
+    natigate('/')
   };
   const renderContent = () => {
       switch (authMode) {
