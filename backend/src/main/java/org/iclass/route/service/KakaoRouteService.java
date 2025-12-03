@@ -25,21 +25,12 @@ public class KakaoRouteService {
 
     private static final String LOCAL_BASE_URL = "https://apis-navi.kakaomobility.com/v1/directions";
 
-    /**
-     * ✅ 기본 생성자 (Spring이 이걸로 빈 생성함)
-     * - KAKAO_REST_API_KEY는
-     *   1) OS 환경변수
-     *   2) .env (java-dotenv)
-     *   두 곳 중 하나에서 가져옴.
-     */
     public KakaoRouteService() {
         this.restTemplate = new RestTemplate();
         this.objectMapper = new ObjectMapper();
 
-        // 1) OS 환경변수에서 먼저 찾기
         String key = System.getenv("KAKAO_REST_API_KEY");
 
-        // 2) 못 찾으면 .env에서 찾기
         if (key == null || key.isBlank()) {
             try {
                 Dotenv dotenv = Dotenv.configure()
@@ -51,7 +42,6 @@ public class KakaoRouteService {
                     key = fromEnv;
                 }
             } catch (Exception ignore) {
-                // .env가 없거나 오류여도 그냥 무시
             }
         }
 
@@ -66,14 +56,14 @@ public class KakaoRouteService {
     }
 
     /**
-     * 🔹 카카오 내비 API에서 원본 경로 정보 받아오기 (내부용)
+     * 카카오 내비 원본 경로 정보 받아오기
      */
     public RouteResponse getRoute(double originLat,
                                   double originLng,
                                   double destLat,
                                   double destLng) {
 
-        // 카카오 내비는 "경도,위도" (lng,lat) 순서
+        // 카카오 내비는 "경도,위도" (lng,lat)
         String originParam = originLng + "," + originLat;
         String destParam   = destLng + "," + destLat;
 
@@ -123,16 +113,24 @@ public class KakaoRouteService {
                 taxiFare = fareNode.path("taxi").asInt();
             }
 
-            // vertexes: [lng1, lat1, lng2, lat2, ...]
+            // ✅ vertexes 파싱: routes[0].sections[*].roads[*].vertexes
             List<RoutePoint> path = new ArrayList<>();
             JsonNode sections = firstRoute.path("sections");
-            for (JsonNode section : sections) {
-                JsonNode vertexes = section.path("vertexes");
-                if (vertexes.isArray()) {
-                    for (int i = 0; i + 1 < vertexes.size(); i += 2) {
-                        double lng = vertexes.get(i).asDouble();
-                        double lat = vertexes.get(i + 1).asDouble();
-                        path.add(new RoutePoint(lat, lng));
+            if (sections.isArray()) {
+                for (JsonNode section : sections) {
+                    JsonNode roads = section.path("roads");
+                    if (!roads.isArray()) continue;
+
+                    for (JsonNode road : roads) {
+                        JsonNode vertexes = road.path("vertexes");
+                        if (!vertexes.isArray()) continue;
+
+                        // [lng1, lat1, lng2, lat2, ...]
+                        for (int i = 0; i + 1 < vertexes.size(); i += 2) {
+                            double lng = vertexes.get(i).asDouble();
+                            double lat = vertexes.get(i + 1).asDouble();
+                            path.add(new RoutePoint(lat, lng));
+                        }
                     }
                 }
             }
@@ -150,8 +148,7 @@ public class KakaoRouteService {
     }
 
     /**
-     * 🔹 프론트에서 쓰기 좋은 형태로 변환해서 리턴하는 메서드
-     *   (Controller 에서 이 메서드를 호출)
+     * 프론트에서 쓰기 좋은 형태로 변환해서 리턴
      */
     public RouteSummaryResponse searchRoute(double originLat,
                                             double originLng,
@@ -164,7 +161,7 @@ public class KakaoRouteService {
         summary.setDistance((int) Math.round(raw.getDistance()));   // m
         summary.setDuration((int) Math.round(raw.getDuration()));   // sec
         summary.setTaxiFare(raw.getTaxiFare());
-        summary.setTollFare(null); // 유료도로 요금은 지금은 사용 안 함
+        summary.setTollFare(null); // 유료도로 요금은 현재 사용 안 함
 
         if (raw.getPath() != null) {
             List<LatLngDto> path = raw.getPath().stream()
