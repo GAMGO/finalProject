@@ -42,7 +42,7 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
 
     try {
       const response = await axios.post(
-        // ⭐️ 백엔드 로그인 엔드포인트: https://api.dishinside.shop/api/auth/login
+        // 백엔드 로그인 엔드포인트: https://api.dishinside.shop/api/auth/login
         `${baseURL}/api/auth/login`,
         loginData,
         { withCredentials: true }
