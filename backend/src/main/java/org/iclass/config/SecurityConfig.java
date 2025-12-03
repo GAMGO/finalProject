@@ -55,7 +55,7 @@ public class SecurityConfig {
                     .requestMatchers(SWAGGER_WHITELIST).permitAll()
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers(PUBLIC_WHITELIST).permitAll()
-                    .requestMatchers( "/api/stores/**","/api/stores/{storeIdx}/reviews").permitAll()
+                    .requestMatchers( "/api/stores/**","/api/stores/{storeIdx}/reviews","/api/routes").permitAll()
                     .requestMatchers(
                             HttpMethod.POST,
                             "/api/auth/login",
@@ -68,7 +68,7 @@ public class SecurityConfig {
                             "/api/auth/logout",
                             "/api/posts",
                             "/api/favorites",
-                            "/api/profile"
+                            "/api/profile" 
                     ).authenticated().anyRequest().authenticated()
             )
             // 폼/베이직 로그인 비활성
