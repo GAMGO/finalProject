@@ -23,6 +23,7 @@ const AuthPage = ({ onLoginSuccess }) => {
   const handleAuthSuccess = () => {
     setAuthMode('login'); 
     setRegisteredEmail('');
+
     Navigate('/')
   };
   const renderContent = () => {
