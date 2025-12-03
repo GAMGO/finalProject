@@ -4,6 +4,14 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  optimizeDeps: {
+    include: ['jwt-decode'],
+  },
+  build: {
+    commonjsOptions: {
+      include: [/node_modules/],
+    },
+  },
   server: {
     // 프론트엔드가 5173 포트에서 실행 중일 때,
     proxy: {
@@ -12,7 +20,7 @@ export default defineConfig({
         // 여기에 백엔드 서버의 실제 주소를 입력하세요 (예: http://localhost:8080)
         target: 'https://api.dishinside.shop', 
         changeOrigin: true,
-        secure: false, // HTTPS가 아닐 경우
+        secure: true, // HTTPS가 아닐 경우
         // rewrite: (path) => path.replace(/^\/api/, '') // 백엔드 경로에 /api가 포함되지 않는다면 필요
       },
     },
