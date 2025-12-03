@@ -14,6 +14,7 @@ public class CorsConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration c = new CorsConfiguration();
         c.addAllowedOriginPattern("https://dishinside.shop");
+        c.addAllowedOriginPattern("dishinside.shop");
         c.addAllowedOriginPattern("https://api.dishinside.shop");
         c.addAllowedOriginPattern("http://localhost:5173");  // Vite dev 서버
         c.addAllowedOriginPattern("http://localhost:3000");  // 사용 시
