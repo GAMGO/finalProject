@@ -53,11 +53,11 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
       const accessToken = response.data.accessToken || response.data.token;
       if (accessToken) {
         onLoginSuccess(accessToken);
-        navigate("/");
+        
       } else {
         console.error("로그인 응답에 Access Token이 포함되어 있지 않습니다.");
       }
-
+      navigate("/");
     } catch (error) {
       // ⭐️ 서버 연결 또는 인증 실패 처리
       if (error.response) {
