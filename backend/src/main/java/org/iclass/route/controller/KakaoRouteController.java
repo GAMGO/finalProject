@@ -3,13 +3,14 @@ package org.iclass.route.controller;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.iclass.route.dto.LatLngDto;
 import org.iclass.route.dto.RouteSummaryResponse;
 import org.iclass.route.service.KakaoRouteService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api")     // 🔹 전체 prefix: /api
+@RequestMapping("/api")     // /api/routes
 @RequiredArgsConstructor
 public class KakaoRouteController {
 
@@ -20,28 +21,31 @@ public class KakaoRouteController {
      * POST /api/routes
      *
      * {
-     *   "originLat": 37.5665,
-     *   "originLng": 126.9780,
-     *   "destLat": 37.1234,
-     *   "destLng": 127.5678
+     *   "from": { "lat": 37.5665, "lng": 126.9780 },
+     *   "to":   { "lat": 37.1234, "lng": 127.5678 }
      * }
      */
     @PostMapping("/routes")
     public ResponseEntity<RouteSummaryResponse> getRoute(@RequestBody RouteRequest request) {
+        if (request.getFrom() == null || request.getTo() == null) {
+            throw new IllegalArgumentException("from/to 좌표가 비어 있습니다.");
+        }
+
+        LatLngDto from = request.getFrom();
+        LatLngDto to   = request.getTo();
+
         RouteSummaryResponse result = kakaoRouteService.searchRoute(
-                request.getOriginLat(),
-                request.getOriginLng(),
-                request.getDestLat(),
-                request.getDestLng()
+                from.getLat(),
+                from.getLng(),
+                to.getLat(),
+                to.getLng()
         );
         return ResponseEntity.ok(result);
     }
 
     @Data
     public static class RouteRequest {
-        private double originLat;
-        private double originLng;
-        private double destLat;
-        private double destLng;
+        private LatLngDto from;
+        private LatLngDto to;
     }
 }

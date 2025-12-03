@@ -597,7 +597,13 @@ export default function KakaoMap() {
 
       const json = JSON.parse(text);
       const data = json.data ?? json;
-      const points = Array.isArray(data?.points) ? data.points : [];
+
+      // 🔥 여기서 path 읽기
+      const points = Array.isArray(data?.path)
+        ? data.path
+        : Array.isArray(data?.points)
+        ? data.points
+        : [];
 
       if (!points.length) {
         throw new Error("경로 데이터가 비어 있습니다.");
