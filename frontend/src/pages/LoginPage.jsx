@@ -50,7 +50,7 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
 
       // ⭐️ 로그인 성공 처리
       alert("로그인 성공!");
-      const accessToken = response.data.accessToken || response.data.token;
+      const accessToken = response.data.token;
       if (accessToken) {
         onLoginSuccess(accessToken);
       } else {
