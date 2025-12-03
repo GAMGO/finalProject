@@ -8,6 +8,7 @@ import org.iclass.route.dto.LatLngDto;
 import org.iclass.route.dto.RoutePoint;
 import org.iclass.route.dto.RouteResponse;
 import org.iclass.route.dto.RouteSummaryResponse;
+import org.iclass.route.dto.TransportMode;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -48,24 +49,23 @@ public class KakaoRouteService {
         if (key == null || key.isBlank()) {
             throw new IllegalStateException(
                     "KAKAO_REST_API_KEY 환경변수를 찾을 수 없습니다. " +
-                    "OS 환경변수나 .env에 설정해 주세요."
-            );
+                            "OS 환경변수나 .env에 설정해 주세요.");
         }
 
         this.kakaoApiKey = key;
     }
 
     /**
-     * 카카오 내비 원본 경로 정보 받아오기
+     * 카카오 내비 원본 경로 정보 받아오기 (차량 기준)
      */
     public RouteResponse getRoute(double originLat,
-                                  double originLng,
-                                  double destLat,
-                                  double destLng) {
+            double originLng,
+            double destLat,
+            double destLng) {
 
         // 카카오 내비는 "경도,위도" (lng,lat)
         String originParam = originLng + "," + originLat;
-        String destParam   = destLng + "," + destLat;
+        String destParam = destLng + "," + destLat;
 
         String url = UriComponentsBuilder
                 .fromHttpUrl(BASE_URL)
@@ -84,13 +84,11 @@ public class KakaoRouteService {
                 url,
                 HttpMethod.GET,
                 entity,
-                String.class
-        );
+                String.class);
 
         if (!response.getStatusCode().is2xxSuccessful()) {
             throw new IllegalStateException(
-                    "Kakao directions API 호출 실패: " + response.getStatusCode()
-            );
+                    "Kakao directions API 호출 실패: " + response.getStatusCode());
         }
 
         try {
@@ -113,24 +111,51 @@ public class KakaoRouteService {
                 taxiFare = fareNode.path("taxi").asInt();
             }
 
-            // ✅ vertexes 파싱: routes[0].sections[*].roads[*].vertexes
+            // ✅ vertexes 파싱 (여러 구조 대응)
             List<RoutePoint> path = new ArrayList<>();
+
             JsonNode sections = firstRoute.path("sections");
             if (sections.isArray()) {
                 for (JsonNode section : sections) {
+
+                    boolean addedFromRoads = false;
+
+                    // 1) sections[*].roads[*].vertexes 구조
                     JsonNode roads = section.path("roads");
-                    if (!roads.isArray()) continue;
-
-                    for (JsonNode road : roads) {
-                        JsonNode vertexes = road.path("vertexes");
-                        if (!vertexes.isArray()) continue;
-
-                        // [lng1, lat1, lng2, lat2, ...]
-                        for (int i = 0; i + 1 < vertexes.size(); i += 2) {
-                            double lng = vertexes.get(i).asDouble();
-                            double lat = vertexes.get(i + 1).asDouble();
-                            path.add(new RoutePoint(lat, lng));
+                    if (roads.isArray() && roads.size() > 0) {
+                        for (JsonNode road : roads) {
+                            JsonNode vertexes = road.path("vertexes");
+                            if (vertexes.isArray()) {
+                                for (int i = 0; i + 1 < vertexes.size(); i += 2) {
+                                    double lng = vertexes.get(i).asDouble();
+                                    double lat = vertexes.get(i + 1).asDouble();
+                                    path.add(new RoutePoint(lat, lng));
+                                }
+                            }
                         }
+                        addedFromRoads = true;
+                    }
+
+                    // 2) sections[*].vertexes 구조 (fallback)
+                    if (!addedFromRoads) {
+                        JsonNode vertexes = section.path("vertexes");
+                        if (vertexes.isArray()) {
+                            for (int i = 0; i + 1 < vertexes.size(); i += 2) {
+                                double lng = vertexes.get(i).asDouble();
+                                double lat = vertexes.get(i + 1).asDouble();
+                                path.add(new RoutePoint(lat, lng));
+                            }
+                        }
+                    }
+                }
+            } else {
+                // 3) routes[0].vertexes 구조 (추가 fallback)
+                JsonNode vertexes = firstRoute.path("vertexes");
+                if (vertexes.isArray()) {
+                    for (int i = 0; i + 1 < vertexes.size(); i += 2) {
+                        double lng = vertexes.get(i).asDouble();
+                        double lat = vertexes.get(i + 1).asDouble();
+                        path.add(new RoutePoint(lat, lng));
                     }
                 }
             }
@@ -149,17 +174,44 @@ public class KakaoRouteService {
 
     /**
      * 프론트에서 쓰기 좋은 형태로 변환해서 리턴
+     *
+     * ※ 지금은 카카오 내비 API가 차량 기준이라,
+     * 도보/대중교통 모드는 자동차 경로를 기반으로
+     * 예상 시간만 다르게 계산해서 내려줌.
+     * (실제 서비스에서는 전용 API로 교체 추천)
      */
-    public RouteSummaryResponse searchRoute(double originLat,
-                                            double originLng,
-                                            double destLat,
-                                            double destLng) {
+    public RouteSummaryResponse searchRoute(TransportMode mode,
+            double originLat,
+            double originLng,
+            double destLat,
+            double destLng) {
+
+        if (mode == null) {
+            mode = TransportMode.CAR;
+        }
 
         RouteResponse raw = getRoute(originLat, originLng, destLat, destLng);
 
+        int distance = (int) Math.round(raw.getDistance()); // m
+        int baseDuration = (int) Math.round(raw.getDuration()); // sec
+        int durationSec;
+        switch (mode) {
+            case WALK:
+                double walkSpeed = 1.3;
+                durationSec = (int) Math.round(distance / walkSpeed);
+                break;
+            case TRANSIT:
+                durationSec = baseDuration + 5 * 60;
+                break;
+            case CAR:
+            default:
+                durationSec = baseDuration;
+                break;
+        }
+
         RouteSummaryResponse summary = new RouteSummaryResponse();
-        summary.setDistance((int) Math.round(raw.getDistance()));   // m
-        summary.setDuration((int) Math.round(raw.getDuration()));   // sec
+        summary.setDistance(distance);
+        summary.setDuration(durationSec);
         summary.setTaxiFare(raw.getTaxiFare());
         summary.setTollFare(null); // 유료도로 요금은 현재 사용 안 함
 

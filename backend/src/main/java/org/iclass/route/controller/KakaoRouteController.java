@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.iclass.route.dto.LatLngDto;
 import org.iclass.route.dto.RouteSummaryResponse;
+import org.iclass.route.dto.TransportMode;
 import org.iclass.route.service.KakaoRouteService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +23,8 @@ public class KakaoRouteController {
      *
      * {
      *   "from": { "lat": 37.5665, "lng": 126.9780 },
-     *   "to":   { "lat": 37.1234, "lng": 127.5678 }
+     *   "to":   { "lat": 37.1234, "lng": 127.5678 },
+     *   "mode": "CAR" | "WALK" | "TRANSIT"
      * }
      */
     @PostMapping("/routes")
@@ -35,6 +37,7 @@ public class KakaoRouteController {
         LatLngDto to   = request.getTo();
 
         RouteSummaryResponse result = kakaoRouteService.searchRoute(
+                request.getMode(),
                 from.getLat(),
                 from.getLng(),
                 to.getLat(),
@@ -47,5 +50,6 @@ public class KakaoRouteController {
     public static class RouteRequest {
         private LatLngDto from;
         private LatLngDto to;
+        private TransportMode mode;   // CAR / WALK / TRANSIT
     }
 }
