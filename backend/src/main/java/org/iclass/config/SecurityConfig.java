@@ -60,7 +60,6 @@ public class SecurityConfig {
                             HttpMethod.POST,
                             "/api/auth/login",
                             "/api/recover/send-code",
-                            "/api/email/verify",
                             "/api/recover/reset",
                             "/api/recover/find-id",
                             "/api/stores/{storeIdx}/reviews"
