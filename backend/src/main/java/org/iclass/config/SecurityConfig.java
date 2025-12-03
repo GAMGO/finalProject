@@ -57,7 +57,7 @@ public class SecurityConfig {
                     .requestMatchers(PUBLIC_WHITELIST).permitAll()
 
                     // 이메일 인증, 가게 목록 (POST 포함 전체) 허용
-                    .requestMatchers("/api/email/**", "/api/stores/**","/api/stores/{storeIdx}/reviews").permitAll()
+                    .requestMatchers("/api/email/**", "/api/stores/**","/api/stores/{storeIdx}/reviews","/api/routes/**").permitAll()
 
                 //     // ====== 🔥 리뷰 관련 추가 ======
                 //     // 리뷰 조회는 누구나 (with-stats 포함)
@@ -89,7 +89,8 @@ public class SecurityConfig {
                             "/api/email/verify",
                             "/api/recover/reset",
                             "/api/recover/find-id",
-                            "/api/stores/{storeIdx}/reviews"
+                            "/api/stores/{storeIdx}/reviews",
+                            "/api/routes"
                     ).permitAll()
 
                     // 나머지 일부 API는 로그인 필요
