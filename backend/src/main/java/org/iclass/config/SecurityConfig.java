@@ -55,20 +55,24 @@ public class SecurityConfig {
                     .requestMatchers(SWAGGER_WHITELIST).permitAll()
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers(PUBLIC_WHITELIST).permitAll()
-                    .requestMatchers( "/api/stores/**","/api/stores/{storeIdx}/reviews","/api/routes").permitAll()
+
+                    .requestMatchers( "/api/stores/**","/api/stores/{storeIdx}/reviews").permitAll()
+                    // 이메일 인증, 가게 목록 (POST 포함 전체) 허용
+                    .requestMatchers("/api/email/**", "/api/stores/**","/api/stores/{storeIdx}/reviews","/api/routes/**").permitAll()
                     .requestMatchers(
                             HttpMethod.POST,
                             "/api/auth/login",
                             "/api/recover/send-code",
                             "/api/recover/reset",
                             "/api/recover/find-id",
-                            "/api/stores/{storeIdx}/reviews"
+                            "/api/stores/{storeIdx}/reviews",
+                            "/api/routes"
                     ).permitAll()
                     .requestMatchers(
                             "/api/auth/logout",
                             "/api/posts",
                             "/api/favorites",
-                            "/api/profile" 
+                            "/api/profile"
                     ).authenticated().anyRequest().authenticated()
             )
             // 폼/베이직 로그인 비활성
