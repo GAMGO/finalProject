@@ -1,0 +1,10 @@
+# Single Page Application (SPA) 라우팅 규칙 정의
+[[redirects]]
+  # 브라우저에서 어떤 경로(예: /login, /community)로 요청이 오든지
+  from = "/*" 
+
+  # 물리적인 index.html 파일을 응답해라 (React 라우터 실행)
+  to = "/index.html" 
+
+  # 이 요청을 404가 아닌, 정상적인 200 OK 상태로 처리해라
+  status = 200
