@@ -36,7 +36,7 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
 
     // ⭐️ API 호출 데이터 준비
     const loginData = {
-      id: customer_id, // ⚠️ 인풋 필드에서 값을 가져오는 변수명인지 확인하세요.
+      id: customer_id,
       password: password
     };
 
@@ -56,8 +56,6 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
       } else {
         console.error("로그인 응답에 Access Token이 포함되어 있지 않습니다.");
       }
-      navigate("/");
-      
     } catch (error) {
       // ⭐️ 서버 연결 또는 인증 실패 처리
       if (error.response) {

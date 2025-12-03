@@ -29,7 +29,7 @@ const AuthPage = ({ onLoginSuccess }) => {
       switch (authMode) {
           case 'login':
               // LoginPage가 onToggleMode를 통해 signup으로 이동합니다.
-              return <LoginPage onToggleMode={toggleMode} onLoginSuccess={onLoginSuccess} key="login" />; 
+              return <LoginPage onToggleMode={toggleMode} onLoginSuccess={onLoginSuccess} key="login" />;
           case 'signup':
               return (
                   // SignupPage에 다음 단계 전환 함수 전달
