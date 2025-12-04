@@ -100,8 +100,7 @@ const SignupPage = ({ onToggleMode, onSignupSuccess }) => {
       if (error.response) {
         // 서버 응답 (예: 409 Conflict - 이미 존재하는 사용자)
         alert(
-          `회원가입 실패: ${
-            error.response.data.message || "이미 존재하는 사용자 이름입니다."
+          `회원가입 실패: ${error.response.data.message || "이미 존재하는 사용자 이름입니다."
           }`
         );
         console.error("회원가입 에러 응답:", error.response);
@@ -124,7 +123,8 @@ const SignupPage = ({ onToggleMode, onSignupSuccess }) => {
   const deppDarkPurple = "#5B2C6F";
   const lightPeach = "#F5D7B7";
   const white = "#FFFFFF";
-  const customFont = "PartialSans, sans-serif";
+  const customFont = "PartialSans,SchoolSafetyRoundedSmile,sans-serif";
+  const clearCustomFont = "SchoolSafetyRoundedSmile,sans-serif";
   const fontFaceCss = `
     @font-face {
       font-family: 'PartialSans';
@@ -133,6 +133,20 @@ const SignupPage = ({ onToggleMode, onSignupSuccess }) => {
       font-display: swap;
     }
   `;
+  const fontClearCss = `@font-face {
+    font-family: 'SchoolSafetyRoundedSmile';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-5@1.0/HakgyoansimDunggeunmisoTTF-R.woff2') format('woff2');
+    font-weight: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'SchoolSafetyRoundedSmile';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-5@1.0/HakgyoansimDunggeunmisoTTF-B.woff2') format('woff2');
+    font-weight: 700;
+    font-display: swap;
+}`;
+const fontSet = [fontClearCss,fontFaceCss];
   const textShadowStyle = { textShadow: `4px 4px 2px ${darkPurple}` };
   const textRoundStyle = { textShadow: `-2px 0 ${darkPurple}, 0 2px ${darkPurple}, 2px 0 ${darkPurple}, 0 -2px ${darkPurple}` };
   const containerStyle = {
@@ -185,7 +199,8 @@ const SignupPage = ({ onToggleMode, onSignupSuccess }) => {
     fontSize: "16px",
     backgroundColor: white,
     color: darkPurple,
-    fontFamily: customFont,
+    fontFamily: clearCustomFont,
+    fontWeight:700,
     boxShadow: `4px 4px 0px ${darkPurple}`,
   };
   const buttonStyle = {
@@ -216,7 +231,7 @@ const SignupPage = ({ onToggleMode, onSignupSuccess }) => {
   // ------------------------------------
   return (
     <div style={containerStyle}>
-      <style>{fontFaceCss}</style>
+      <style>{fontSet}</style>
       <div style={loginBoxStyle}>
         <div>
           <h2 style={titleStyle}>회원가입</h2>
@@ -310,14 +325,14 @@ const SignupPage = ({ onToggleMode, onSignupSuccess }) => {
           >
             <button
               type="button"
-              style={gender === 'M' ? selectedButtonStyle : buttonStyle} 
+              style={gender === 'M' ? selectedButtonStyle : buttonStyle}
               onClick={() => handleGenderSelect('M')}
             >
               남자
             </button>
             <button
               type="button"
-              style={gender === null? selectedButtonStyle : buttonStyle}
+              style={gender === null ? selectedButtonStyle : buttonStyle}
               onClick={() => handleGenderSelect(null)}
             >
               비공개

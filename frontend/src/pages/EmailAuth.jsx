@@ -87,12 +87,6 @@ const createHandleChange = (setter) => (e) => setter(e.target.value);
 // 3. EmailAuthPage 컴포넌트
 // ----------------------------------------------------------------------
 
-/**
- * @param {object} props 
- * @param {string} props.registeredEmail - 회원가입 성공 후 전달받은 이메일 주소
- * @param {function} props.onAuthSuccess - 인증 성공 시 AuthPage에 알리는 콜백 함수 (Login 페이지로 전환 요청)
- * @param {function} props.onRestartSignup - 인증 시간 만료 시 Signup 페이지로 돌아가기 요청
- */
 const EmailAuthPage = ({ registeredEmail, onAuthSuccess, onRestartSignup }) => {
   const [authCode, setAuthCode] = useState('');
   const [countdown, setCountdown] = useState(300); // 5분 = 300초

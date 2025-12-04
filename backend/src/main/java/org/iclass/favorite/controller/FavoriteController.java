@@ -29,13 +29,19 @@ public class FavoriteController {
     }
 
     @PutMapping("/{id}")
-    public FavoriteResponse updateFavorite(@PathVariable Long idx,
-                                           @RequestBody FavoriteRequest req) {
+    public FavoriteResponse updateFavorite(
+            // ✅ URL 의 {id} 를 idx 파라미터에 매핑
+            @PathVariable("id") Long idx,
+            @RequestBody FavoriteRequest req
+    ) {
         return favoriteService.updateFavorite(idx, req);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteFavorite(@PathVariable Long idx) {
+    public void deleteFavorite(
+            // ✅ 위와 동일하게 명시
+            @PathVariable("id") Long idx
+    ) {
         favoriteService.deleteFavorite(idx);
     }
 }
