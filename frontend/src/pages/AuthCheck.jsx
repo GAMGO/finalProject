@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 // ----------------------------------------------------
 // ⭐️ 순수 JavaScript를 이용한 JWT 수동 파싱 함수
 // ----------------------------------------------------
@@ -25,6 +25,7 @@ const manualJwtDecode = (token) => {
 
 
 const AuthCheck = ({ children }) => {
+    const navigate = useNavigate();
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -84,7 +85,7 @@ const AuthCheck = ({ children }) => {
 
     // 2. 인증 실패 → /login로 리다이렉트
     if (!isAuthenticated) {
-        return <Navigate to="/login" replace />;
+        return <navigate to="/login" replace />;
     }
 
     // 3. 인증 성공 → children 렌더링
