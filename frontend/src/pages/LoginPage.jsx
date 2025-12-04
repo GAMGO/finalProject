@@ -2,15 +2,9 @@ import React, { useState, useCallback } from "react";
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-// ------------------------------------
-// [오류 해결] 1. 환경 변수 대신 API 주소를 직접 정의 (import.meta.env 오류 해결)
-// ------------------------------------
-const baseURL = import.meta.env.VITE_LOCAL_BASE_URL; 
+const baseURL = import.meta.env.VITE_LOCAL_BASE_URL;
 
-// ------------------------------------
-// [오류 해결] 2. setAuthToken 함수를 인라인 정의 (apiClient resolve 오류 해결)
-// 토큰을 localStoragea에 저장하여 사용자가 로그인 상태를 유지하도록 합니다.
-// ------------------------------------
+
 const setAuthToken = (token) => {
   if (token) {
     localStorage.setItem('accessToken', token);
@@ -21,13 +15,9 @@ const setAuthToken = (token) => {
     delete axios.defaults.headers.common['Authorization'];
   }
 };
+//로고경로
+const dishLogoUrl = "/src/assets/DISH_LOGO.png";
 
-
-/**
- * 로그인 페이지 컴포넌트
- * @param {function} onToggleMode - 회원가입 모드 전환 함수
- * @param {function} onLoginSuccess - 로그인 성공 시 호출될 함수 (토큰 전달)
- */
 const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
   // ------------------------------------
   // 1. 상태 관리
@@ -85,7 +75,7 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
     } catch (error) {
       // ⭐️ 서버 연결 또는 인증 실패 처리
       let errorMessage = "서버 연결에 실패했습니다. 네트워크 상태를 확인해주세요.";
-      
+
       if (error.response) {
         // 4xx 또는 5xx 응답
         errorMessage = error.response.data.message || "아이디 또는 비밀번호를 확인해주세요.";
@@ -99,18 +89,18 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
         errorMessage = `요청 오류: ${error.message}`;
         console.error("로그인 에러:", error.message);
       }
-      
+
       setMessage({ text: `로그인 실패: ${errorMessage}`, type: "error" });
     }
   };
 
   // ------------------------------------
-  // 4. 스타일 정의 (기존 스타일 유지)
+  // 4. 스타일 정의
   // ------------------------------------
   const darkPurple = "#78266A";
   const lightPeach = "#F5D7B7";
   const white = "#FFFFFF";
-  const customFont = "PartialSans, sans-serif";
+  const customFont = "PartialSans,Paperozi,sans-serif";
 
   const fontFaceCss = `
     @font-face {
@@ -120,6 +110,68 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
       font-display: swap;
     }
   `;
+  const fontClearCss = `@font-face {
+    font-family: 'Paperozi';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-1Thin.woff2') format('woff2');
+    font-weight: 100;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Paperozi';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-2ExtraLight.woff2') format('woff2');
+    font-weight: 200;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Paperozi';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-3Light.woff2') format('woff2');
+    font-weight: 300;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Paperozi';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-4Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Paperozi';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-5Medium.woff2') format('woff2');
+    font-weight: 500;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Paperozi';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-6SemiBold.woff2') format('woff2');
+    font-weight: 600;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Paperozi';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-7Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Paperozi';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-8ExtraBold.woff2') format('woff2');
+    font-weight: 800;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Paperozi';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-9Black.woff2') format('woff2');
+    font-weight: 900;
+    font-display: swap;
+}`
 
   const textShadowStyle = { textShadow: `4px 4px 2px ${darkPurple}` };
 
@@ -142,17 +194,12 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
     textAlign: "center",
     fontFamily: customFont,
   };
-  
-  // [오류 해결] 3. 이미지 대신 텍스트 로고 스타일
-  const logoTextStyle = {
-    fontSize: "48px",
-    fontWeight: "bold",
-    color: darkPurple,
-    marginBottom: "30px",
-    letterSpacing: "4px",
-    textShadow: `2px 2px 0px ${white}`,
-  };
 
+  const logoContainerStyle = {
+    maxWidth: "100%",
+    height: "auto",
+    marginBottom: "30px",
+  };
 
   const inputGroupStyle = {
     marginBottom: "20px",
@@ -180,7 +227,7 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
     fontSize: "16px",
     backgroundColor: white,
     color: darkPurple,
-    fontFamily: customFont,
+    fontFamily: fontClearCss,
     boxShadow: `4px 4px 0px ${darkPurple}`,
   };
 
@@ -199,14 +246,16 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
     fontFamily: customFont,
     boxShadow: `4px 4px 0px ${darkPurple}`,
   };
-  
+
   const messageStyle = {
     marginTop: '15px',
     marginBottom: '15px',
     padding: '10px',
     borderRadius: '10px',
-    fontWeight: 'bold',
+    fontWeight: '0',
     color: white,
+    ...textShadowStyle,
+    fontFamily: '',
     backgroundColor: message.type === 'error' ? '#D9534F' : '#5CB85C', // 빨간색 또는 초록색
     fontSize: '14px'
   };
@@ -218,16 +267,15 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
     <div style={containerStyle}>
       <style>{fontFaceCss}</style>
       <div style={loginBoxStyle}>
-        {/* [수정된] 로고 영역 (텍스트 로고 사용) */}
         <div>
-          <h1 style={logoTextStyle}>DISH</h1>
+          <img src={dishLogoUrl} alt="DISH 로고" style={logoContainerStyle} />
         </div>
 
         {/* 메시지 영역 */}
         {message.text && (
-            <div style={messageStyle}>
-                {message.text}
-            </div>
+          <div style={messageStyle}>
+            {message.text}
+          </div>
         )}
 
         {/* ID 입력 필드 */}
