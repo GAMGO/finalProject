@@ -5,7 +5,8 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@Getter @Setter
+@Getter 
+@Setter
 public class CommentResponse {
     private Long id;
     private Long postIdx;

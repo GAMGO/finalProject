@@ -1,123 +1,103 @@
 // src/pages/CommunityPage.jsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "../components/community/Community.css";
 import PostEditor from "../components/community/PostEditor";
-import writeFabIcon from "../assets/write-icon.svg"; // ← 네 아이콘 경로로 수정
+import writeFabIcon from "../assets/write-icon.svg";
 
-// ✅ 기본 노점 목데이터
-const INITIAL_POSTS = [
-  {
-    id: 1,
-    title: "시청 앞 통닭 트럭 오늘 7시에 온대요",
-    writer: "노점헌터",
-    board: "서울 노점 제보",
-    time: "13:50",
-    commentCount: 88,
-    views: 1240,
-    category: "제보",
-    location: "서울 중구 시청역 2번 출구 앞",
-    thumbnail:
-      "https://images.pexels.com/photos/461198/pexels-photo-461198.jpeg?auto=compress&cs=tinysrgb&w=400",
-    content:
-      "어제도 왔던 통닭 트럭인데 오늘도 7시쯤 온다고 해서 제보합니다.\n\n가격은 한 마리 15,000원, 감자튀김 추가 3,000원이고, 줄 금방 길어지니 미리 가는 거 추천!",
-  },
-  {
-    id: 2,
-    title: "광화문 붕어빵 5개 3천원 파는 곳 후기",
-    writer: "붕어덕후",
-    board: "간식·디저트",
-    time: "13:35",
-    commentCount: 32,
-    views: 830,
-    category: "후기",
-    location: "광화문역 7번 출구 앞",
-    thumbnail:
-      "https://images.pexels.com/photos/4109994/pexels-photo-4109994.jpeg?auto=compress&cs=tinysrgb&w=400",
-    content:
-      "팥 듬뿍 + 크기도 커서 가성비 상당합니다.\n\n다만 줄이 조금 길고, 카드 결제는 안 됩니다.",
-  },
-  {
-    id: 3,
-    title: "연남동 타코 트럭 신메뉴 나왔대요",
-    writer: "타코타코",
-    board: "연남·홍대",
-    time: "13:20",
-    commentCount: 10,
-    views: 542,
-    category: "제보",
-    location: "연남동 동진시장 근처",
-    thumbnail:
-      "https://images.pexels.com/photos/461198/pexels-photo-461198.jpeg?auto=compress&cs=tinysrgb&w=400",
-    content:
-      "새우 타코 나왔다고 해서 점심에 먹어봤는데 소스가 살짝 매콤달콤.\n\n오늘 내일만 한정 메뉴라길래 공유합니다.",
-  },
-  {
-    id: 4,
-    title: "신촌 닭강정 트럭 요즘도 나오나요?",
-    writer: "찾는중",
-    board: "질문·찾기",
-    time: "13:05",
-    commentCount: 49,
-    views: 910,
-    category: "질문",
-    location: "신촌역 현대백화점 쪽",
-    thumbnail:
-      "https://images.pexels.com/photos/4109136/pexels-photo-4109136.jpeg?auto=compress&cs=tinysrgb&w=400",
-    content:
-      "작년 겨울마다 보이던 주황색 트럭이 안 보이네요.\n\n혹시 요즘도 나오는지, 요일이 바뀐 건지 아시는 분 계신가요?",
-  },
-  {
-    id: 5,
-    title: "서면 야시장 닭꼬치 줄 미쳤네요ㅋㅋ",
-    writer: "부산인",
-    board: "부산 노점",
-    time: "12:45",
-    commentCount: 16,
-    views: 678,
-    category: "후기",
-    location: "부산 서면 야시장",
-    thumbnail:
-      "https://images.pexels.com/photos/106343/pexels-photo-106343.jpeg?auto=compress&cs=tinysrgb&w=400",
-    content:
-      "맛은 있는데 최소 20분은 서야 먹을 수 있습니다…\n\n줄 길이 감안하고 가세요 ㅠ",
-  },
-];
+// API
+import {
+  listPosts as listPostsApi,
+  createPost as createPostApi,
+  updatePost as updatePostApi,
+  deletePost as deletePostApi,
+} from "../api/posts";
+import {
+  listComments,
+  createComment,
+  deleteComment,
+} from "../api/comments";
 
 const DEFAULT_THUMB =
   "https://images.pexels.com/photos/461198/pexels-photo-461198.jpeg?auto=compress&cs=tinysrgb&w=400";
 
-/** PostEditor에서 넘어오는 형식을 DC 리스트용으로 매핑 */
-function mapEditorPostToCommunity(editorPost) {
+/** 서버(PostResponse) → 커뮤니티 카드용 포맷으로 매핑 */
+function mapPostFromApi(p) {
   return {
-    id: Date.now(),
-    title: editorPost.title || "(제목 없음)",
-    writer: editorPost.writer || "익명",
-    board: editorPost.storeCategory || "노점",
-    time: "방금 전",
-    commentCount: 0,
-    views: 0,
-    category: editorPost.type || "제보",
-    location: editorPost.locationText || "",
-    thumbnail: editorPost.imageUrl || DEFAULT_THUMB,
-    content: editorPost.content || "",
+    id: p.id ?? p.postId,
+    title: p.title ?? "(제목 없음)",
+    writer: p.writer ?? "익명",
+    board: p.storeCategory ?? p.board ?? "노점",
+    time: p.createdAt
+      ? new Date(p.createdAt).toLocaleTimeString("ko-KR", {
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : "방금 전",
+    commentCount: p.commentCount ?? 0,
+    views: p.viewCount ?? p.views ?? 0,
+    category: p.type ?? p.category ?? "제보",
+    location: p.locationText ?? p.location ?? "",
+    thumbnail: p.imageUrl ?? DEFAULT_THUMB,
+    content: p.content ?? "",
+  };
+}
+
+/** 커뮤니티 카드 → PostEditor 초기값 포맷 */
+function mapPostToEditorInitial(post) {
+  return {
+    type: post.category ?? "제보",
+    title: post.title ?? "",
+    content: post.content ?? "",
+    locationText: post.location ?? "",
+    storeCategory: post.board ?? "",
+    writer: post.writer ?? "",
+    imageUrl: post.thumbnail ?? "",
   };
 }
 
 export default function CommunityPage() {
   // view: list / detail / write
   const [view, setView] = useState("list");
-  const [posts, setPosts] = useState(INITIAL_POSTS);
+  const [posts, setPosts] = useState([]);
   const [selectedPostId, setSelectedPostId] = useState(null);
+  const [editingPost, setEditingPost] = useState(null); // PostEditor 초기값(수정 모드일 때만 세팅)
 
-  // 댓글 상태: { [postId]: [{ id, author, text, createdAt }] }
+  // 댓글 상태: { [postId]: [{ id, author, content, createdAt }] }
   const [commentsByPost, setCommentsByPost] = useState({});
 
-  const selectedPost =
-    posts.find((p) => p.id === selectedPostId) || null;
+  const selectedPost = posts.find((p) => p.id === selectedPostId) || null;
 
-  const handleOpenPost = (postId) => {
+  // ─────────────────────────────────────────────────────────────
+  // 게시글 목록 최초 로드
+  // ─────────────────────────────────────────────────────────────
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await listPostsApi();
+        const list = Array.isArray(data) ? data : data?.content ?? [];
+        setPosts(list.map(mapPostFromApi));
+      } catch (e) {
+        console.error("[listPosts] 실패:", e);
+      }
+    })();
+  }, []);
+
+  // ─────────────────────────────────────────────────────────────
+  // 상세 진입: 댓글 불러오기(페이지 0 기준)
+  // ─────────────────────────────────────────────────────────────
+  const handleOpenPost = async (postId) => {
     setSelectedPostId(postId);
     setView("detail");
+    try {
+      const page = await listComments(postId, 0, 10);
+      setCommentsByPost((prev) => ({
+        ...prev,
+        [postId]: page?.content ?? [],
+      }));
+    } catch (e) {
+      console.error("[listComments] 실패:", e);
+      alert("댓글을 불러오지 못했어요.");
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -126,41 +106,102 @@ export default function CommunityPage() {
     setView("list");
   };
 
-  const handleAddComment = (postId, text) => {
-    if (!text.trim()) return;
-    setCommentsByPost((prev) => {
-      const list = prev[postId] || [];
-      const newComment = {
-        id: Date.now(),
+  // ─────────────────────────────────────────────────────────────
+  // 댓글 등록
+  // ─────────────────────────────────────────────────────────────
+  const handleAddComment = async (postId, content) => {
+    if (!content.trim()) return;
+    try {
+      await createComment(postId, {
         author: "익명",
-        text: text.trim(),
-        createdAt: "방금 전",
-      };
-      return {
+        content: content.trim(),
+      });
+      const page = await listComments(postId, 0, 10);
+      setCommentsByPost((prev) => ({
         ...prev,
-        [postId]: [...list, newComment],
-      };
-    });
+        [postId]: page?.content ?? [],
+      }));
+    } catch (e) {
+      console.error("[createComment] 실패:", e);
+      alert("댓글 등록에 실패했어요.");
+    }
   };
 
+  // ─────────────────────────────────────────────────────────────
+  // 글쓰기(생성) / 수정 / 삭제
+  // ─────────────────────────────────────────────────────────────
   const handleOpenWrite = () => {
+    setEditingPost(null); // 생성 모드
     setView("write");
   };
 
-  const handleCreatePost = (newPostFromEditor) => {
-    const mapped = mapEditorPostToCommunity(newPostFromEditor);
-    setPosts((prev) => [mapped, ...prev]);
-    setSelectedPostId(mapped.id);
-    setView("detail");
+  const handleCreatePost = async (form) => {
+    try {
+      const created = await createPostApi(form); // 서버가 id 또는 객체 반환
+      // 목록 재조회
+      const data = await listPostsApi();
+      const list = Array.isArray(data) ? data : data?.content ?? [];
+      const mapped = list.map(mapPostFromApi);
+      setPosts(mapped);
+
+      // 생성된 글로 이동
+      const createdId =
+        (typeof created === "object"
+          ? created.id ?? created.postId
+          : created) ?? mapped[0]?.id;
+      setSelectedPostId(createdId ?? null);
+      setView("detail");
+    } catch (e) {
+      console.error("[createPost] 실패:", e);
+      alert("게시글 등록에 실패했어요.");
+    }
+  };
+
+  const openEdit = (post) => {
+    setEditingPost(mapPostToEditorInitial(post)); // 수정 모드 초기값
+    setSelectedPostId(post.id);
+    setView("write");
+  };
+
+  const handleUpdatePost = async (postId, form) => {
+    try {
+      await updatePostApi(postId, form);
+      const data = await listPostsApi();
+      const list = Array.isArray(data) ? data : data?.content ?? [];
+      const mapped = list.map(mapPostFromApi);
+      setPosts(mapped);
+      setEditingPost(null);
+      setSelectedPostId(postId);
+      setView("detail");
+    } catch (e) {
+      console.error("[updatePost] 실패:", e);
+      alert("게시글 수정에 실패했어요.");
+    }
+  };
+
+  const handleDeletePost = async (postId) => {
+    if (!confirm("이 게시글을 삭제할까요?")) return;
+    try {
+      await deletePostApi(postId);
+      const data = await listPostsApi();
+      const list = Array.isArray(data) ? data : data?.content ?? [];
+      setPosts(list.map(mapPostFromApi));
+      setSelectedPostId(null);
+      setView("list");
+    } catch (e) {
+      console.error("[deletePost] 실패:", e);
+      alert("게시글 삭제에 실패했어요.");
+    }
   };
 
   const handleCloseEditor = () => {
+    setEditingPost(null);
     setView("list");
   };
 
   return (
     <div className="community-root">
-      {/* 리스트 화면에서만 상단 입력창 + 리스트 + 플로팅 버튼 보임 */}
+      {/* 리스트 화면 */}
       {view === "list" && (
         <>
           <div className="community-input-wrapper">
@@ -184,6 +225,7 @@ export default function CommunityPage() {
         </>
       )}
 
+      {/* 상세 화면 */}
       {view === "detail" && selectedPost && (
         <CommunityDetail
           post={selectedPost}
@@ -191,13 +233,24 @@ export default function CommunityPage() {
           comments={commentsByPost[selectedPost.id] || []}
           onBack={handleBackToList}
           onAddComment={handleAddComment}
+          onEdit={() => openEdit(selectedPost)}
+          onDelete={() => handleDeletePost(selectedPost.id)}
+          onDeleteComment={(commentId) => deleteComment(commentId)} // 필요 시 사용
         />
       )}
 
+      {/* 글쓰기/수정 화면 (PostEditor 재사용) */}
       {view === "write" && (
         <PostEditor
+          initial={editingPost ?? undefined}
           onClose={handleCloseEditor}
-          onSubmit={handleCreatePost}
+          onSubmit={async (form) => {
+            if (editingPost && selectedPostId) {
+              await handleUpdatePost(selectedPostId, form);
+            } else {
+              await handleCreatePost(form);
+            }
+          }}
         />
       )}
     </div>
@@ -230,13 +283,9 @@ function CommunityList({ posts, onOpenPost }) {
                 </span>
               </div>
               <div className="community-row-meta">
-                <span className="community-row-writer">
-                  {post.writer}
-                </span>
+                <span className="community-row-writer">{post.writer}</span>
                 <span className="community-row-dot">·</span>
-                <span className="community-row-location">
-                  {post.location}
-                </span>
+                <span className="community-row-location">{post.location}</span>
               </div>
             </div>
 
@@ -259,6 +308,8 @@ function CommunityDetail({
   comments,
   onBack,
   onAddComment,
+  onEdit,
+  onDelete,
 }) {
   const [commentInput, setCommentInput] = useState("");
 
@@ -266,24 +317,26 @@ function CommunityDetail({
     (p) => p.writer === post.writer && p.id !== post.id
   );
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onAddComment(post.id, commentInput);
+    await onAddComment(post.id, commentInput);
     setCommentInput("");
   };
 
   return (
     <div className="post-detail-wrapper">
-      <button
-        type="button"
-        className="post-detail-back"
-        onClick={onBack}
-      >
+      <button type="button" className="post-detail-back" onClick={onBack}>
         ◀ 목록으로
       </button>
 
       <div className="post-detail-main">
         <h1 className="post-detail-title">{post.title}</h1>
+
+        {/* 수정/삭제 버튼 */}
+        <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+          <button onClick={onEdit}>수정</button>
+          <button onClick={onDelete}>삭제</button>
+        </div>
 
         <div className="post-detail-meta">
           <span className="post-detail-writer">{post.writer}</span>
@@ -305,28 +358,22 @@ function CommunityDetail({
       <div className="post-detail-layout-bottom">
         {/* 댓글 */}
         <section className="post-comments">
-          <h2 className="post-comments-title">
-            댓글 {comments.length}
-          </h2>
+          <h2 className="post-comments-title">댓글 {comments.length}</h2>
 
           <ul className="post-comments-list">
             {comments.length === 0 ? (
-              <li className="post-comments-empty">
-                첫 댓글을 남겨보세요.
-              </li>
+              <li className="post-comments-empty">첫 댓글을 남겨보세요.</li>
             ) : (
               comments.map((c) => (
                 <li key={c.id} className="post-comment-row">
                   <div className="post-comment-header">
-                    <span className="post-comment-author">
-                      {c.author}
-                    </span>
+                    <span className="post-comment-author">{c.author}</span>
                     <span className="post-comment-dot">·</span>
                     <span className="post-comment-time">
-                      {c.createdAt}
+                      {new Date(c.createdAt).toLocaleString()}
                     </span>
                   </div>
-                  <div className="post-comment-text">{c.text}</div>
+                  <div className="post-comment-content">{c.content}</div>
                 </li>
               ))
             )}
@@ -350,20 +397,14 @@ function CommunityDetail({
 
         {/* 같은 작성자 글 */}
         <aside className="post-writer-more">
-          <h3 className="post-writer-more-title">
-            {post.writer} 님의 다른 글
-          </h3>
+          <h3 className="post-writer-more-title">{post.writer} 님의 다른 글</h3>
           <ul className="post-writer-more-list">
             {sameWriterPosts.length === 0 ? (
-              <li className="post-writer-more-empty">
-                다른 글이 없습니다.
-              </li>
+              <li className="post-writer-more-empty">다른 글이 없습니다.</li>
             ) : (
               sameWriterPosts.map((p) => (
                 <li key={p.id} className="post-writer-more-row">
-                  <span className="post-writer-more-title-text">
-                    {p.title}
-                  </span>
+                  <span className="post-writer-more-title-text">{p.title}</span>
                   <span className="post-writer-more-count">
                     [{p.commentCount}]
                   </span>
