@@ -2,29 +2,21 @@ import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 
 // ----------------------------------------------------
-// ⭐️ 순수 JavaScript를 이용한 JWT 수동 파싱 함수 (개선됨)
+// 순수 JavaScript를 이용한 JWT 수동 파싱 함수
 // ----------------------------------------------------
 const manualJwtDecode = (token) => {
     try {
         // 1. JWT의 페이로드(두 번째 부분)를 가져옵니다.
         const base64Url = token.split('.')[1];
         
-        // 2. Base64URL 포맷을 일반 Base64 포맷으로 변환합니다.
-        // Node.js 환경에서 Buffer를 사용하거나, 최신 브라우저에서 'btoa/atob' 대신
-        // TextDecoder와 Blob/File Reader를 사용할 수도 있으나,
-        // 여기서는 기존 'atob' 기반 로직을 활용하면서 안전성을 높입니다.
+        // 2. Base64URL 포맷을 일반 Base64 포맷으로 변환하고 패딩을 추가합니다.
         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-
-        // 3. 디코딩: atob()은 ASCII/Latin1만 지원하므로, 멀티바이트 문자를 포함할 경우
-        // 디코딩 전에 패딩을 추가하여 오류를 방지합니다.
-        // 참고: Base64 문자열의 길이가 4의 배수가 아닐 경우 atob()에서 오류가 날 수 있습니다.
         const paddedBase64 = base64.padEnd(base64.length + (4 - base64.length % 4) % 4, '=');
         
         // Base64 디코딩 (Latin1 문자열)
         const rawPayload = atob(paddedBase64);
         
         // Latin1 문자열을 UTF-8로 변환하여 JSON 파싱
-        // TextDecoder API가 없는 환경을 가정하고 기존 로직을 ES6로 간결화했습니다.
         const jsonPayload = decodeURIComponent(
             rawPayload.split('').map(c => 
                 '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
@@ -39,7 +31,9 @@ const manualJwtDecode = (token) => {
 };
 
 
-const AuthCheck = ({ children }) => {
+// ⭐️ 콤포넌트 정의와 동시에 기본 내보내기 (인라인 default export)
+//    -> 번들러가 '이 파일은 오직 하나의 함수 컴포넌트'라는 것을 명확히 알게 됨
+export default ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -104,5 +98,3 @@ const AuthCheck = ({ children }) => {
     // 3. 인증 성공 → children 렌더링
     return children;
 };
-
-export default AuthCheck;
