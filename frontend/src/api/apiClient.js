@@ -2,8 +2,7 @@
 import axios from "axios";
 
 const apiClient = axios.create({
-  // 예: VITE_LOCAL_BASE_URL=http://localhost:8080
-  baseURL: import.meta.env.VITE_LOCAL_BASE_URL,
+  baseURL: import.meta.env.VITE_LOCAL_BASE_URL
 });
 
 // ======================
