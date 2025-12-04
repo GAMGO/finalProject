@@ -121,9 +121,9 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
     src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-5@1.0/HakgyoansimDunggeunmisoTTF-B.woff2') format('woff2');
     font-weight: 700;
     font-display: swap;
-}`
+}`;
+  const fontSet = [fontClearCss, fontFaceCss];
   const textShadowStyle = { textShadow: `4px 4px 2px ${darkPurple}` };
-
   const containerStyle = {
     display: "flex",
     justifyContent: "center",
@@ -177,6 +177,7 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
     backgroundColor: white,
     color: darkPurple,
     fontFamily: clearCustomFont,
+    fontWeight:700,
     boxShadow: `4px 4px 0px ${darkPurple}`,
   };
 
@@ -213,7 +214,7 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
   // ------------------------------------
   return (
     <div style={containerStyle}>
-      <style>{fontFaceCss},{fontClearCss}</style>
+      <style>{fontSet}</style>
       <div style={loginBoxStyle}>
         <div>
           <img src={dishLogoUrl} alt="DISH 로고" style={logoContainerStyle} />
