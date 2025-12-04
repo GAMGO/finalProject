@@ -5,15 +5,25 @@ public class FavoriteRequest {
     private Long idx;
     private String category;
     private String title;
-    private String address;
+
+    // 프론트 쪽 payload 에서는 favoriteAddress 로 보내고 있으므로 둘 다 받자
+    private String address;          // 예전/다른 코드용
+    private String favoriteAddress;  // FavoritePage 에서 보내는 필드
+
     private String note;
     private Double rating;
     private String imageUrl;
     private String videoUrl;
 
     // ---- getter / setter ----
-    public Long getIDx() {
+
+    // ☆ 오타 수정: getIDx -> getIdx
+    public Long getIdx() {
         return idx;
+    }
+
+    public void setIdx(Long idx) {
+        this.idx = idx;
     }
 
     public String getCategory() {
@@ -32,12 +42,21 @@ public class FavoriteRequest {
         this.title = title;
     }
 
+    // address / favoriteAddress 둘 다 지원
     public String getAddress() {
         return address;
     }
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public String getFavoriteAddress() {
+        return favoriteAddress;
+    }
+
+    public void setFavoriteAddress(String favoriteAddress) {
+        this.favoriteAddress = favoriteAddress;
     }
 
     public String getNote() {
