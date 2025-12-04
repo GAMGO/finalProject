@@ -1,7 +1,7 @@
 // src/App.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import KakaoMap from "./components/KakaoMap";
+import Main from "./components/Main";
 import CommunityPage from "./pages/CommunityPage";
 import UserProfilePage from "./pages/UserProfilePage";
 import AuthPage from "./pages/AuthPage"
@@ -136,7 +136,7 @@ export default function App() {
 
       <main className="main-content">
         {page === "map" ? (
-          <KakaoMap />
+          <Main />
         ) : page === "community" ? (
           <CommunityPage />
         ) : page === "profile" ? (
