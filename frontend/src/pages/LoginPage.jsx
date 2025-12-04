@@ -2,18 +2,6 @@ import React, { useState, useCallback } from "react";
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 const baseURL = import.meta.env.VITE_LOCAL_BASE_URL;
-
-const setAuthToken = (token) => {
-  if (token) {
-    localStorage.setItem('accessToken', token);
-    // axios의 기본 헤더에 토큰을 설정하여 모든 후속 요청에 포함되도록 합니다.
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-  } else {
-    localStorage.removeItem('accessToken');
-    delete axios.defaults.headers.common['Authorization'];
-  }
-};
-//로고경로
 const dishLogoUrl = "/src/assets/DISH_LOGO.png";
 
 const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
@@ -53,37 +41,39 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
     };
 
     try {
-      // ⭐️ API 호출
+      // 2. ⭐️ API 호출
       const response = await axios.post(
         `${baseURL}/api/auth/login`,
         loginData,
         { withCredentials: true }
       );
 
-      // ⭐️ 로그인 성공 처리
+      // 3. ⭐️ 로그인 성공 처리
       const accessToken = response.data.token;
       if (accessToken) {
-        setAuthToken(accessToken); // 토큰 설정
-        onLoginSuccess(accessToken);
+        // 🚨 onLoginSuccess 함수 유효성 체크
+        if (typeof onLoginSuccess === 'function') {
+          onLoginSuccess(accessToken); // 유효한 함수일 때만 호출
+        } else {
+          // 라우팅 충돌로 인한 props 누락 경고
+          console.error("onLoginSuccess props가 유효한 함수가 아닙니다. 라우팅 설정 확인 필요.");
+        }
         setMessage({ text: "로그인 성공!", type: "success" });
       } else {
         setMessage({ text: "로그인 응답에 Access Token이 포함되어 있지 않습니다.", type: "error" });
         console.error("로그인 응답에 Access Token이 포함되어 있지 않습니다.");
       }
     } catch (error) {
-      // ⭐️ 서버 연결 또는 인증 실패 처리
+      // 4. ⭐️ 서버 연결 또는 인증 실패 처리
       let errorMessage = "서버 연결에 실패했습니다. 네트워크 상태를 확인해주세요.";
 
       if (error.response) {
-        // 4xx 또는 5xx 응답
         errorMessage = error.response.data.message || "아이디 또는 비밀번호를 확인해주세요.";
         console.error("로그인 에러 응답:", error.response);
       } else if (error.request) {
-        // 요청이 전송되었지만 응답을 받지 못한 경우 (CORS, 네트워크 다운 등)
         errorMessage = "서버 응답이 없습니다. (CORS 문제 가능성 높음) 백엔드 서버의 CORS 설정을 확인해주세요.";
         console.error("로그인 에러 요청 (CORS/네트워크):", error.request);
       } else {
-        // 요청 설정 자체에서 오류가 발생한 경우
         errorMessage = `요청 오류: ${error.message}`;
         console.error("로그인 에러:", error.message);
       }
@@ -91,7 +81,6 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
       setMessage({ text: `로그인 실패: ${errorMessage}`, type: "error" });
     }
   };
-
   // ------------------------------------
   // 4. 스타일 정의
   // ------------------------------------
@@ -177,7 +166,7 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
     backgroundColor: white,
     color: darkPurple,
     fontFamily: clearCustomFont,
-    fontWeight:700,
+    fontWeight: 700,
     boxShadow: `4px 4px 0px ${darkPurple}`,
   };
 
