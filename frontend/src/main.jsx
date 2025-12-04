@@ -15,7 +15,7 @@ createRoot(document.getElementById("root")).render(
                 <AuthCheck>
                     <App />
                 </AuthCheck>
-            } 
+            }
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
