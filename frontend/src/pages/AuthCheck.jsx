@@ -85,3 +85,4 @@ const AuthCheck = ({ children }) => {
     // 3. 인증 성공 → children 렌더링
     return children;
 };
+export default AuthCheck;
