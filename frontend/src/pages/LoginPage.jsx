@@ -1,9 +1,7 @@
 import React, { useState, useCallback } from "react";
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-
 const baseURL = import.meta.env.VITE_LOCAL_BASE_URL;
-
 
 const setAuthToken = (token) => {
   if (token) {
@@ -100,7 +98,8 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
   const darkPurple = "#78266A";
   const lightPeach = "#F5D7B7";
   const white = "#FFFFFF";
-  const customFont = "PartialSans,Paperozi,sans-serif";
+  const customFont = "PartialSans,SchoolSafetyRoundedSmile,sans-serif";
+  const clearCustomFont = "SchoolSafetyRoundedSmile,sans-serif";
 
   const fontFaceCss = `
     @font-face {
@@ -111,68 +110,18 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
     }
   `;
   const fontClearCss = `@font-face {
-    font-family: 'Paperozi';
-    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-1Thin.woff2') format('woff2');
-    font-weight: 100;
+    font-family: 'SchoolSafetyRoundedSmile';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-5@1.0/HakgyoansimDunggeunmisoTTF-R.woff2') format('woff2');
+    font-weight: normal;
     font-display: swap;
 }
 
 @font-face {
-    font-family: 'Paperozi';
-    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-2ExtraLight.woff2') format('woff2');
-    font-weight: 200;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'Paperozi';
-    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-3Light.woff2') format('woff2');
-    font-weight: 300;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'Paperozi';
-    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-4Regular.woff2') format('woff2');
-    font-weight: 400;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'Paperozi';
-    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-5Medium.woff2') format('woff2');
-    font-weight: 500;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'Paperozi';
-    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-6SemiBold.woff2') format('woff2');
-    font-weight: 600;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'Paperozi';
-    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-7Bold.woff2') format('woff2');
+    font-family: 'SchoolSafetyRoundedSmile';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-5@1.0/HakgyoansimDunggeunmisoTTF-B.woff2') format('woff2');
     font-weight: 700;
     font-display: swap;
-}
-
-@font-face {
-    font-family: 'Paperozi';
-    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-8ExtraBold.woff2') format('woff2');
-    font-weight: 800;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'Paperozi';
-    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-9Black.woff2') format('woff2');
-    font-weight: 900;
-    font-display: swap;
 }`
-
   const textShadowStyle = { textShadow: `4px 4px 2px ${darkPurple}` };
 
   const containerStyle = {
@@ -227,7 +176,7 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
     fontSize: "16px",
     backgroundColor: white,
     color: darkPurple,
-    fontFamily: fontClearCss,
+    fontFamily: clearCustomFont,
     boxShadow: `4px 4px 0px ${darkPurple}`,
   };
 
@@ -254,8 +203,7 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
     borderRadius: '10px',
     fontWeight: '0',
     color: white,
-    ...textShadowStyle,
-    fontFamily: '',
+    fontFamily: clearCustomFont,
     backgroundColor: message.type === 'error' ? '#D9534F' : '#5CB85C', // 빨간색 또는 초록색
     fontSize: '14px'
   };
@@ -265,7 +213,7 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
   // ------------------------------------
   return (
     <div style={containerStyle}>
-      <style>{fontFaceCss}</style>
+      <style>{fontFaceCss},{fontClearCss}</style>
       <div style={loginBoxStyle}>
         <div>
           <img src={dishLogoUrl} alt="DISH 로고" style={logoContainerStyle} />
