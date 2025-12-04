@@ -17,7 +17,7 @@ public class CorsConfig {
         c.addAllowedOriginPattern("https://merry-bunny-6557aa.netlify.app");
         c.addAllowedOriginPattern("https://api.dishinside.shop");
         c.addAllowedOriginPattern("http://localhost:5173");  // Vite dev 서버
-        c.addAllowedOriginPattern("http://localhost:3000");  // 사용 시
+        c.addAllowedOriginPattern("http://localhost:8080");  // 사용 시
         c.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         c.addAllowedHeader("*");
         c.setAllowedHeaders(List.of("Content-Type", "Authorization"));

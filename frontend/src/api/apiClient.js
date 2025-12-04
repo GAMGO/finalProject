@@ -2,44 +2,74 @@
 import axios from "axios";
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_BASE_URL,
+  // 예: VITE_LOCAL_BASE_URL=http://localhost:8080
+  baseURL: import.meta.env.VITE_LOCAL_BASE_URL,
 });
 
+// ======================
 // 즐겨찾기 API
+// ======================
 export const favoriteApi = {
+  // 전체 조회
   async getAll() {
-    const res = await apiClient.get("/favorites");
+    // ✅ 백엔드 매핑에 맞게 /api/favorites 로 고정
+    const res = await apiClient.get("/api/favorites");
     // 백엔드에서 ApiResponse<T> 쓰면 보통 { status, message, data } 구조일 거라서
     return res.data.data ?? res.data; // 둘 중 프로젝트 구조에 맞는 쪽으로 쓰이면 된다.
   },
 
+  // 생성
   async create(favorite) {
-    const res = await apiClient.post("/favorites", favorite);
+    const res = await apiClient.post("/api/favorites", favorite);
     return res.data.data ?? res.data;
   },
 
+  // 수정
   async update(id, favorite) {
-    const res = await apiClient.put(`/favorites/${id}`, favorite);
+    const res = await apiClient.put(`/api/favorites/${id}`, favorite);
     return res.data.data ?? res.data;
   },
 
+  // 삭제
   async remove(id) {
-    await apiClient.delete(`/favorites/${id}`);
+    await apiClient.delete(`/api/favorites/${id}`);
   },
 };
+
 // =================================================================
 // JWT 인증 및 토큰 관리 로직
 // =================================================================
-const getTokenFromStorage = () => sessionStorage.getItem("jwtToken");
-export const setAuthToken = (token) => {
-  // ⭐️ 메모리 저장소에 토큰 저장 (XSS 공격으로부터 localStorage보다 안전)
-  sessionStorage.setItem("jwtToken", token);
-  console.log("Access Token 저장 완료");
-  //token.substring(0, 10) + "..."
+
+// 🔑 전역 JWT 토큰 변수 (메모리 저장소 역할)
+let globalAccessToken = null;
+
+// 🔎 토큰 조회 함수 (메모리 → sessionStorage 순서로 확인)
+const getTokenFromStorage = () => {
+  if (globalAccessToken) return globalAccessToken;
+
+  const stored = sessionStorage.getItem("jwtToken");
+  if (stored) {
+    globalAccessToken = stored;
+  }
+  return stored;
 };
 
-//5. 토큰 관리 함수: 로그아웃 또는 토큰 만료 시 메모리 토큰을 제거합니다.
+export const setAuthToken = (token) => {
+  // 메모리 + sessionStorage 에 모두 저장
+  globalAccessToken = token;
+
+  if (token) {
+    sessionStorage.setItem("jwtToken", token);
+  } else {
+    sessionStorage.removeItem("jwtToken");
+  }
+
+  console.log("Access Token 저장 완료");
+};
+
+// 토큰 삭제 (로그아웃 / 만료 시)
 export const clearAuthToken = () => {
+  globalAccessToken = null;
   sessionStorage.removeItem("jwtToken");
   console.log("Access Token 제거 완료.");
   // TODO: 실제 프로젝트에서는 여기에 로그인 페이지로 리다이렉트하는 로직을 추가합니다.
@@ -48,7 +78,6 @@ export const clearAuthToken = () => {
 // 6. 요청 인터셉터 설정 (모든 요청에 토큰 자동 주입)
 apiClient.interceptors.request.use(
   (config) => {
-    //토큰을 sessionStorage에서 직접 가져옴
     const currentToken = getTokenFromStorage();
     if (currentToken) {
       // 모든 요청에 'Authorization: Bearer <토큰>' 헤더를 자동으로 추가
@@ -88,12 +117,10 @@ apiClient.interceptors.response.use(
 
       // 3. 사용자에게 알림 후 로그인 페이지로 리다이렉트 (실제 환경에서는 모달 사용 권장)
       setTimeout(() => {
-        // alert 대신 프로젝트의 메시지 UI를 사용하세요.
         alert("인증 세션이 만료되었습니다. 다시 로그인해 주세요.");
         // 예: navigate('/login');
       }, 0);
 
-      // 에러 전파를 막아 다음 .catch() 블록이 실행되지 않게 합니다.
       return Promise.reject(error);
     }
 
