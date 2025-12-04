@@ -1,78 +1,84 @@
-import React, { useState, useCallback } from "react"; // ⭐️ useCallback 추가
+import React, { useState, useCallback } from "react";
 import axios from 'axios';
-import dishLogo from "../assets/DISH_LOGO.png"; // ✅ 로고 이미지 import
 import { useNavigate } from 'react-router-dom';
-import { setAuthToken } from '../api/apiClient';
 const baseURL = import.meta.env.VITE_LOCAL_BASE_URL;
-// 'onToggleMode' 프롭을 받아 회원가입 버튼 클릭 시 모드를 전환하도록 합니다.
+const dishLogoUrl = "/src/assets/DISH_LOGO.png";
+
 const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
   // ------------------------------------
   // 1. 상태 관리
   // ------------------------------------
   const [customer_id, setcustomer_id] = useState("");
   const [password, setPassword] = useState("");
+  const [message, setMessage] = useState({ text: "", type: "" }); // { text: 메시지 내용, type: 'success' | 'error' }
   const navigate = useNavigate();
+
   // ------------------------------------
   // 2. 상태 설정 함수 (useCallback)
   // ------------------------------------
   const handleIdChange = useCallback((e) => {
     setcustomer_id(e.target.value);
+    setMessage({ text: "", type: "" }); // 입력 시 메시지 초기화
   }, []);
 
   const handlePasswordChange = useCallback((e) => {
     setPassword(e.target.value);
+    setMessage({ text: "", type: "" }); // 입력 시 메시지 초기화
   }, []);
 
   // ------------------------------------
   // 3. 로그인 처리
   // ------------------------------------
   const handleLogin = async () => {
-
-    // ... 기존 로그인 로직 유지 ...
     if (!customer_id || !password) {
-      alert("아이디와 비밀번호를 모두 입력해주세요.");
+      setMessage({ text: "아이디와 비밀번호를 모두 입력해주세요.", type: "error" });
       return;
     }
 
-    // ⭐️ API 호출 데이터 준비
     const loginData = {
-      id: customer_id, // ⚠️ 인풋 필드에서 값을 가져오는 변수명인지 확인하세요.
+      id: customer_id,
       password: password
     };
 
     try {
+      // 2. ⭐️ API 호출
       const response = await axios.post(
-        // 백엔드 로그인 엔드포인트: https://api.dishinside.shop/api/auth/login
         `${baseURL}/api/auth/login`,
         loginData,
         { withCredentials: true }
       );
 
-      // ⭐️ 로그인 성공 처리
-      alert("로그인 성공!");
-
-      const accessToken = response.data.accessToken || response.data.token;
+      // 3. ⭐️ 로그인 성공 처리
+      const accessToken = response.data.token;
       if (accessToken) {
-        onLoginSuccess(accessToken); 
+        // 🚨 onLoginSuccess 함수 유효성 체크
+        if (typeof onLoginSuccess === 'function') {
+          onLoginSuccess(accessToken); // 유효한 함수일 때만 호출
+        } else {
+          // 라우팅 충돌로 인한 props 누락 경고
+          console.error("onLoginSuccess props가 유효한 함수가 아닙니다. 라우팅 설정 확인 필요.");
+        }
+        setMessage({ text: "로그인 성공!", type: "success" });
       } else {
+        setMessage({ text: "로그인 응답에 Access Token이 포함되어 있지 않습니다.", type: "error" });
         console.error("로그인 응답에 Access Token이 포함되어 있지 않습니다.");
       }
-
     } catch (error) {
-      // ⭐️ 서버 연결 또는 인증 실패 처리
+      // 4. ⭐️ 서버 연결 또는 인증 실패 처리
+      let errorMessage = "서버 연결에 실패했습니다. 네트워크 상태를 확인해주세요.";
+
       if (error.response) {
-        // 서버가 응답을 보냈지만 2xx 범위가 아닐 경우 (예: 401 Unauthorized, 400 Bad Request)
-        alert(`로그인 실패: ${error.response.data.message || "아이디 또는 비밀번호를 확인해주세요."}`);
+        errorMessage = error.response.data.message || "아이디 또는 비밀번호를 확인해주세요.";
         console.error("로그인 에러 응답:", error.response);
       } else if (error.request) {
-        // 요청이 전송되었지만 응답을 받지 못한 경우 (네트워크, CORS 등)
-        alert("서버 응답이 없습니다. CORS 설정 또는 네트워크 상태를 확인해주세요.");
-        console.error("로그인 에러 요청:", error.request);
+        errorMessage = "서버 응답이 없습니다. (CORS 문제 가능성 높음) 백엔드 서버의 CORS 설정을 확인해주세요.";
+        console.error("로그인 에러 요청 (CORS/네트워크):", error.request);
       } else {
-        // 요청 설정 자체에서 오류가 발생한 경우
-        alert("서버 연결에 실패했습니다. 네트워크 상태를 확인해주세요.");
+        errorMessage = `요청 오류: ${error.message}`;
         console.error("로그인 에러:", error.message);
       }
+
+      setMessage({ text: `로그인 실패: ${errorMessage}`, type: "error" });
     }
   };
   // ------------------------------------
@@ -81,7 +87,8 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
   const darkPurple = "#78266A";
   const lightPeach = "#F5D7B7";
   const white = "#FFFFFF";
-  const customFont = "PartialSans, sans-serif";
+  const customFont = "PartialSans,SchoolSafetyRoundedSmile,sans-serif";
+  const clearCustomFont = "SchoolSafetyRoundedSmile,sans-serif";
 
   const fontFaceCss = `
     @font-face {
@@ -91,9 +98,21 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
       font-display: swap;
     }
   `;
+  const fontClearCss = `@font-face {
+    font-family: 'SchoolSafetyRoundedSmile';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-5@1.0/HakgyoansimDunggeunmisoTTF-R.woff2') format('woff2');
+    font-weight: normal;
+    font-display: swap;
+}
 
+@font-face {
+    font-family: 'SchoolSafetyRoundedSmile';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-5@1.0/HakgyoansimDunggeunmisoTTF-B.woff2') format('woff2');
+    font-weight: 700;
+    font-display: swap;
+}`;
+  const fontSet = [fontClearCss, fontFaceCss];
   const textShadowStyle = { textShadow: `4px 4px 2px ${darkPurple}` };
-
   const containerStyle = {
     display: "flex",
     justifyContent: "center",
@@ -146,7 +165,8 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
     fontSize: "16px",
     backgroundColor: white,
     color: darkPurple,
-    fontFamily: customFont,
+    fontFamily: clearCustomFont,
+    fontWeight: 700,
     boxShadow: `4px 4px 0px ${darkPurple}`,
   };
 
@@ -166,22 +186,39 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
     boxShadow: `4px 4px 0px ${darkPurple}`,
   };
 
+  const messageStyle = {
+    marginTop: '15px',
+    marginBottom: '15px',
+    padding: '10px',
+    borderRadius: '10px',
+    fontWeight: '0',
+    color: white,
+    fontFamily: clearCustomFont,
+    backgroundColor: message.type === 'error' ? '#D9534F' : '#5CB85C', // 빨간색 또는 초록색
+    fontSize: '14px'
+  };
+
   // ------------------------------------
   // 5. 렌더링
   // ------------------------------------
   return (
     <div style={containerStyle}>
-      <style>{fontFaceCss}</style>
+      <style>{fontSet}</style>
       <div style={loginBoxStyle}>
-        {/* 로고 영역 */}
         <div>
-          {/* ✅ 배포 환경에서도 동작하는 로고 경로 */}
-          <img src={dishLogo} alt="DISH 로고" style={logoContainerStyle} />
+          <img src={dishLogoUrl} alt="DISH 로고" style={logoContainerStyle} />
         </div>
+
+        {/* 메시지 영역 */}
+        {message.text && (
+          <div style={messageStyle}>
+            {message.text}
+          </div>
+        )}
 
         {/* ID 입력 필드 */}
         <div style={inputGroupStyle}>
-          <label htmlFor="customer_ix" style={labelStyle}>
+          <label htmlFor="customer_id" style={labelStyle}>
             ID
           </label>
           <input

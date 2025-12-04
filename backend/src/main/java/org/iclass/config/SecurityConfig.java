@@ -55,21 +55,29 @@ public class SecurityConfig {
                     .requestMatchers(SWAGGER_WHITELIST).permitAll()
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers(PUBLIC_WHITELIST).permitAll()
-                    .requestMatchers( "/api/stores/**","/api/stores/{storeIdx}/reviews").permitAll()
+                    // 이메일 인증, 가게 목록 (POST 포함 전체) 허용
+                    .requestMatchers("/api/email/**", "/api/stores/**","/api/stores/{storeIdx}/reviews","/api/routes/**").permitAll()
                     .requestMatchers(
                             HttpMethod.POST,
                             "/api/auth/login",
                             "/api/recover/send-code",
                             "/api/recover/reset",
                             "/api/recover/find-id",
-                            "/api/stores/{storeIdx}/reviews"
+                            "/api/stores/{storeIdx}/reviews",
+                            "/api/routes"
                     ).permitAll()
+
+                    // ===== 로그인 필요 영역 =====
                     .requestMatchers(
                             "/api/auth/logout",
                             "/api/posts",
-                            "/api/favorites",
+                            "/api/favorites",      // 목록
+                            "/api/favorites/**",   // 개별 즐겨찾기 (수정/삭제 등)
                             "/api/profile"
-                    ).authenticated().anyRequest().authenticated()
+                    ).authenticated()
+
+                    // 그 외 전부 인증 필요
+                    .anyRequest().authenticated()
             )
             // 폼/베이직 로그인 비활성
             .httpBasic(b -> b.disable())
