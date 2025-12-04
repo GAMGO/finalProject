@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
 import LoginPage from "./LoginPage";
 import SignupPage from "./SignupPage";
 import EmailAuth from "./EmailAuth";
@@ -22,7 +22,7 @@ const AuthPage = ({ onLoginSuccess }) => {
   const handleAuthSuccess = () => {
     setAuthMode('login'); 
     setRegisteredEmail('');
-    navigate('/')
+    Navigate('/')
   };
   const renderContent = () => {
       switch (authMode) {
