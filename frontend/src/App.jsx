@@ -14,30 +14,29 @@ import "./SidebarPatch.css";
 import DISH_LOGO from "./assets/DISH_LOGO.png";
 
 const Logout = ({ onLogoutSuccess }) => {
-    const [message, setMessage] = useState("로그아웃을 시도 중...");
-    useEffect(() => {
-        const handleLogout = async () => {
-            try {
-                //apiClient 사용: /api/auth/logout 엔드포인트에 요청합니다. apiClient의 인터셉터가 Authorization 헤더를 자동으로 추가합니다.
-                await apiClient.post(
-                    `/api/auth/logout`,
-                    {}
-                );
-                setMessage("로그아웃에 성공했습니다. 잠시 후 로그인 화면으로 돌아갑니다.");
-                // 성공 시 onLogoutSuccess 호출 -> App 컴포넌트에서 토큰 삭제 및 isLoggedIn=false 처리
-                setTimeout(() => {
-                    onLogoutSuccess();
-                }, 1500);
-            } catch (error) {
-                console.error("Logout API Error:", error);
-                // 서버에서 로그아웃 처리가 실패했더라도, 클라이언트 상태는 로그아웃으로 전환합니다.
-                setMessage("로그아웃 처리 중 오류가 발생했지만, 인증 상태를 해제합니다.");
-                setTimeout(() => {
-                    onLogoutSuccess();
-                }, 3000);
-            }
-        };
-
+  const [message, setMessage] = useState("로그아웃을 시도 중...");
+  useEffect(() => {
+    const handleLogout = async () => {
+      try {
+        //apiClient 사용: /api/auth/logout 엔드포인트에 요청합니다. apiClient의 인터셉터가 Authorization 헤더를 자동으로 추가합니다.
+        await apiClient.post(
+          `/api/auth/logout`,
+          {}
+        );
+        setMessage("로그아웃에 성공했습니다. 잠시 후 로그인 화면으로 돌아갑니다.");
+        // 성공 시 onLogoutSuccess 호출 -> App 컴포넌트에서 토큰 삭제 및 isLoggedIn=false 처리
+        setTimeout(() => {
+          onLogoutSuccess();
+        }, 1500);
+      } catch (error) {
+        console.error("Logout API Error:", error);
+        // 서버에서 로그아웃 처리가 실패했더라도, 클라이언트 상태는 로그아웃으로 전환합니다.
+        setMessage("로그아웃 처리 중 오류가 발생했지만, 인증 상태를 해제합니다.");
+        setTimeout(() => {
+          onLogoutSuccess();
+        }, 3000);
+      }
+    };
     handleLogout();
   }, [onLogoutSuccess]);
 
@@ -62,7 +61,13 @@ const Logout = ({ onLogoutSuccess }) => {
 export default function App() {
   const [page, setPage] = useState("map"); // map / community / profile / favorite / logout
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-
+  useEffect(() => {
+    const token = sessionStorage.getItem('jwtToken');
+    if (token) {
+      setAuthToken(token);
+      setIsLoggedIn(true);
+    }
+  }, []);
   // 로그인 성공 콜백: 토큰을 받아 메모리에 저장합니다.
   const handleLoginSuccess = (token) => {
     setAuthToken(token);
@@ -84,11 +89,10 @@ export default function App() {
   if (!isLoggedIn) {
     return (
       <div className="h-screen w-full">
-        <AuthPage onLoginSuccess={handleLoginSuccess}/>
+        <AuthPage onLoginSuccess={handleLoginSuccess} />
       </div>
     );
   }
-
   return (
     <div className="app">
       <aside className="side-bar">
