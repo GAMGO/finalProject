@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import LoginPage from "./LoginPage";
 import SignupPage from "./SignupPage";
 import EmailAuth from "./EmailAuth";
-const baseURL = import.meta.env.VITE_LOCAL_BASE_URL;
+const baseURL = import.meta.env.VITE_BASE_URL;
 const AuthPage = ({ onLoginSuccess }) => {
   const navigate = useNavigate();
   // 🌟 이 상태가 로그인/회원가입 모드를 결정합니다.
@@ -18,7 +18,6 @@ const AuthPage = ({ onLoginSuccess }) => {
     setRegisteredEmail(email); // 이메일 저장
     setAuthMode('EmailAuth');  // 모드를 'emailAuth'로 변경
   };
-  
   //인증 성공 시 호출될 함수 (EmailAuth -> login 전환)
   const handleAuthSuccess = () => {
     setAuthMode('login'); 
