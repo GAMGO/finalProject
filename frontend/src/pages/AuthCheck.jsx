@@ -85,7 +85,7 @@ const AuthCheck = ({ children }) => {
                     localStorage.removeItem("jwtToken");
                 }
             }else {
-                console.log("sessionStorage에 Access Token 없음.");
+                console.log("Storage에 Access Token 없음.");
             }
             setIsAuthenticated(isValid);
             setIsLoading(false);
