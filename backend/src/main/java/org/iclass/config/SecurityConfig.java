@@ -57,7 +57,7 @@ public class SecurityConfig {
                                                 // 이메일 인증, 가게 목록 (POST 포함 전체) 허용
                                                 .requestMatchers("/api/email/**", "/api/stores/**",
                                                                 "/api/stores/{storeIdx}/reviews", "/api/routes/**",
-                                                                "/api/posts/{id}/**")
+                                                                "/api/posts/**")
                                                 .permitAll()
                                                 .requestMatchers(
                                                                 HttpMethod.POST,
@@ -73,8 +73,8 @@ public class SecurityConfig {
                                                                 "/api/auth/logout",
                                                                 "/api/favorites", // 목록
                                                                 "/api/favorites/**", // 개별 즐겨찾기 (수정/삭제 등)
-                                                                "/api/profile",
-                                                                "/api/posts")
+                                                                "/api/profile"
+                                                )
                                                 .authenticated()
                                                 // 그 외 전부 인증 필요
                                                 .anyRequest().authenticated())
