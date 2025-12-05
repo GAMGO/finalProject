@@ -2,7 +2,7 @@ import React, { useState, useCallback } from "react";
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 const baseURL = import.meta.env.VITE_LOCAL_BASE_URL;
-const dishLogoUrl = "/src/assets/DISH_LOGO.png";
+const dishLogoUrl = "./src/assets/DISH_LOGO.png";
 
 const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
   // ------------------------------------
@@ -34,26 +34,29 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
       setMessage({ text: "아이디와 비밀번호를 모두 입력해주세요.", type: "error" });
       return;
     }
-
     const loginData = {
       id: customer_id,
       password: password
     };
-
     try {
-      // 2. ⭐️ API 호출
+      //API 호출
       const response = await axios.post(
         `${baseURL}/api/auth/login`,
         loginData,
         { withCredentials: true }
       );
 
-      // 3. ⭐️ 로그인 성공 처리
+      //로그인 성공 처리
       const accessToken = response.data.token;
+      const refreshToken = response.data.refreshToken;
       if (accessToken) {
         // 🚨 onLoginSuccess 함수 유효성 체크
         if (typeof onLoginSuccess === 'function') {
-          onLoginSuccess(accessToken); // 유효한 함수일 때만 호출
+          setAuthToken(accessToken, refreshToken); //setAuthToken에 Refresh Token을 함께 전달합니다.
+          setMessage({ text: "로그인 성공!", type: "success" });
+          setTimeout(() => {
+          onLoginSuccess();
+        }, 1500);
         } else {
           // 라우팅 충돌로 인한 props 누락 경고
           console.error("onLoginSuccess props가 유효한 함수가 아닙니다. 라우팅 설정 확인 필요.");

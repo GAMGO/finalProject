@@ -9,9 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class LoginResponse {
+public class TokenRefreshResponse {
     private String token;
-    private String refreshToken;
-    private String tokenType;
-    private String id;
+    private String refreshToken; // 재발급된 Access Token과 함께 기존 Refresh Token을 반환
+    private String tokenType; // "Bearer"
 }

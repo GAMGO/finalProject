@@ -55,14 +55,13 @@ public class AccountService {
                 .email(me.getEmail())
                 .birth(me.getBirth())
                 .age(me.getAge())
-                .gender(me.getGender())
                 .address(me.getAddress())
                 .emailVerified(Boolean.TRUE.equals(me.getEmailVerified()))
                 .build();
     }
 
     // ----------------------------------------------------------
-    // 2) 회원정보 수정 (birth/age/gender/address 정도만)
+    // 2) 회원정보 수정 (birth/age/address 정도만)
     // ----------------------------------------------------------
     @Transactional
     public AccountInfoDto updateMyAccount(UserDetails userDetails, AccountUpdateRequest req) {
@@ -74,10 +73,7 @@ public class AccountService {
         if (req.getAge() != null) {
             me.setAge(req.getAge());
         }
-        if (req.getGender() != null || me.getGender() != null) {
-            // null 로 보내면 비공개로 변경하는 것도 허용
-            me.setGender(req.getGender());
-        }
+
         if (req.getAddress() != null) {
             me.setAddress(req.getAddress());
         }
@@ -89,7 +85,6 @@ public class AccountService {
                 .email(saved.getEmail())
                 .birth(saved.getBirth())
                 .age(saved.getAge())
-                .gender(saved.getGender())
                 .address(saved.getAddress())
                 .emailVerified(Boolean.TRUE.equals(saved.getEmailVerified()))
                 .build();

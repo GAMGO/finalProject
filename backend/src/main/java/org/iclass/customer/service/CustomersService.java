@@ -61,7 +61,6 @@ public class CustomersService implements UserDetailsService {
                                 .age(req.getAge())
                                 .address(req.getAddress())
                                 .birth(req.getBirth().toString())
-                                .gender(req.getGender())
                                 .email(req.getEmail())
                                 .emailVerified(false) // 이메일 인증 대기 상태
                                 .emailVerificationToken(verificationCode) // 인증번호
