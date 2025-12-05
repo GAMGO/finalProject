@@ -11,8 +11,6 @@ const SignupPage = ({ onToggleMode, onSignupSuccess }) => {
   const [email, setEmail] = useState("");
   // 생년월일 (YYYY-MM-DD 형식)
   const [birthDate, setBirthDate] = useState("");
-  // 성별 (0: 남자, 1: 여자, null/undefined: 선택 안 함)
-  const [gender, setGender] = useState('');
   //나이는 자동 계산
   const [age, setAge] = useState(0);
 
@@ -55,12 +53,6 @@ const SignupPage = ({ onToggleMode, onSignupSuccess }) => {
     const calculatedAge = calculateAge(newDate);
     setAge(calculatedAge);
   }, []);
-
-  // 성별 선택 핸들러: 성별 상태(0 또는 1)를 업데이트
-  const handleGenderSelect = useCallback((selectedGender) => {
-    setGender(selectedGender);
-  }, []);
-
   const handleRegister = async () => {
     if (
       !customer_id ||
@@ -81,7 +73,6 @@ const SignupPage = ({ onToggleMode, onSignupSuccess }) => {
       password: password,
       email: email,
       birth: birthDate,
-      gender: gender, // 0 또는 1
       age: age, // 자동 계산된 나이
     };
 
@@ -312,41 +303,6 @@ const fontSet = [fontClearCss,fontFaceCss];
             계산된 나이: <span style={{ color: darkPurple }}>{age} 세</span>
           </div>
         </div>
-
-        {/* 6. 성별 (버튼 선택) */}
-        <div style={inputGroupStyle}>
-          <label style={labelStyle}>성별</label>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-around",
-              gap: "10px",
-            }}
-          >
-            <button
-              type="button"
-              style={gender === 'M' ? selectedButtonStyle : buttonStyle}
-              onClick={() => handleGenderSelect('M')}
-            >
-              남자
-            </button>
-            <button
-              type="button"
-              style={gender === null ? selectedButtonStyle : buttonStyle}
-              onClick={() => handleGenderSelect(null)}
-            >
-              비공개
-            </button>
-            <button
-              type="button"
-              style={gender === 'F' ? selectedButtonStyle : buttonStyle}
-              onClick={() => handleGenderSelect('F')}
-            >
-              여자
-            </button>
-          </div>
-        </div>
-        {/* 버튼 영역 */}
         <div>
           <button type="button" style={buttonStyle} onClick={handleRegister}>
             회원가입 완료 및 이메일 인증하기

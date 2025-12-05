@@ -448,7 +448,7 @@ export default function KakaoMap() {
     // 토큰 키 여러 개 중 하나라도 있으면 사용
     const token =
       sessionStorage.getItem("jwtToken") ||
-      sessionStorage.getItem("accessToken") ||
+      sessionStorage.getItem("refreshToken") ||
       sessionStorage.getItem("token");
 
     if (!token) {

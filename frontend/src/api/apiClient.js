@@ -41,39 +41,81 @@ export const favoriteApi = {
 
 // 🔑 전역 JWT 토큰 변수 (메모리 저장소 역할)
 let globalAccessToken = null;
-
+let globalRefreshToken = sessionStorage.getItem("refreshToken");
 // 🔎 토큰 조회 함수 (메모리 → sessionStorage 순서로 확인)
 const getTokenFromStorage = () => {
   if (globalAccessToken) return globalAccessToken;
-
+  
   const stored = sessionStorage.getItem("jwtToken");
   if (stored) {
     globalAccessToken = stored;
   }
   return stored;
 };
-
-export const setAuthToken = (token) => {
+const getRefreshTokenFromStorage = () => {
+    if (!globalRefreshToken) {
+        globalRefreshToken = sessionStorage.getItem("refreshToken");
+    }
+    return globalRefreshToken;
+}
+export const setAuthToken = (token,refreshToken) => {
   // 메모리 + sessionStorage 에 모두 저장
   globalAccessToken = token;
-
-  if (token) {
+  globalRefreshToken = refreshToken;
     sessionStorage.setItem("jwtToken", token);
-  } else {
-    sessionStorage.removeItem("jwtToken");
-  }
-
-  console.log("Access Token 저장 완료");
+    if (refreshToken) {
+        globalRefreshToken = refreshToken;
+        sessionStorage.setItem("refreshToken", refreshToken);
+    }
+    console.log("Access Token 설정 완료.");
+    if (refreshToken) console.log("Refresh Token 설정 완료.");
 };
-
 // 토큰 삭제 (로그아웃 / 만료 시)
 export const clearAuthToken = () => {
   globalAccessToken = null;
+  globalRefreshToken = null;
   sessionStorage.removeItem("jwtToken");
+  sessionStorage.removeItem("refreshToken");
   console.log("Access Token 제거 완료.");
   // TODO: 실제 프로젝트에서는 여기에 로그인 페이지로 리다이렉트하는 로직을 추가합니다.
+  window.location.href = "/login";
 };
+// 🔑 [추가] Refresh Token 요청 함수 (내부 사용)
+const refreshAccessToken = async () => {
+    const token = getRefreshTokenFromStorage();
+    if (!token) {
+        console.error("Refresh Token이 없습니다. 로그인 필요.");
+        clearAuthToken();
+        throw new Error("No Refresh Token");
+    }
 
+    try {
+        // ⭐️ 기본 axios를 사용하여 토큰 재발급 요청 (무한 루프 방지)
+        // 백엔드 구현에 따라 Refresh Token을 Header나 Body에 담아 요청합니다.
+        // 여기서는 Body에 담아 /api/auth/refresh 엔드포인트에 요청하는 것으로 가정합니다.
+        const response = await axios.post(`${apiClient.defaults.baseURL}/api/auth/refresh`, {
+            refreshToken: token
+        });
+
+        const newAccessToken = response.data.token;
+        const newRefreshToken = response.data.refreshToken; // 백엔드에서 새로운 리프레시 토큰도 주는 경우
+
+        if (newAccessToken) {
+            // ⭐️ 새로운 Access Token 및 Refresh Token 저장
+            setAuthToken(newAccessToken, newRefreshToken);
+            console.log("Access Token 재발급 성공.");
+            return newAccessToken;
+        } else {
+            // 서버에서 토큰을 주지 않은 경우 (Refresh Token도 만료되었을 가능성)
+            clearAuthToken();
+            throw new Error("Token refresh failed");
+        }
+    } catch (refreshError) {
+        console.error("Access Token 갱신 실패: Refresh Token도 만료되었을 수 있습니다.", refreshError);
+        clearAuthToken();
+        throw refreshError;
+    }
+};
 // 6. 요청 인터셉터 설정 (모든 요청에 토큰 자동 주입)
 apiClient.interceptors.request.use(
   (config) => {
@@ -95,37 +137,44 @@ apiClient.interceptors.response.use(
     // 2xx 응답은 그대로 반환
     return response;
   },
-  (error) => {
+  // ⭐️ [수정] 401 에러 발생 시 Access Token 갱신 로직 추가
+  async (error) => { 
     const originalRequest = error.config;
+    const status = error.response ? error.response.status : null;
 
-    // 서버에서 401 Unauthorized 에러를 보냈고, 재시도 플래그가 없는 경우 (무한 루프 방지)
-    if (
-      error.response &&
-      error.response.status === 401 &&
-      !originalRequest._retry
-    ) {
-      console.warn(
-        "401 Unauthorized 감지. 토큰 만료로 간주하고 로그아웃 처리 시작."
-      );
+    // 1. 서버에서 401 Unauthorized 에러를 보냈고, 재시도 플래그가 없는 경우 (무한 루프 방지)
+    if (status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true; // 재시도 플래그 설정 (무한 루프 방지)
 
-      // 1. 재시도 플래그 설정
-      originalRequest._retry = true;
+      // 2. Refresh Token이 있는지 확인
+      const refreshToken = getRefreshTokenFromStorage();
+      if (!refreshToken) {
+        console.warn("Refresh Token 없음. 로그인 페이지로 리다이렉트.");
+        clearAuthToken(); 
+        return Promise.reject(error);
+      }
 
-      // 2. 메모리 토큰 제거 및 리다이렉트 준비
-      clearAuthToken();
+      try {
+        // 3. Access Token 갱신 시도
+        const newAccessToken = await refreshAccessToken();
+        
+        // 4. 원래 요청의 Authorization 헤더를 새 토큰으로 업데이트
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
-      // 3. 사용자에게 알림 후 로그인 페이지로 리다이렉트 (실제 환경에서는 모달 사용 권장)
-      setTimeout(() => {
-        alert("인증 세션이 만료되었습니다. 다시 로그인해 주세요.");
-        // 예: navigate('/login');
-      }, 0);
-
-      return Promise.reject(error);
+        // 5. 원래 요청 재시도
+        console.log("만료된 요청을 새 Access Token으로 재시도 중...");
+        return apiClient(originalRequest);
+      } catch (refreshError) {
+        // 갱신 실패 시 (예: Refresh Token도 만료) -> 로그아웃 처리
+        console.error("Access Token 갱신 실패. 재 로그인 필요.");
+        // refreshAccessToken 내부에서 이미 clearAuthToken을 호출합니다.
+        return Promise.reject(refreshError); 
+      }
     }
-
-    // 401이 아닌 다른 에러는 그대로 전파
+    
+    // 401 에러가 아니거나, 이미 재시도한 요청이거나, 요청 자체가 실패한 경우
     return Promise.reject(error);
   }
 );
-
+// 기존 export 구문 유지
 export default apiClient;

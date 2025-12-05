@@ -1,7 +1,6 @@
 package org.iclass.customer.dto;
 
 import org.iclass.customer.entity.CustomersEntity;
-import org.iclass.customer.entity.Gender;
 import lombok.*;
 
 @Getter
@@ -13,10 +12,9 @@ public class SignupResponse {
     private String id;
     private String email;
     private Integer age;
-    private Gender gender;
     private String birth;
     private String address;
-    private String accessToken; // JTW
+    private String token; // JTW
     private String tokenType; // "Bearer"
     private long expiresIn; // 만료 시간(초) <- 추가해두면 프론트가 토큰 관리 편리함.
 
@@ -29,7 +27,6 @@ public class SignupResponse {
                 .id(entity.getId())
                 .email(entity.getEmail())
                 .age(entity.getAge())
-                .gender(entity.getGender())
                 .birth(entity.getBirth().toString())
                 .address(entity.getAddress())
                 .build();
