@@ -36,7 +36,7 @@ public class SecurityConfig {
             "/error",           // 스프링 기본 에러 엔드포인트
             "/api/recover/**",  // 비밀번호 복구(시작/검증/재설정)
             "/api/food/**",
-            "/api/email/**"     // 이메일 인증 관련 엔드포인트
+            "/api/email/**"     // 이메일 인증 관련 엔드포인
     };
 
     @Bean

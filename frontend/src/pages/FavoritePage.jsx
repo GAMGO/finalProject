@@ -23,9 +23,17 @@ import sundaeGopchangIcon from "../assets/favIcons/sundae_gopchang.png"; // 순�
 import etcIcon from "../assets/favIcons/Etc.png";
 
 // ===== 샘플 사진 (fallback 용) =====
-import favChicken from "../assets/images/favorites/chicken.jpg";
-import favBungebbang from "../assets/images/favorites/bungebbang.jpg";
-import favPojangmacha from "../assets/images/favorites/pojangmacha.jpg";
+import FAV_CHICKEN from "../assets/images/favorites/favChicken.jpg";
+import FAV_BUNGEOPPANG from "../assets/images/favorites/favBungeoppang.jpg";
+import FAV_BUSNIK from "../assets/images/favorites/favBunsik.jpg";
+import FAV_TAKOYAKI from "../assets/images/favorites/favTakoyaki.png";
+import FAV_SUNDAE_GOPCHANG from "../assets/images/favorites/favSundaeGopchang.jpg";
+import FAV_SEAFOOD from "../assets/images/favorites/favSeafood.jpg";
+import FAV_BBEONGTTEUGI from "../assets/images/favorites/favBbeongtteugi.jpg";
+import FAV_EGG_BREAD from "../assets/images/favorites/favEggBread.jpg";
+import FAV_CORN from "../assets/images/favorites/favCorn.jpg";
+import FAV_GUNBAM_GOGUMA from "../assets/images/favorites/favGunbamGoguma.png";
+import FAV_SKEWERS from "../assets/images/favorites/favSkewers.png";
 
 /** KakaoMap 쪽 드롭다운이랑 맞춰 놓은 카테고리들 */
 const FILTERS = [
@@ -37,13 +45,11 @@ const FILTERS = [
   { key: "붕어빵", label: "붕어빵", icon: bungebbangIcon },
   { key: "군밤/고구마", label: "군밤/고구마", icon: chestnutSweetpotatoIcon },
   { key: "닭꼬치", label: "닭꼬치", icon: skewersIcon },
-
   { key: "분식", label: "분식", icon: ddeokbokkiIcon },
   { key: "해산물", label: "해산물", icon: seafoodIcon },
   { key: "뻥튀기", label: "뻥튀기", icon: bbeongtIcon },
   { key: "계란빵", label: "계란빵", icon: eggbreadIcon },
   { key: "옥수수", label: "옥수수", icon: cornIcon },
-
   { key: "기타", label: "기타", icon: etcIcon },
 ];
 
@@ -57,15 +63,42 @@ const DEFAULT_CROP = {
   zoom: 1,
 };
 
+/** 카테고리별 기본 카드 이미지 매핑 */
+const DEFAULT_CARD_IMAGE = {
+  통닭: FAV_CHICKEN,
+  타코야끼: FAV_TAKOYAKI,
+  순대곱창: FAV_SUNDAE_GOPCHANG,
+  붕어빵: FAV_BUNGEOPPANG,
+  "군밤/고구마": FAV_GUNBAM_GOGUMA,
+  닭꼬치: FAV_SKEWERS,
+
+  분식: FAV_BUSNIK,
+  떡볶이: FAV_BUSNIK, // 혹시 이렇게 저장됐을 때
+
+  해산물: FAV_SEAFOOD,
+  뻥튀기: FAV_BBEONGTTEUGI,
+  계란빵: FAV_EGG_BREAD,
+  옥수수: FAV_CORN,
+};
+
+/** DTO에 imageUrl이 비어 있을 때 쓸 기본 이미지 선택
+ *  - 기타 등은 그냥 빈 문자열 리턴 → 사진 없이 카드 뜨게
+ */
 const getFallbackImage = (category) => {
-  switch (category) {
-    case "붕어빵":
-      return favBungebbang;
-    case "통닭":
-      return favChicken;
-    default:
-      return favPojangmacha;
+  // 1) 카테고리 직접 매핑
+  if (DEFAULT_CARD_IMAGE[category]) {
+    return DEFAULT_CARD_IMAGE[category];
   }
+
+  // 2) ALIAS(분식 ↔ 떡볶이 등) 역으로 찾기
+  for (const [base, aliases] of Object.entries(CATEGORY_ALIAS)) {
+    if (aliases.includes(category)) {
+      return DEFAULT_CARD_IMAGE[base] || "";
+    }
+  }
+
+  // 3) 그 외: 기본 이미지 없음
+  return "";
 };
 
 // 백엔드 DTO -> 프론트에서 쓰는 형태로 매핑
@@ -84,6 +117,8 @@ const mapFromDto = (dto) => {
   const imageUrl = dto.imageUrl ?? dto.IMAGE_URL ?? "";
   const videoUrl = dto.videoUrl ?? dto.VIDEO_URL ?? "";
 
+  const fallbackImage = getFallbackImage(category);
+
   return {
     id,
     category,
@@ -91,7 +126,7 @@ const mapFromDto = (dto) => {
     address: favoriteAddress,
     note,
     rating,
-    image: imageUrl || getFallbackImage(category),
+    image: imageUrl || fallbackImage,
     videoUrl,
     createdAt: dto.createdAt ?? dto.CREATED_AT ?? null,
     expiredAt: dto.expiredAt ?? dto.EXPIRED_AT ?? null,
@@ -285,7 +320,6 @@ export default function FavoritePage() {
 
   // ===== 즐겨찾기 삭제 (DB + 화면) =====
   const handleUnfavorite = async (id) => {
-    // confirm 싫으면 이 두 줄 지워도 됨
     if (!window.confirm("이 즐겨찾기를 해제할까요?")) return;
 
     try {
@@ -345,18 +379,16 @@ export default function FavoritePage() {
 
     const url = URL.createObjectURL(file);
 
-    // 사진/영상 통합: 파일 타입에 따라 imageUrl / videoUrl 채우기
     if (file.type.startsWith("video/")) {
       setFormState((prev) => ({
         ...prev,
         imageUrl: "",
-        videoUrl: url, // blob: → MediaEmbed에서 video로 처리
+        videoUrl: url,
       }));
     } else {
       setFormState((prev) => ({
         ...prev,
         imageUrl: url,
-        // 사진만 올린 경우 기존 videoUrl은 유지 (온라인 링크 썼을 수도 있음)
       }));
     }
   };
@@ -452,11 +484,10 @@ export default function FavoritePage() {
         : formState.videoUrl || "";
 
     const payload = {
-      // FAVORITE 테이블 구조에 맞춘 필드들 (엔티티/DTO에 맞게 일부는 무시돼도 됨)
       idx: formState.id ?? null,
-      id: formState.id ?? null, // 혹시 id 필드를 쓰는 경우 대비
-      customer_idx: 1, // TODO: 로그인 붙으면 토큰에서 꺼내서 백엔드에서 세팅하는 쪽이 베스트
-      favoriteStoreIdx: null, // 아직 STORE랑 연동 안 하니까 NULL
+      id: formState.id ?? null,
+      customer_idx: 1,
+      favoriteStoreIdx: null,
 
       category: formState.category,
       title: trimmedTitle,
@@ -471,12 +502,10 @@ export default function FavoritePage() {
       setIsSaving(true);
 
       if (formState.id == null) {
-        // 신규 등록
         const createdDto = await favoriteApi.create(payload);
         const created = mapFromDto(createdDto);
         setFavorites((prev) => [...prev, created]);
       } else {
-        // 수정
         const updatedDto = await favoriteApi.update(formState.id, payload);
         const updated = mapFromDto(updatedDto);
         setFavorites((prev) =>
@@ -606,7 +635,7 @@ export default function FavoritePage() {
                         poster={item.image}
                         className="fav-card-media"
                       />
-                    ) : (
+                    ) : item.image ? (
                       <>
                         <img
                           src={item.image}
@@ -622,6 +651,8 @@ export default function FavoritePage() {
                           초점 조절
                         </button>
                       </>
+                    ) : (
+                      <div className="fav-card-noimage">사진 없음</div>
                     )}
                   </div>
 
@@ -661,23 +692,27 @@ export default function FavoritePage() {
         )}
       </div>
 
-      {/* 이미지 크롭 모달 */}
+      {/* 이미지 크롭 모달 – **이 화면 = 실제 카드랑 1:1 동일** */}
       {editingCropId && (
         <div className="fav-crop-modal-backdrop">
           <div className="fav-crop-modal">
             <div className="fav-crop-modal-header">
               <span>사진 위치 조정</span>
               <small>
-                사진을 끌어서 위치를 맞추고, 확대/축소로 딱 맞게 잘라 보세요.
+                아래 화면이 실제 카드에 적용되는 모습과 100% 동일합니다.
               </small>
             </div>
 
-            <div className="fav-crop-frame" onMouseDown={handleCropMouseDown}>
+            <div
+              className="fav-crop-frame"
+              onMouseDown={handleCropMouseDown}
+            >
               <img
                 src={
                   favorites.find((f) => f.id === editingCropId)?.image || ""
                 }
                 alt="crop"
+                className="fav-card-image"
                 style={{
                   objectPosition: `${draftCrop.offsetX}% ${draftCrop.offsetY}%`,
                   transform: `scale(${draftCrop.zoom})`,

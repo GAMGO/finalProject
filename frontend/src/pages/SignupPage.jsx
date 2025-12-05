@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from "react"; // ⭐️ useCallback 추가
 import axios from "axios";
+import "../theme/theme.css"; // ✅ 테마 CSS
 const baseURL = import.meta.env.VITE_LOCAL_BASE_URL;
 const SignupPage = ({ onToggleMode, onSignupSuccess }) => {
   // ------------------------------------
