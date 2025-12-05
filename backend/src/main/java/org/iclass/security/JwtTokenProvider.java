@@ -25,8 +25,8 @@ public class JwtTokenProvider {
     // ✨ 수정 1: 시크릿 키를 클래스 필드에서 한 번만 생성하여 메모리에 저장하고 final로 선언합니다.
     private final SecretKey secretKey = Keys.hmacShaKeyFor(SECRET_KEY_STRING.getBytes());
     
-    // 토큰 만료 시간 (밀리초 단위, 현재는 24시간)
-    private final int jwtExpirationInMs = 24 * 60 * 60 * 1000;
+    // 토큰 만료 시간 (밀리초 단위, 유효시간 30분)
+    private final int jwtExpirationInMs = 30 * 60 * 1000;;
     // Refresh Token 만료 시간 (밀리초 단위, 7일)
     private final int refreshTokenExpirationInMs = 7 * 24 * 60 * 60 * 1000; // 7일
     @Lazy

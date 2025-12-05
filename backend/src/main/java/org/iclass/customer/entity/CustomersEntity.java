@@ -49,6 +49,6 @@ public class CustomersEntity {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime emailVerificationExpires;
 
-    @Column(name = "refresh_token", length = 255)
+    @Column(name = "refresh_token", length = 1024)
     private String refreshToken;
 }

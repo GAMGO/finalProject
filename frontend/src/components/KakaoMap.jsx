@@ -531,9 +531,9 @@ export default function KakaoMap() {
 
     // 토큰 키 여러 개 중 하나라도 있으면 사용
     const token =
-      sessionStorage.getItem("jwtToken") ||
-      sessionStorage.getItem("refreshToken") ||
-      sessionStorage.getItem("token");
+      localStorage.getItem("jwtToken") ||
+      localStorage.getItem("refreshToken") ||
+      localStorage.getItem("token");
 
     if (!token) {
       alert("로그인 후 리뷰를 작성할 수 있어요.");
