@@ -4,11 +4,12 @@ import axios from "axios";
 import KakaoMap from "./components/KakaoMap";
 import CommunityPage from "./pages/CommunityPage";
 import UserProfilePage from "./pages/UserProfilePage";
-import AuthPage from "./pages/AuthPage"
+import AuthPage from "./pages/AuthPage";
 import FavoritePage from "./pages/FavoritePage";
 import apiClient, { setAuthToken, clearAuthToken } from "./api/apiClient";
 import "./App.css";
 import "./SidebarPatch.css";
+import "./theme/theme.css"; // ✅ 테마 CSS
 
 // ✅ 로고 이미지
 import DISH_LOGO from "./assets/DISH_LOGO.png";
@@ -19,10 +20,7 @@ const Logout = ({ onLogoutSuccess }) => {
     const handleLogout = async () => {
       try {
         //apiClient 사용: /api/auth/logout 엔드포인트에 요청합니다. apiClient의 인터셉터가 Authorization 헤더를 자동으로 추가합니다.
-        await apiClient.post(
-          `/api/auth/logout`,
-          {}
-        );
+        await apiClient.post(`/api/auth/logout`, {});
         setMessage("로그아웃에 성공했습니다. 잠시 후 로그인 화면으로 돌아갑니다.");
         // 성공 시 onLogoutSuccess 호출 -> App 컴포넌트에서 토큰 삭제 및 isLoggedIn=false 처리
         setTimeout(() => {
@@ -61,13 +59,32 @@ const Logout = ({ onLogoutSuccess }) => {
 export default function App() {
   const [page, setPage] = useState("map"); // map / community / profile / favorite / logout
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // ✅ 추가: 테마 상태 (light / dark)
+  const [theme, setTheme] = useState(() => {
+    if (typeof window === "undefined") return "light";
+    return localStorage.getItem("theme") || "light";
+  });
+
   useEffect(() => {
-    const token = sessionStorage.getItem('jwtToken');
+    const token = sessionStorage.getItem("jwtToken");
     if (token) {
       setAuthToken(token);
       setIsLoggedIn(true);
     }
   }, []);
+
+  // ✅ 추가: theme 값이 바뀔 때마다 <html data-theme="..."> 달기
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  // ✅ 추가: 토글 함수
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === "light" ? "dark" : "light"));
+  };
+
   // 로그인 성공 콜백: 토큰을 받아 메모리에 저장합니다.
   const handleLoginSuccess = (token) => {
     setAuthToken(token);
@@ -93,6 +110,7 @@ export default function App() {
       </div>
     );
   }
+
   return (
     <div className="app">
       <aside className="side-bar">
@@ -135,6 +153,15 @@ export default function App() {
           onClick={() => setPage("logout")}
         >
           로그아웃
+        </button>
+
+        {/* ✅ 로그아웃 밑에 다크/라이트 토글 버튼 */}
+        <button
+          type="button"
+          className="side-nav-btn theme-toggle-btn"
+          onClick={toggleTheme}
+        >
+          {theme === "light" ? "다크 모드" : "라이트 모드"}
         </button>
       </aside>
 

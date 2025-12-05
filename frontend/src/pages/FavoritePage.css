@@ -1,3 +1,5 @@
+/* src/pages/FavoritePage.css */
+
 .favorite-root {
   --brand-purple: #78266a;
   --accent-peach: #ffd19d;
@@ -184,8 +186,8 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;              /* 11 → 13 */
-  padding: 5px 10px;            /* 살짝 키움 */
+  font-size: 13px;
+  padding: 5px 10px;
   border-radius: 999px;
   background: rgba(52, 211, 153, 0.18);
   border: 1px solid rgba(16, 185, 129, 0.85);
@@ -204,9 +206,9 @@
   border: none;
   background: rgba(0, 0, 0, 0.18);
   color: #fff;
-  font-size: 13px;              /* 11 → 13 */
+  font-size: 13px;
   font-weight: 600;
-  padding: 5px 12px;            /* 크기 업 */
+  padding: 5px 12px;
   border-radius: 999px;
   cursor: pointer;
 }
@@ -215,12 +217,12 @@
   background: rgba(0, 0, 0, 0.28);
 }
 
-/* 해제 버튼 (하트 제거 + 글자 키움) */
+/* 해제 버튼 */
 .fav-unlike {
   border: none;
   background: transparent;
   cursor: pointer;
-  font-size: 13px;              /* 12 → 13 */
+  font-size: 13px;
   font-weight: 700;
   color: var(--accent-brown);
 }
@@ -233,7 +235,7 @@
   border-radius: 14px;
   overflow: hidden;
   background: #000;
-  height: 620px; /* 기본 카드 이미지 높이 */
+  height: 620px; /* 기준 높이 */
 }
 
 .fav-card-image {
@@ -244,6 +246,18 @@
   transform: scale(var(--crop-zoom, 1));
   transform-origin: center center;
   transition: transform 0.06s linear, object-position 0.06s linear;
+}
+
+/* 사진 없는 카드용 (기타 등) */
+.fav-card-noimage {
+  width: 100%;
+  height: 100%;
+  background: #4b5563;
+  color: #f9fafb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
 }
 
 /* MediaEmbed에서 쓰는 공용 클래스 */
@@ -424,17 +438,20 @@
 }
 
 .fav-crop-modal {
-  width: 880px;
-  max-width: min(960px, calc(100% - 40px));
+  width: 980px;
+  max-width: min(980px, calc(100% - 40px));
   background: #111;
   border-radius: 18px;
   padding: 16px 18px 14px;
   color: #f9fafb;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .fav-crop-modal-header {
-  margin-bottom: 10px;
+  margin-bottom: 4px;
 }
 
 .fav-crop-modal-header > span {
@@ -449,10 +466,11 @@
   color: #9ca3af;
 }
 
+/* 이 프레임 크기 = 카드 이미지와 100% 동일 (데스크탑 기준 620px) */
 .fav-crop-frame {
   position: relative;
   width: 100%;
-  height: 430px;
+  height: 620px;
   background: #000;
   overflow: hidden;
   border-radius: 12px;
@@ -506,8 +524,10 @@
     );
 }
 
+/* 컨트롤 */
+
 .fav-crop-controls {
-  margin-top: 10px;
+  margin-top: 4px;
 }
 
 .fav-crop-zoom-row {
@@ -527,7 +547,7 @@
 }
 
 .fav-crop-modal-actions {
-  margin-top: 12px;
+  margin-top: 8px;
   display: flex;
   justify-content: flex-end;
   gap: 8px;
@@ -775,6 +795,10 @@
   .fav-card-image-wrap {
     height: 500px;
   }
+
+  .fav-crop-frame {
+    height: 500px; /* 카드랑 동일 */
+  }
 }
 
 @media (max-width: 640px) {
@@ -797,12 +821,12 @@
     padding: 12px 12px 10px;
   }
 
-  .fav-crop-frame {
-    height: 260px;
-  }
-
   .fav-card-image-wrap {
     height: 360px;
+  }
+
+  .fav-crop-frame {
+    height: 360px; /* 카드랑 동일 */
   }
 
   .fav-card-body-main {

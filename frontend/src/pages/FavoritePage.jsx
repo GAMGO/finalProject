@@ -79,10 +79,11 @@ const DEFAULT_CARD_IMAGE = {
   뻥튀기: FAV_BBEONGTTEUGI,
   계란빵: FAV_EGG_BREAD,
   옥수수: FAV_CORN,
-
 };
 
-/** DTO에 imageUrl이 비어 있을 때 쓸 기본 이미지 선택 */
+/** DTO에 imageUrl이 비어 있을 때 쓸 기본 이미지 선택
+ *  - 기타 등은 그냥 빈 문자열 리턴 → 사진 없이 카드 뜨게
+ */
 const getFallbackImage = (category) => {
   // 1) 카테고리 직접 매핑
   if (DEFAULT_CARD_IMAGE[category]) {
@@ -92,12 +93,12 @@ const getFallbackImage = (category) => {
   // 2) ALIAS(분식 ↔ 떡볶이 등) 역으로 찾기
   for (const [base, aliases] of Object.entries(CATEGORY_ALIAS)) {
     if (aliases.includes(category)) {
-      return DEFAULT_CARD_IMAGE[base] || FAV_ETC;
+      return DEFAULT_CARD_IMAGE[base] || "";
     }
   }
 
-  // 3) 그 외: 기타 기본 이미지 (또는 null로 바꿔서 "사진 없음" 처리해도 됨)
-  return FAV_ETC;
+  // 3) 그 외: 기본 이미지 없음
+  return "";
 };
 
 // 백엔드 DTO -> 프론트에서 쓰는 형태로 매핑
@@ -116,6 +117,8 @@ const mapFromDto = (dto) => {
   const imageUrl = dto.imageUrl ?? dto.IMAGE_URL ?? "";
   const videoUrl = dto.videoUrl ?? dto.VIDEO_URL ?? "";
 
+  const fallbackImage = getFallbackImage(category);
+
   return {
     id,
     category,
@@ -123,7 +126,7 @@ const mapFromDto = (dto) => {
     address: favoriteAddress,
     note,
     rating,
-    image: imageUrl || getFallbackImage(category),
+    image: imageUrl || fallbackImage,
     videoUrl,
     createdAt: dto.createdAt ?? dto.CREATED_AT ?? null,
     expiredAt: dto.expiredAt ?? dto.EXPIRED_AT ?? null,
@@ -632,7 +635,7 @@ export default function FavoritePage() {
                         poster={item.image}
                         className="fav-card-media"
                       />
-                    ) : (
+                    ) : item.image ? (
                       <>
                         <img
                           src={item.image}
@@ -648,6 +651,8 @@ export default function FavoritePage() {
                           초점 조절
                         </button>
                       </>
+                    ) : (
+                      <div className="fav-card-noimage">사진 없음</div>
                     )}
                   </div>
 
@@ -687,23 +692,27 @@ export default function FavoritePage() {
         )}
       </div>
 
-      {/* 이미지 크롭 모달 */}
+      {/* 이미지 크롭 모달 – **이 화면 = 실제 카드랑 1:1 동일** */}
       {editingCropId && (
         <div className="fav-crop-modal-backdrop">
           <div className="fav-crop-modal">
             <div className="fav-crop-modal-header">
               <span>사진 위치 조정</span>
               <small>
-                사진을 끌어서 위치를 맞추고, 확대/축소로 딱 맞게 잘라 보세요.
+                아래 화면이 실제 카드에 적용되는 모습과 100% 동일합니다.
               </small>
             </div>
 
-            <div className="fav-crop-frame" onMouseDown={handleCropMouseDown}>
+            <div
+              className="fav-crop-frame"
+              onMouseDown={handleCropMouseDown}
+            >
               <img
                 src={
                   favorites.find((f) => f.id === editingCropId)?.image || ""
                 }
                 alt="crop"
+                className="fav-card-image"
                 style={{
                   objectPosition: `${draftCrop.offsetX}% ${draftCrop.offsetY}%`,
                   transform: `scale(${draftCrop.zoom})`,
