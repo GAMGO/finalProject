@@ -22,7 +22,7 @@ public interface CustomersRepository extends JpaRepository<CustomersEntity, Long
 
     // 이메일 인증 토큰으로 사용자 조회
     Optional<CustomersEntity> findByEmailVerificationToken(String token);
-
+    // ✅ customer_idx로 엔티티 조회
     Optional<CustomersEntity> findByIdx(Long idx);
 
     Optional<CustomersEntity> findByRefreshToken(String refreshToken);

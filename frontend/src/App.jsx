@@ -62,7 +62,7 @@ export default function App() {
   const [page, setPage] = useState("map"); // map / community / profile / favorite / logout
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   useEffect(() => {
-    const token = sessionStorage.getItem('jwtToken');
+    const token = localStorage.getItem('jwtToken');
     if (token) {
       setAuthToken(token);
       setIsLoggedIn(true);
