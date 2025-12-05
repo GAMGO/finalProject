@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import App from "./App.jsx"; // 메인 앱 레이아웃
 import AuthPage from "./pages/AuthPage.jsx"; // 로그인/회원가입 페이지
-import Check from "./pages/AuthCheck.jsx"; // 인증 상태 확인 (AuthCheck)
+import AuthCheck from "./pages/AuthCheck.jsx"; // 인증 상태 확인 (AuthCheck)
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -12,10 +12,10 @@ createRoot(document.getElementById("root")).render(
         <Route 
             path="/*" 
             element={
-                <Check>
+                <AuthCheck>
                     <App />
-                </Check>
-            } 
+                </AuthCheck>
+            }
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

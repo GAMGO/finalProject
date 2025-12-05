@@ -1,17 +1,14 @@
 package org.iclass.customer.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class LoginResponse {
-    private String token;
+public class TokenRefreshRequest {
+    @NotBlank
     private String refreshToken;
-    private String tokenType;
-    private String id;
 }

@@ -7,6 +7,7 @@ import org.iclass.route.dto.LatLngDto;
 import org.iclass.route.dto.RouteSummaryResponse;
 import org.iclass.route.dto.TransportMode;
 import org.iclass.route.service.KakaoRouteService;
+import org.iclass.route.service.OdsayTransitService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 public class KakaoRouteController {
 
     private final KakaoRouteService kakaoRouteService;
+    private final OdsayTransitService odsayTransitService;   // ✅ 추가
 
     /**
      * 프론트에서 호출하는 엔드포인트
@@ -36,13 +38,28 @@ public class KakaoRouteController {
         LatLngDto from = request.getFrom();
         LatLngDto to   = request.getTo();
 
-        RouteSummaryResponse result = kakaoRouteService.searchRoute(
-                request.getMode(),
-                from.getLat(),
-                from.getLng(),
-                to.getLat(),
-                to.getLng()
-        );
+        TransportMode mode = request.getMode();
+        if (mode == null) {
+            mode = TransportMode.CAR;
+        }
+
+        RouteSummaryResponse result;
+
+        // ✅ 대중교통이면 ODsay 사용
+        if (mode == TransportMode.TRANSIT) {
+            result = odsayTransitService.searchTransitRoute(
+                    from.getLat(), from.getLng(),
+                    to.getLat(), to.getLng()
+            );
+        } else {
+            // ✅ 차량/도보는 기존 Kakao 내비 사용
+            result = kakaoRouteService.searchRoute(
+                    mode,
+                    from.getLat(), from.getLng(),
+                    to.getLat(), to.getLng()
+            );
+        }
+
         return ResponseEntity.ok(result);
     }
 
