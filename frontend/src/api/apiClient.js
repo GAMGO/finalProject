@@ -78,7 +78,7 @@ export const clearAuthToken = () => {
   sessionStorage.removeItem("refreshToken");
   console.log("Access Token 제거 완료.");
   // TODO: 실제 프로젝트에서는 여기에 로그인 페이지로 리다이렉트하는 로직을 추가합니다.
-  window.location.href = "/auth";
+  window.location.href = "/login";
 };
 // 🔑 [추가] Refresh Token 요청 함수 (내부 사용)
 const refreshAccessToken = async () => {
@@ -178,4 +178,3 @@ apiClient.interceptors.response.use(
 );
 // 기존 export 구문 유지
 export default apiClient;
-export { setAuthToken, clearAuthToken };
