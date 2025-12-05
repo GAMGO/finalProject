@@ -364,16 +364,98 @@ export default function KakaoMap() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!selectedPos) {
-      alert("지도를 클릭해서 위치를 먼저 선택해줘요");
+    // 1. 우선 위치 정보 준비 (지도 클릭 or 주소로 검색)
+    let finalPos = selectedPos;
+
+    // 지도 안 찍었으면, 주소로 좌표 찾기 시도
+    if (!finalPos) {
+      const addr = (form.address || "").trim();
+      if (!addr) {
+        alert("지도를 클릭해서 위치를 선택하거나, 주소를 입력해 주세요.");
+        return;
+      }
+
+      if (!window.kakao) {
+        alert("지도가 아직 준비되지 않았어요. 잠시 후 다시 시도해 주세요.");
+        return;
+      }
+
+      const geocoder = geocoderRef.current;
+      const places = placesRef.current;
+
+      // 주소검색 (도로명/지번)
+      const searchByAddress = () =>
+        new Promise((resolve, reject) => {
+          if (!geocoder) return reject(new Error("지오코더가 없습니다."));
+          geocoder.addressSearch(addr, (result, status) => {
+            if (
+              status === window.kakao.maps.services.Status.OK &&
+              result &&
+              result.length > 0
+            ) {
+              const r = result[0];
+              resolve({
+                lat: parseFloat(r.y),
+                lng: parseFloat(r.x),
+              });
+            } else {
+              reject(new Error("주소 검색 실패"));
+            }
+          });
+        });
+
+      // 키워드 검색 (가게 이름 등)
+      const searchByKeyword = () =>
+        new Promise((resolve, reject) => {
+          if (!places) return reject(new Error("장소 검색 객체가 없습니다."));
+          places.keywordSearch(addr, (data, status) => {
+            if (
+              status === window.kakao.maps.services.Status.OK &&
+              data &&
+              data.length > 0
+            ) {
+              const d = data[0];
+              resolve({
+                lat: parseFloat(d.y),
+                lng: parseFloat(d.x),
+              });
+            } else {
+              reject(new Error("키워드 검색 실패"));
+            }
+          });
+        });
+
+      try {
+        // 주소 검색 먼저, 안 되면 키워드 검색
+        try {
+          finalPos = await searchByAddress();
+        } catch (e1) {
+          console.warn("주소 검색 실패, 키워드 검색 시도:", e1);
+          finalPos = await searchByKeyword();
+        }
+
+        // 찾은 좌표 state에도 저장해두기 (필요하면)
+        setSelectedPos(finalPos);
+      } catch (err) {
+        console.error("입력한 주소로 좌표 찾기 실패:", err);
+        alert(
+          "입력한 주소로 위치를 찾을 수 없어요.\n지도를 클릭해서 위치를 선택해 주세요."
+        );
+        return;
+      }
+    }
+
+    if (!finalPos) {
+      alert("위치를 찾지 못했어요. 다시 시도해 주세요.");
       return;
     }
 
+    // 2. payload 만들기
     const payload = {
       storeName: form.description || "이름 없는 노점",
       storeAddress: form.address || "",
-      lat: selectedPos.lat,
-      lng: selectedPos.lng,
+      lat: finalPos.lat,
+      lng: finalPos.lng,
     };
 
     try {
@@ -405,6 +487,7 @@ export default function KakaoMap() {
         if (!Number.isNaN(n)) savedId = n;
       }
 
+      // 지도에 새 마커 추가
       if (mapInstanceRef.current) {
         const newStoreForMarker = {
           idx: savedId,
@@ -422,6 +505,7 @@ export default function KakaoMap() {
       alert("가게 등록에 실패했어 ㅠㅠ 콘솔 로그 한 번 봐줘.");
     }
   };
+
 
   // ==========================
   // 리뷰 작성
