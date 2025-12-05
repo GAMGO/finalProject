@@ -63,14 +63,14 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   useEffect(() => {
     const token = localStorage.getItem('jwtToken');
+    const refreshToken = localStorage.getItem('refreshToken');
     if (token) {
-      setAuthToken(token);
+      setAuthToken(token, refreshToken);
       setIsLoggedIn(true);
     }
   }, []);
   // 로그인 성공 콜백: 토큰을 받아 메모리에 저장합니다.
-  const handleLoginSuccess = (token) => {
-    setAuthToken(token);
+  const handleLoginSuccess = () => {
     setIsLoggedIn(true);
     setPage("map");
   };

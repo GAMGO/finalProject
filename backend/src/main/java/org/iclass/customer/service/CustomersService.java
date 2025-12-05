@@ -93,7 +93,7 @@ public class CustomersService implements UserDetailsService {
         }
 
 
-        // >>> [ADDED] 복구/프로필 등에서 공용으로 쓰는 비밀번호 변경 유틸
+        // 복구/프로필 등에서 공용으로 쓰는 비밀번호 변경 유틸
         @Transactional
         public void updatePassword(String customer_id, String newPassword) {
                 CustomersEntity user = customersRepository.findById(customer_id)

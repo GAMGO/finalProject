@@ -58,47 +58,45 @@ const getRefreshTokenFromStorage = () => {
   }
   return globalRefreshToken;
 };
+
 export const setAuthToken = (token, refreshToken) => {
   const MIN_TOKEN_LENGTH = 50;
-
-  // 1. Access Token 처리
+  // 1. Access Token 처리 (항상 저장 또는 제거)
   if (typeof token === "string" && token.length > MIN_TOKEN_LENGTH) {
     globalAccessToken = token;
     localStorage.setItem("jwtToken", token);
     console.log("✅ Access Token 설정 완료. 길이:", token.length);
   } else {
-    // 🚨 [수정 및 추가된 부분] 유효성 검사 실패 시
     globalAccessToken = null;
-    localStorage.removeItem("jwtToken");
-    // 이 로그는 `길이=9` 오류가 다시 발생하지 않음을 확인하는 데 도움이 됩니다.
-    if (token !== undefined && token !== null) {
+    localStorage.removeItem("jwtToken"); // LocalStorage에서 제거
+    if (token) {
       console.error(
         "❌ Access Token이 유효하지 않거나 너무 짧아 저장을 건너뛰고 기존 토큰을 제거했습니다."
       );
     }
-  }
+  } // 2. Refresh Token 처리 // 🚨 [핵심 수정] refreshToken 인자가 undefined나 null이면 기존 값 유지 (제거하지 않음)
+  if (refreshToken === null || typeof refreshToken === "undefined") {
+    console.log(
+      "⚠️ Refresh Token 인자가 누락되어, 기존 저장소 값을 유지합니다."
+    );
+    return; // Access Token만 처리하고 종료
+  } // 인자가 유효한 토큰인 경우 (갱신 또는 새로 저장)
 
-  // 2. Refresh Token 처리 (선택적으로 새로운 토큰을 주지 않을 수 있으므로 Access Token과 분리)
   if (
-    refreshToken &&
     typeof refreshToken === "string" &&
     refreshToken.length > MIN_TOKEN_LENGTH
   ) {
-    globalRefreshToken = refreshToken;
+    globalRefreshToken = refreshToken; // Refresh Token은 localStorage에 저장
     localStorage.setItem("refreshToken", refreshToken);
     console.log("✅ Refresh Token 설정 완료. 길이:", refreshToken.length);
   } else {
-    // Refresh Token 갱신 실패 시에도 확실하게 제거
+    // 인자가 유효하지 않으므로 (빈 문자열 등), 강제로 제거
+    console.error(`❌ Refresh Token 제거됨! (인자 값: ${refreshToken})`);
     globalRefreshToken = null;
     localStorage.removeItem("refreshToken");
-    if (refreshToken) {
-      // null이 아닌 값이 왔는데 유효하지 않은 경우만 로깅
-      console.error(
-        "❌ Refresh Token이 유효하지 않거나 너무 짧습니다. 제거합니다."
-      );
-    }
   }
 };
+
 // 토큰 삭제 (로그아웃 / 만료 시)
 export const clearAuthToken = () => {
   globalAccessToken = null;
@@ -106,25 +104,24 @@ export const clearAuthToken = () => {
   localStorage.removeItem("jwtToken");
   localStorage.removeItem("refreshToken");
   console.log("Access Token 제거 완료.");
-  // TODO: 실제 프로젝트에서는 여기에 로그인 페이지로 리다이렉트하는 로직을 추가합니다.
   window.location.href = "/login";
 };
-// 🔑 [추가] Refresh Token 요청 함수 (내부 사용)
+
+// Refresh Token 요청 함수 (내부 사용)
 const refreshAccessToken = async () => {
-  const token = getRefreshTokenFromStorage();
-  if (!token) {
+  const refreshToken = getRefreshTokenFromStorage();
+  if (!refreshToken) {
     console.error("Refresh Token이 없습니다. 로그인 필요.");
     clearAuthToken();
     throw new Error("No Refresh Token");
   }
-
   try {
     // ⭐️ 기본 axios를 사용하여 토큰 재발급 요청 (무한 루프 방지)
     // 백엔드 구현에 따라 Refresh Token을 Header나 Body에 담아 요청합니다.
     const response = await axios.post(
       `${apiClient.defaults.baseURL}/api/auth/refresh`,
       {
-        refreshToken: token,
+        refreshToken: refreshToken,
       }
     );
     const newAccessToken = response.data.token;

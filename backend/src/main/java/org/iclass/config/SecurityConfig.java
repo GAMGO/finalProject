@@ -66,7 +66,6 @@ public class SecurityConfig {
                             "/api/stores/{storeIdx}/reviews",
                             "/api/routes"
                     ).permitAll()
-
                     // ===== 로그인 필요 영역 =====
                     .requestMatchers(
                             "/api/auth/logout",
@@ -75,7 +74,6 @@ public class SecurityConfig {
                             "/api/favorites/**",   // 개별 즐겨찾기 (수정/삭제 등)
                             "/api/profile"
                     ).authenticated()
-
                     // 그 외 전부 인증 필요
                     .anyRequest().authenticated()
             )
