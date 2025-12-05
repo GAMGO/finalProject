@@ -58,11 +58,11 @@ const getRefreshTokenFromStorage = () => {
     }
     return globalRefreshToken;
 }
-export const setAuthToken = (token) => {
+export const setAuthToken = (token,refreshToken) => {
   // 메모리 + sessionStorage 에 모두 저장
   globalAccessToken = token;
-  globalAccessToken = accessToken;
-    sessionStorage.setItem("jwtToken", accessToken);
+  globalRefreshToken = refreshToken;
+    sessionStorage.setItem("jwtToken", token);
     if (refreshToken) {
         globalRefreshToken = refreshToken;
         sessionStorage.setItem("refreshToken", refreshToken);
@@ -97,7 +97,7 @@ const refreshAccessToken = async () => {
             refreshToken: token
         });
 
-        const newAccessToken = response.data.accessToken;
+        const newAccessToken = response.data.token;
         const newRefreshToken = response.data.refreshToken; // 백엔드에서 새로운 리프레시 토큰도 주는 경우
 
         if (newAccessToken) {

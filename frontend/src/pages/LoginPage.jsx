@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from "react";
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { setAuthToken } from "../api/apiClient";
 const baseURL = import.meta.env.VITE_LOCAL_BASE_URL;
 const dishLogoUrl = "./src/assets/DISH_LOGO.png";
 
@@ -50,7 +51,7 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
       const accessToken = response.data.token;
       const refreshToken = response.data.refreshToken;
       if (accessToken) {
-        // 🚨 onLoginSuccess 함수 유효성 체크
+        // onLoginSuccess 함수 유효성 체크
         if (typeof onLoginSuccess === 'function') {
           setAuthToken(accessToken, refreshToken); //setAuthToken에 Refresh Token을 함께 전달합니다.
           setMessage({ text: "로그인 성공!", type: "success" });
