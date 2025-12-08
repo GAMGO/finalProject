@@ -30,3 +30,4 @@ public class PollOption {
     @Column(name = "order")
     private Long orderNo;
 }
+

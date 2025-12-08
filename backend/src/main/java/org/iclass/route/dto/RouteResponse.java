@@ -5,13 +5,11 @@ import lombok.Data;
 
 import java.util.List;
 
-/**
- * 카카오 내비 원본 응답을 담는 DTO (서비스 내부용)
- */
 @Data
 public class RouteResponse {
-    private double distance;     // m
-    private double duration;     // sec
-    private Integer taxiFare;    // 원 (null 가능)
-    private List<RoutePoint> path;
+    private Double distance;          // m
+    private Double duration;          // sec (우리가 변환해서 넣음)
+    private Integer taxiFare;         // 택시 요금
+    private Integer tollFare;         // 톨게이트 요금 (없으면 null)
+    private List<RoutePoint> path;    // 경로 좌표들 (lat,lng)
 }
