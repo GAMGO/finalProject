@@ -36,7 +36,7 @@ public class SecurityConfig {
                         "/error", // 스프링 기본 에러 엔드포인트
                         "/api/recover/**", // 비밀번호 복구(시작/검증/재설정)
                         "/api/food/**",
-                        "/api/email/**" // 이메일 인증 관련 엔드포인
+                        "/api/email/**" // 이메일 인증
         };
 
         @Bean
@@ -56,7 +56,7 @@ public class SecurityConfig {
                                                 .requestMatchers(PUBLIC_WHITELIST).permitAll()
                                                 // 이메일 인증, 가게 목록 (POST 포함 전체) 허용
                                                 .requestMatchers("/api/email/**", "/api/stores/**",
-                                                                "/api/stores/{storeIdx}/reviews", "/api/routes/**",
+                                                                "/api/stores/{storeIdx}/reviews", "/api/routes/**","/api/auth/restore",
                                                                 "/api/posts/**")
                                                 .permitAll()
                                                 .requestMatchers(

@@ -51,7 +51,4 @@ public class CustomersEntity {
 
     @Column(name = "refresh_token", length = 1024)
     private String refreshToken;
-    
-    @Column(name = "is_deleted", nullable = false)
-    private Boolean isDeleted = false;
 }
