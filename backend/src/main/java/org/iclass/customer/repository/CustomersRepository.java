@@ -26,5 +26,8 @@ public interface CustomersRepository extends JpaRepository<CustomersEntity, Long
 
     Optional<CustomersEntity> findByRefreshToken(String refreshToken);
 
-    Optional<CustomersEntity> findByIdAndIsDeletedFalse(String id);
+    @Query("SELECT c FROM CustomersEntity c " +
+           "LEFT JOIN WithdrawalEntity w ON c.idx = w.customerIdx " +
+           "WHERE c.id = :id AND (w.isDeleted IS NULL OR w.isDeleted = false)")
+    Optional<CustomersEntity> findByIdAndIsDeletedFalse(@Param("id") String id);
 }

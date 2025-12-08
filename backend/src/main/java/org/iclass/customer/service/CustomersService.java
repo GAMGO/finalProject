@@ -113,7 +113,7 @@ public class CustomersService implements UserDetailsService {
                 log.info("[WITHDRAWAL:SERVICE] 사용자 소프트 삭제 처리 및 복구 메일 발송: {}", id);
         }
 
-        // 신규 추가: 본인 확인 후 계정 복구
+        // 본인 확인 후 계정 복구
         @Transactional
         public void restoreCustomer(String recoveryToken) {
                 // 1. 토큰으로 탈퇴 정보 조회

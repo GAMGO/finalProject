@@ -2,6 +2,7 @@ package org.iclass.deleteAccount.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.iclass.customer.service.CustomersService;
+import org.iclass.deleteAccount.dto.RestoreRequest;
 import org.iclass.security.JwtTokenProvider;
 import org.iclass.BalcklistedToken.service.TokenBlacklistService; // 블랙리스트 서비스
 import org.springframework.http.HttpHeaders;
@@ -53,9 +54,11 @@ public class WithdrawalController {
      * 계정 복구 (이메일로 받은 토큰 사용)
      */
     @PostMapping("/restore")
-    public ResponseEntity<?> restore(@RequestBody Map<String, String> request) {
-        String recoveryToken = request.get("recoveryToken");
-        
+    public ResponseEntity<?> restore(@RequestBody RestoreRequest request) {
+
+        // request.get("recoveryToken") 대신 getter 사용
+        String recoveryToken = request.getRecoveryToken();
+
         if (!StringUtils.hasText(recoveryToken)) {
             return ResponseEntity.badRequest().body(Map.of("message", "복구 코드가 필요합니다."));
         }
