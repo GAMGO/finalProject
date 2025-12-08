@@ -43,8 +43,9 @@ function mapPostFromApi(p) {
     views: p.viewCount ?? p.views ?? 0,
     category: p.type ?? p.category ?? "제보",
     location: p.locationText ?? p.location ?? "",
-    thumbnail: p.imageUrl ?? DEFAULT_THUMB,
-    // ✅ 게시글 본문은 body로 통일
+    // 빈 문자열("")도 기본 썸네일로 대체
+    thumbnail: p.imageUrl || DEFAULT_THUMB,
+    // 게시글 본문은 body로 통일
     body: p.body ?? p.content ?? "",
   };
 }
@@ -54,7 +55,7 @@ function mapPostToEditorInitial(post) {
   return {
     type: post.category ?? "제보",
     title: post.title ?? "",
-    body: post.body ?? "",                  // ✅ content 대신 body
+    body: post.body ?? "",                  // content 대신 body
     locationText: post.location ?? "",
     storeCategory: post.board ?? "",
     writer: post.writer ?? "",
@@ -285,7 +286,10 @@ function CommunityList({ posts, onOpenPost }) {
             onClick={() => onOpenPost(post.id)}
           >
             <div className="community-thumb">
-              <img src={post.thumbnail} alt={post.title} />
+              {/* ⬇️ CHANGED: 빈 값이면 <img> 렌더링하지 않음 */}
+              {post.thumbnail && (
+                <img src={post.thumbnail} alt={post.title} />
+              )}
             </div>
 
             <div className="community-row-main">
@@ -366,7 +370,10 @@ function CommunityDetail({
         </div>
 
         <div className="post-detail-thumbnail">
-          <img src={post.thumbnail} alt={post.title} />
+          {/* ⬇️ CHANGED: 빈 값이면 렌더링하지 않음 */}
+          {post.thumbnail && (
+            <img src={post.thumbnail} alt={post.title} />
+          )}
         </div>
 
         {/* ✅ 게시글 본문: body 사용 */}
