@@ -10,9 +10,9 @@ pip install -r requirements.txt
 
 더미데이터 추가
 
-python sentiment_batch_reviews.py
-
 학습 전 database.py의 cursorclass 주석처리
+
+python sentiment_batch_reviews.py
 
 python train_stall_recommender.py
 
