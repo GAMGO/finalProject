@@ -26,4 +26,5 @@ public interface CustomersRepository extends JpaRepository<CustomersEntity, Long
     Optional<CustomersEntity> findByIdx(Long idx);
 
     Optional<CustomersEntity> findByRefreshToken(String refreshToken);
+    Optional<CustomersEntity> findByIdAndIsDeletedFalse(String id);
 }

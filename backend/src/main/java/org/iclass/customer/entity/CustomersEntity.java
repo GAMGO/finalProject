@@ -25,7 +25,7 @@ public class CustomersEntity {
 
     @Column(name = "password_hash", length = 255, nullable = false)
     private String password;
-    
+
     @Email
     @Column(name = "email")
     private String email;
@@ -37,10 +37,10 @@ public class CustomersEntity {
     private String birth;
 
     @Column(name = "address")
-    private String address;    
+    private String address;
 
     @Column(name = "email_verified")
-    private Boolean emailVerified; // 이메일 인증 
+    private Boolean emailVerified; // 이메일 인증
 
     @Column(name = "email_verification_token")
     private String emailVerificationToken; // 이메일 인증 토큰
@@ -51,4 +51,7 @@ public class CustomersEntity {
 
     @Column(name = "refresh_token", length = 1024)
     private String refreshToken;
+    
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
 }

@@ -80,19 +80,6 @@ public class CustomersService implements UserDetailsService {
                 return savedUser;
         }
 
-        @Override
-        public UserDetails loadUserByUsername(String id) throws UsernameNotFoundException {
-                CustomersEntity user = customersRepository.findById(id)
-                                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다 : " + id));
-
-                return org.springframework.security.core.userdetails.User.builder()
-                                .username(user.getId())
-                                .password(user.getPassword())
-                                .roles("USER")
-                                .build();
-        }
-
-
         // 복구/프로필 등에서 공용으로 쓰는 비밀번호 변경 유틸
         @Transactional
         public void updatePassword(String customer_id, String newPassword) {
@@ -102,4 +89,33 @@ public class CustomersService implements UserDetailsService {
                 customersRepository.save(user);
         }
 
+        @Transactional
+        public void deleteCustomer(String id) {
+                // 1. 사용자 조회
+                CustomersEntity user = customersRepository.findById(id)
+                                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + id));
+
+                // 2. 소프트 삭제 처리: 필드값 변경 및 저장
+                user.setIsDeleted(true);
+                user.setRefreshToken(null); // 보안을 위해 리프레시 토큰도 무효화
+                customersRepository.save(user);
+
+                log.info("[WITHDRAWAL:SERVICE] 사용자 소프트 삭제 완료: {}", id);
+        }
+
+        @Override
+        public UserDetails loadUserByUsername(String id) throws UsernameNotFoundException {
+                CustomersEntity user = customersRepository.findById(id)
+                                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다 : " + id));
+                // 3. 탈퇴 계정 로그인 차단 로직 추가
+                if (Boolean.TRUE.equals(user.getIsDeleted())) {
+                        log.warn("[LOGIN:SERVICE] 탈퇴한 계정 접근 시도: {}", id);
+                        throw new UsernameNotFoundException("탈퇴 처리된 계정입니다: " + id);
+                }
+                return org.springframework.security.core.userdetails.User.builder()
+                                .username(user.getId())
+                                .password(user.getPassword())
+                                .roles("USER")
+                                .build();
+        }
 }
