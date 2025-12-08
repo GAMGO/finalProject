@@ -73,7 +73,8 @@ public class SecurityConfig {
                                                                 "/api/auth/logout",
                                                                 "/api/favorites", // 목록
                                                                 "/api/favorites/**", // 개별 즐겨찾기 (수정/삭제 등)
-                                                                "/api/profile"
+                                                                "/api/profile",
+                                                                "/api/auth/withdrawal"
                                                 )
                                                 .authenticated()
                                                 // 그 외 전부 인증 필요
