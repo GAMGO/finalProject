@@ -44,6 +44,8 @@ dependencies {
     runtimeOnly "io.jsonwebtoken:jjwt-impl:${jwtVersion}"
     runtimeOnly "io.jsonwebtoken:jjwt-jackson:${jwtVersion}" // jackson serializer
 
+    // Flyway
+
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     // testImplementation 'org.springframework.security:spring-security-test'
 }
@@ -64,5 +66,3 @@ bootJar {
  * - 팀원이 어떤 라이브러리 쓰는지, 자바 버전/부트 버전이 뭔지 한눈에 볼 수 있음.
  *
  */
-
- 
