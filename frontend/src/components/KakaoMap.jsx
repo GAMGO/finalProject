@@ -4,22 +4,97 @@ import plusIcon from "../assets/plus.svg";
 import "./KakaoMap.css";
 
 const APP_KEY = "bdd84bdbed2db3bc5d8b90cd6736a995";
-const API_BASE = import.meta.env.VITE_LOCAL_BASE_URL;
-const DATA_API_BASE =
-  import.meta.env.VITE_DATA_LOCAL_BASE_URL || API_BASE; // 🔥 AI 서버 주소 (없으면 기존 서버로)
 
-// 반경 선택 슬라이더용 옵션 (m 단위)
-const RADIUS_OPTIONS = [
-  10, 20, 30, 50, 100, 200, 300, 400, 500, 1000, 2000,
+// 스프링(8080) 쪽
+const API_BASE = import.meta.env.VITE_LOCAL_BASE_URL;
+// AI 서버(8000) 쪽
+const DATA_API_BASE =
+  import.meta.env.VITE_DATA_LOCAL_BASE_URL || "http://127.0.0.1:8000";
+
+// FOOD_INFO / FoodCategory 기준 (백엔드에 아직 안 쓰여도 프론트용)
+const CATEGORIES = [
+  { id: 1, label: "통닭" },
+  { id: 2, label: "타코야끼" },
+  { id: 3, label: "순대곱창" },
+  { id: 4, label: "붕어빵" },
+  { id: 5, label: "군밤/고구마" },
+  { id: 6, label: "닭꼬치" },
+  { id: 7, label: "분식" },
+  { id: 8, label: "해산물" },
+  { id: 9, label: "뻥튀기" },
+  { id: 10, label: "계란빵" },
+  { id: 11, label: "옥수수" },
 ];
 
-// 🔥 백엔드에서 맞춰줄 엔드포인트 (예: FastAPI 쪽에서 /recommend/around-me 로 구현)
-const NEARBY_ENDPOINT = "/recommend/route";
+// ✅ Store 객체에서 PK 꺼내는 공통 헬퍼
+const getStoreIdx = (storeRaw) => {
+  if (!storeRaw) return null;
+  const s = storeRaw.store ?? storeRaw.stall ?? storeRaw;
+  return (
+    s.idx ??
+    s.id ??
+    s.storeIdx ??
+    s.store_id ??
+    s.stall_id ??
+    null
+  );
+};
 
-// ✅ Store 객체에서 PK 꺼내는 공통 헬퍼 (idx / id / storeIdx 아무거나 올 수 있음)
-const getStoreIdx = (store) => {
-  if (!store) return null;
-  return store.idx ?? store.id ?? store.storeIdx ?? store.store_id ?? null;
+// ✅ 공통: store 객체에서 위/경도 뽑기 (웬만한 필드명 다 커버)
+const getLatLngFromStore = (storeRaw) => {
+  const s = storeRaw.store ?? storeRaw.stall ?? storeRaw;
+  if (!s) return { s: null, lat: null, lng: null };
+
+  let lat =
+    s.latitude ??
+    s.lat ??
+    s.y ??
+    s.LAT ??
+    s.LATITUDE ??
+    s.latitutde; // 오타 대비
+  let lng =
+    s.longitude ??
+    s.lng ??
+    s.x ??
+    s.LNG ??
+    s.LONGITUDE ??
+    s.lon ??
+    s.long;
+
+  // 마지막 방어: key 이름에 lat / lng / lon 들어있는 숫자 필드 자동 탐색
+  if (lat == null || lng == null) {
+    for (const [key, value] of Object.entries(s)) {
+      if (typeof value !== "number" && typeof value !== "string") continue;
+      const num = Number(value);
+      if (Number.isNaN(num)) continue;
+      const lower = key.toLowerCase();
+      if (lat == null && lower.includes("lat")) lat = num;
+      if (lng == null && (lower.includes("lng") || lower.includes("lon")))
+        lng = num;
+    }
+  }
+
+  return {
+    s,
+    lat: lat != null ? Number(lat) : null,
+    lng: lng != null ? Number(lng) : null,
+  };
+};
+
+// ✅ Haversine 거리 계산 (m)
+const distanceMeters = (lat1, lng1, lat2, lng2) => {
+  const toRad = (d) => (d * Math.PI) / 180;
+  const R = 6371000;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
 };
 
 export default function KakaoMap() {
@@ -27,7 +102,11 @@ export default function KakaoMap() {
   const mapInstanceRef = useRef(null);
   const geocoderRef = useRef(null);
   const tempMarkerRef = useRef(null);
-  const markersRef = useRef([]);
+
+  // ✅ 기본 노점 마커
+  const baseMarkersRef = useRef([]);
+  // ✅ 추천 노점(경로 주변 2km) 마커
+  const recommendedMarkersRef = useRef([]);
 
   // ✅ 길찾기 + 내 위치
   const routeLineRef = useRef(null);
@@ -58,6 +137,11 @@ export default function KakaoMap() {
   });
   const [hoverRating, setHoverRating] = useState(0);
 
+  // ✅ 리뷰 요약(AI)
+  const [reviewSummary, setReviewSummary] = useState("");
+  const [reviewSummaryLoading, setReviewSummaryLoading] = useState(false);
+  const [reviewSummaryError, setReviewSummaryError] = useState("");
+
   // ===== 길찾기 상태 =====
   const [routeForm, setRouteForm] = useState({ from: "", to: "" });
   const [routeMode, setRouteMode] = useState("CAR"); // CAR / WALK / TRANSIT
@@ -68,16 +152,6 @@ export default function KakaoMap() {
   const [myLocation, setMyLocation] = useState(null);
   const [useMyLocationAsFrom, setUseMyLocationAsFrom] = useState(false);
   const [locating, setLocating] = useState(false);
-
-  // ✅ 내 주변 추천 상태
-  const [radiusIndex, setRadiusIndex] = useState(
-    RADIUS_OPTIONS.indexOf(200) === -1 ? 0 : RADIUS_OPTIONS.indexOf(200)
-  ); // 기본 200m
-  const [nearbyStores, setNearbyStores] = useState([]);
-  const [nearbyLoading, setNearbyLoading] = useState(false);
-  const [nearbyError, setNearbyError] = useState("");
-
-  const selectedRadius = RADIUS_OPTIONS[radiusIndex] ?? RADIUS_OPTIONS[0];
 
   // ==========================
   // 유틸
@@ -110,14 +184,8 @@ export default function KakaoMap() {
     );
   };
 
-  const formatRatingShort = (v) => {
-    const n = Number(v);
-    if (Number.isNaN(n)) return "-";
-    return n.toFixed(1);
-  };
-
   // ==========================
-  // 리뷰 + 통계 불러오기 (/with-stats 사용)
+  // 리뷰 + 통계 불러오기
   // ==========================
   const loadReviews = async (storeIdx) => {
     if (!storeIdx) {
@@ -131,7 +199,11 @@ export default function KakaoMap() {
         `${API_BASE}/api/stores/${storeIdx}/reviews/with-stats?page=0&size=20`
       );
       const text = await res.text();
-      console.log("GET /api/stores/{id}/reviews/with-stats:", res.status, text);
+      console.log(
+        "GET /api/stores/{id}/reviews/with-stats:",
+        res.status,
+        text
+      );
 
       if (!res.ok) {
         console.error("리뷰+통계 불러오기 실패:", res.status, text);
@@ -141,7 +213,7 @@ export default function KakaoMap() {
       }
 
       const json = JSON.parse(text);
-      const data = json.data ?? json; // ApiResponse 래퍼 고려
+      const data = json.data ?? json;
 
       setReviewStats(data.stats || null);
       setReviews(Array.isArray(data.reviews) ? data.reviews : []);
@@ -154,6 +226,39 @@ export default function KakaoMap() {
     }
   };
 
+  // ==========================
+  // 리뷰 요약(AI) 불러오기
+  // ==========================
+  const loadReviewSummary = async (storeIdx) => {
+    if (!storeIdx) return;
+
+    setReviewSummaryLoading(true);
+    setReviewSummaryError("");
+    setReviewSummary("");
+
+    try {
+      const res = await fetch(
+        `${DATA_API_BASE}/api/stores/${storeIdx}/summary`
+      );
+      const text = await res.text();
+      console.log("GET /api/stores/{id}/summary:", res.status, text);
+
+      if (!res.ok) {
+        throw new Error(`요약 요청 실패 (${res.status})`);
+      }
+
+      const json = JSON.parse(text);
+      const data = json.data ?? json;
+
+      setReviewSummary(data.summary || "");
+    } catch (err) {
+      console.error("리뷰 요약 불러오기 에러:", err);
+      setReviewSummaryError("리뷰 요약을 불러오지 못했어요.");
+    } finally {
+      setReviewSummaryLoading(false);
+    }
+  };
+
   const handleMarkerClick = (store) => {
     const storeIdx = getStoreIdx(store);
     console.log("marker click store:", store, "idx:", storeIdx);
@@ -161,7 +266,9 @@ export default function KakaoMap() {
     setIsDetailOpen(true);
     setReviewForm({ rating: 5, text: "" });
     setHoverRating(0);
+
     loadReviews(storeIdx);
+    loadReviewSummary(storeIdx);
   };
 
   const closeDetail = () => {
@@ -171,19 +278,20 @@ export default function KakaoMap() {
     setReviewStats(null);
     setReviewForm({ rating: 5, text: "" });
     setHoverRating(0);
+    setReviewSummary("");
+    setReviewSummaryError("");
+    setReviewSummaryLoading(false);
   };
 
   // ==========================
-  // 가게 / 마커
+  // 마커 생성 / 삭제
   // ==========================
-  const addStoreMarker = (map, store) => {
-    if (!window.kakao || !map || !store) return;
+  const createMarkerForStore = (map, storeRaw, targetRef) => {
+    if (!window.kakao || !map || !storeRaw) return;
 
-    const lat = store.latitude ?? store.lat;
-    const lng = store.longitude ?? store.lng;
-
-    if (lat == null || lng == null) {
-      console.warn("마커 좌표 없음, store:", store);
+    const { s, lat, lng } = getLatLngFromStore(storeRaw);
+    if (!s || lat == null || lng == null) {
+      console.warn("마커 좌표 없음, store:", storeRaw);
       return;
     }
 
@@ -194,9 +302,14 @@ export default function KakaoMap() {
       map,
     });
 
-    const categoryText = store.category ?? "";
-    const nameText = store.storeName ?? store.name ?? "";
-    const addressText = store.address ?? store.storeAddress ?? "";
+    const categoryText =
+      s.category ?? s.categoryName ?? s.food_category ?? "";
+    const nameText = s.storeName ?? s.name ?? s.stall_name ?? "";
+    const addressText =
+      s.address ??
+      s.storeAddress ??
+      s.road_address ??
+      "";
 
     const content = `
       <div style="padding:8px 12px;font-size:12px;max-width:220px;">
@@ -218,12 +331,29 @@ export default function KakaoMap() {
 
     window.kakao.maps.event.addListener(marker, "click", () => {
       infowindow.open(map, marker);
-      handleMarkerClick(store);
+      handleMarkerClick(s);
     });
 
-    markersRef.current.push({ marker, infowindow });
+    targetRef.current.push({ marker, infowindow, store: s });
   };
 
+  const addBaseStoreMarker = (map, storeRaw) =>
+    createMarkerForStore(map, storeRaw, baseMarkersRef);
+
+  const addRecommendedStoreMarker = (map, storeRaw) =>
+    createMarkerForStore(map, storeRaw, recommendedMarkersRef);
+
+  const clearRecommendedMarkers = () => {
+    recommendedMarkersRef.current.forEach(({ marker, infowindow }) => {
+      if (infowindow) infowindow.close();
+      if (marker) marker.setMap(null);
+    });
+    recommendedMarkersRef.current = [];
+  };
+
+  // ==========================
+  // 전체 가게 로딩
+  // ==========================
   const loadStoresAndDraw = async (map) => {
     try {
       const res = await fetch(`${API_BASE}/api/stores`);
@@ -244,7 +374,7 @@ export default function KakaoMap() {
       }
 
       const stores = Array.isArray(json) ? json : json.data || [];
-      stores.forEach((s) => addStoreMarker(map, s));
+      stores.forEach((s) => addBaseStoreMarker(map, s));
     } catch (err) {
       console.error("가게 목록 불러오기 실패:", err);
     }
@@ -315,6 +445,8 @@ export default function KakaoMap() {
         });
 
         console.log("[KAKAO] map created", map);
+
+        // 초기에는 전체 노점 마커 표시
         await loadStoresAndDraw(map);
       });
     };
@@ -497,7 +629,7 @@ export default function KakaoMap() {
           lat: payload.lat,
           lng: payload.lng,
         };
-        addStoreMarker(mapInstanceRef.current, newStoreForMarker);
+        addBaseStoreMarker(mapInstanceRef.current, newStoreForMarker);
       }
 
       closeModal();
@@ -552,14 +684,17 @@ export default function KakaoMap() {
 
     setReviewSubmitting(true);
     try {
-      const res = await fetch(`${API_BASE}/api/stores/${storeIdx}/reviews`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+      const res = await fetch(
+        `${API_BASE}/api/stores/${storeIdx}/reviews`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       const text = await res.text();
       console.log("POST /api/stores/{id}/reviews:", res.status, text);
@@ -575,6 +710,7 @@ export default function KakaoMap() {
       setReviewForm({ rating: 5, text: "" });
       setHoverRating(0);
       await loadReviews(storeIdx);
+      await loadReviewSummary(storeIdx);
     } catch (err) {
       console.error("리뷰 작성 에러:", err);
       alert("리뷰 등록 중 에러가 발생했어 ㅠㅠ");
@@ -584,27 +720,7 @@ export default function KakaoMap() {
   };
 
   // ==========================
-  // 공통: 지도 내 위치로 포커스
-  // ==========================
-  const focusMapToMyLocation = (lat, lng) => {
-    if (!mapInstanceRef.current || !window.kakao) return;
-
-    const latLng = new window.kakao.maps.LatLng(lat, lng);
-    mapInstanceRef.current.setCenter(latLng);
-
-    if (!myLocationMarkerRef.current) {
-      myLocationMarkerRef.current = new window.kakao.maps.Marker({
-        position: latLng,
-        map: mapInstanceRef.current,
-      });
-    } else {
-      myLocationMarkerRef.current.setPosition(latLng);
-      myLocationMarkerRef.current.setMap(mapInstanceRef.current);
-    }
-  };
-
-  // ==========================
-  // 내 위치 버튼 (길찾기 출발)
+  // 내 위치 버튼
   // ==========================
   const handleUseMyLocation = () => {
     if (!navigator.geolocation) {
@@ -626,7 +742,21 @@ export default function KakaoMap() {
 
         setRouteForm((prev) => ({ ...prev, from: "내 위치" }));
 
-        focusMapToMyLocation(lat, lng);
+        if (mapInstanceRef.current && window.kakao) {
+          const latLng = new window.kakao.maps.LatLng(lat, lng);
+          mapInstanceRef.current.setCenter(latLng);
+
+          if (!myLocationMarkerRef.current) {
+            myLocationMarkerRef.current = new window.kakao.maps.Marker({
+              position: latLng,
+              map: mapInstanceRef.current,
+            });
+          } else {
+            myLocationMarkerRef.current.setPosition(latLng);
+            myLocationMarkerRef.current.setMap(mapInstanceRef.current);
+          }
+        }
+
         setLocating(false);
       },
       (err) => {
@@ -638,102 +768,6 @@ export default function KakaoMap() {
         }
         setLocating(false);
         setUseMyLocationAsFrom(false);
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
-    );
-  };
-
-  // ==========================
-  // 내 주변 노점 추천 (AI 서버)
-  // ==========================
-  const fetchNearbyFromServer = async (lat, lng, radiusM) => {
-    try {
-      setNearbyLoading(true);
-      setNearbyError("");
-
-      const userIdStr =
-        sessionStorage.getItem("userId") ||
-        sessionStorage.getItem("USER_ID") ||
-        null;
-      const userId = userIdStr ? Number(userIdStr) : null;
-
-      const res = await fetch(`${DATA_API_BASE}${NEARBY_ENDPOINT}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user_id: userId,
-          lat,
-          lng,
-          max_radius_m: radiusM,
-        }),
-      });
-
-      const text = await res.text();
-      console.log("POST /recommend/route:", res.status, text);
-
-      if (!res.ok) {
-        throw new Error(`내 주변 추천 실패 (${res.status})`);
-      }
-
-      const json = JSON.parse(text);
-      const data = json.data ?? json;
-
-      // 🔥 백엔드에서 이렇게 리턴해 주는 걸 가정:
-      // {
-      //   center: { lat, lng },
-      //   stores: [ { idx, name, rating, distance_m, recommended, reason? }, ... ]
-      // }
-      setNearbyStores(Array.isArray(data.stores) ? data.stores : []);
-    } catch (err) {
-      console.error("내 주변 추천 에러:", err);
-      setNearbyError(
-        err.message || "내 주변 노점 추천 중 에러가 발생했습니다."
-      );
-      setNearbyStores([]);
-    } finally {
-      setNearbyLoading(false);
-    }
-  };
-
-  const handleNearbySearch = () => {
-    const radiusM = selectedRadius;
-
-    const doFetch = (lat, lng) => {
-      focusMapToMyLocation(lat, lng);
-      fetchNearbyFromServer(lat, lng, radiusM);
-    };
-
-    if (myLocation?.lat && myLocation?.lng) {
-      doFetch(myLocation.lat, myLocation.lng);
-      return;
-    }
-
-    if (!navigator.geolocation) {
-      setNearbyError("브라우저에서 위치 정보를 지원하지 않습니다.");
-      return;
-    }
-
-    setNearbyLoading(true);
-    setNearbyError("");
-
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-        const loc = { lat, lng };
-        setMyLocation(loc);
-        doFetch(lat, lng);
-      },
-      (err) => {
-        console.error("geolocation error (nearby)", err);
-        if (err.code === 1) {
-          setNearbyError(
-            "위치 권한이 거부되었습니다. 브라우저 설정을 확인해 주세요."
-          );
-        } else {
-          setNearbyError("내 위치를 가져오지 못했어요.");
-        }
-        setNearbyLoading(false);
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
     );
@@ -760,10 +794,122 @@ export default function KakaoMap() {
       routeLineRef.current.setMap(null);
       routeLineRef.current = null;
     }
+    // 추천 마커만 제거 (기본 노점은 그대로)
+    clearRecommendedMarkers();
   };
 
+// ✅ 상점 추천 API 호출 (FastAPI 8000, 경로 주변 2km)
+const callRecommendRoute = async (startPoint, endPoint, routePoints) => {
+  if (!startPoint || !endPoint) return;
+
+  try {
+    const RADIUS_M = 2000; // 🔥 2km 고정
+
+    const url = `${DATA_API_BASE}/recommend/route`;
+
+    const payload = {
+      start: startPoint,
+      waypoints: [],        // 필요하면 나중에 채우기
+      end: endPoint,
+      user_id: 10,          // TODO: 실제 로그인 유저 ID로 교체
+    };
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const text = await res.text();
+    console.log("POST /recommend/route:", res.status, text);
+
+    if (!res.ok) {
+      console.error("상점 추천 실패:", res.status, text);
+      return;
+    }
+
+    let json;
+    try {
+      json = JSON.parse(text);
+    } catch (e) {
+      console.error("상점 추천 JSON 파싱 실패:", e);
+      return;
+    }
+
+    const data = json.data ?? json;
+    console.log("상점 추천 원본 데이터:", data);
+
+    // 🔥 백엔드 구조: { start: [...], waypoints: [ [...], ... ], end: [...] }
+    let candidates = [];
+
+    if (Array.isArray(data.start)) {
+      candidates.push(...data.start);
+    }
+    if (Array.isArray(data.end)) {
+      candidates.push(...data.end);
+    }
+    if (Array.isArray(data.waypoints)) {
+      data.waypoints.forEach((wp) => {
+        if (Array.isArray(wp)) candidates.push(...wp);
+      });
+    }
+
+    console.log("플랫한 후보 노점 개수:", candidates.length);
+
+    if (!mapInstanceRef.current || !window.kakao) return;
+
+    // ✅ 경로 polyline 기준 2km 안쪽만 필터
+    let filtered = [];
+    if (Array.isArray(routePoints) && routePoints.length) {
+      filtered = candidates.filter((store) => {
+        const { lat, lng } = getLatLngFromStore(store);
+        if (lat == null || lng == null) return false;
+
+        let minDist = Infinity;
+        for (const p of routePoints) {
+          if (p.lat == null || p.lng == null) continue;
+          const d = distanceMeters(p.lat, p.lng, lat, lng);
+          if (d < minDist) minDist = d;
+          if (minDist <= RADIUS_M) break;
+        }
+        return minDist <= RADIUS_M;
+      });
+    } else {
+      // 경로 포인트 없으면 출발/도착 중간 기준 2km
+      const centerLat = (startPoint.lat + endPoint.lat) / 2;
+      const centerLng = (startPoint.lng + endPoint.lng) / 2;
+
+      filtered = candidates.filter((store) => {
+        const { lat, lng } = getLatLngFromStore(store);
+        if (lat == null || lng == null) return false;
+        const dist = distanceMeters(centerLat, centerLng, lat, lng);
+        return dist <= RADIUS_M;
+      });
+    }
+
+    console.log(
+      `경로 2km 필터 후 노점 개수: ${filtered.length} / 원본: ${candidates.length}`
+    );
+
+    // 이전 추천 마커만 지우기 (기본 노점은 그대로 둠)
+    clearRecommendedMarkers();
+
+    if (!filtered.length) {
+      console.log("경로 주변 2km 이내 추천 노점 없음");
+      return;
+    }
+
+    filtered.forEach((store) => {
+      addRecommendedStoreMarker(mapInstanceRef.current, store);
+    });
+  } catch (err) {
+    console.error("상점 추천 호출 에러:", err);
+  }
+};
+
+
   const handleRouteSearch = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     if (!mapInstanceRef.current || !window.kakao) return;
 
     const { from, to } = routeForm;
@@ -819,6 +965,7 @@ export default function KakaoMap() {
         lng: parseFloat(toPlace.x),
       };
 
+      // 1) Spring 서버로 길찾기 요청
       const res = await fetch(`${API_BASE}/api/routes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -878,12 +1025,37 @@ export default function KakaoMap() {
       const bounds = new window.kakao.maps.LatLngBounds();
       path.forEach((latlng) => bounds.extend(latlng));
       mapInstanceRef.current.setBounds(bounds);
+
+      // 2) FastAPI로 상점 추천 요청 (경로 주변 2km만 프론트에서 다시 필터)
+      await callRecommendRoute(fromPoint, toPoint, points);
     } catch (err) {
       console.error("길찾기 에러:", err);
       setRouteError(err.message || "길찾기 중 에러가 발생했습니다.");
     } finally {
       setRouteLoading(false);
     }
+  };
+
+  // ==========================
+  // 상세 모달에서 "이 가게로 길찾기" 버튼
+  // ==========================
+  const handleSetRouteToHere = () => {
+    if (!selectedStore) return;
+
+    const address =
+      selectedStore.address ||
+      selectedStore.storeAddress ||
+      selectedStore.storeName ||
+      "";
+
+    setUseMyLocationAsFrom(true);
+    setRouteForm({
+      from: "내 위치",
+      to: address,
+    });
+
+    handleUseMyLocation();
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // ==========================
@@ -906,201 +1078,6 @@ export default function KakaoMap() {
             height: "100%",
           }}
         />
-      </div>
-
-      {/* 🔹 왼쪽 위: 내 주변 노점 패널 */}
-      <div
-        style={{
-          position: "fixed",
-          top: "16px",
-          left: "24px",
-          zIndex: 10000,
-          background: "rgba(255,255,255,0.96)",
-          borderRadius: 12,
-          boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
-          padding: "10px 12px",
-          width: 300,
-          fontSize: 12,
-        }}
-      >
-        <div
-          style={{
-            fontSize: 13,
-            fontWeight: 600,
-            marginBottom: 8,
-          }}
-        >
-          내 주변 노점
-        </div>
-
-        {/* 반경 슬라이더 */}
-        <div style={{ marginBottom: 8 }}>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              fontSize: 11,
-              color: "#6b7280",
-              marginBottom: 4,
-            }}
-          >
-            <span>반경 설정</span>
-            <span>
-              {selectedRadius >= 1000
-                ? `${selectedRadius / 1000}km`
-                : `${selectedRadius}m`}{" "}
-              이내
-            </span>
-          </div>
-          <input
-            type="range"
-            min={0}
-            max={RADIUS_OPTIONS.length - 1}
-            step={1}
-            value={radiusIndex}
-            onChange={(e) => setRadiusIndex(Number(e.target.value))}
-            style={{ width: "100%" }}
-          />
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              marginTop: 3,
-              fontSize: 10,
-              color: "#9ca3af",
-            }}
-          >
-            <span>10m</span>
-            <span>100m</span>
-            <span>500m</span>
-            <span>2km</span>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={handleNearbySearch}
-          disabled={nearbyLoading}
-          style={{
-            width: "100%",
-            borderRadius: 999,
-            border: "none",
-            background: nearbyLoading ? "#9ca3af" : "#16a34a",
-            color: "#fff",
-            padding: "6px 10px",
-            fontWeight: 600,
-            cursor: nearbyLoading ? "default" : "pointer",
-            fontSize: 12,
-          }}
-        >
-          {nearbyLoading ? "검색 중..." : "내 주변 노점 보기"}
-        </button>
-
-        {nearbyError && (
-          <div
-            style={{
-              marginTop: 6,
-              fontSize: 11,
-              color: "#dc2626",
-              whiteSpace: "pre-wrap",
-            }}
-          >
-            {nearbyError}
-          </div>
-        )}
-
-        {/* 추천 리스트 */}
-        <div
-          style={{
-            marginTop: 8,
-            maxHeight: 220,
-            overflowY: "auto",
-          }}
-        >
-          {nearbyStores.length === 0 && !nearbyLoading ? (
-            <div style={{ fontSize: 12, color: "#9ca3af" }}>
-              아직 추천 결과가 없어요.
-            </div>
-          ) : (
-            nearbyStores.map((s) => {
-              const key = s.idx ?? s.store_id ?? s.id;
-              const name = s.name || s.store_name || "이름 없는 노점";
-              const dist =
-                s.distance_m ?? s.distance ?? s.distanceFromRoute ?? null;
-
-              return (
-                <div
-                  key={key}
-                  onClick={() => handleMarkerClick(s)}
-                  style={{
-                    padding: "6px 0",
-                    borderBottom: "1px solid #f3f4f6",
-                    cursor: "pointer",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      marginBottom: 2,
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: "#111827",
-                      }}
-                    >
-                      {name}
-                    </span>
-                    {dist != null && (
-                      <span
-                        style={{
-                          fontSize: 11,
-                          color: "#6b7280",
-                        }}
-                      >
-                        {Math.round(Number(dist))}m
-                      </span>
-                    )}
-                  </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      fontSize: 11,
-                      color: "#6b7280",
-                    }}
-                  >
-                    <span>★ {formatRatingShort(s.rating)}</span>
-                    {s.recommended && (
-                      <span
-                        style={{
-                          color: "#16a34a",
-                          fontWeight: 600,
-                        }}
-                      >
-                        추천
-                      </span>
-                    )}
-                  </div>
-                  {s.reason && (
-                    <div
-                      style={{
-                        marginTop: 2,
-                        fontSize: 11,
-                        color: "#4b5563",
-                      }}
-                    >
-                      {s.reason}
-                    </div>
-                  )}
-                </div>
-              );
-            })
-          )}
-        </div>
       </div>
 
       {/* 오른쪽 위 길찾기 패널 */}
@@ -1178,7 +1155,7 @@ export default function KakaoMap() {
               name="from"
               value={routeForm.from}
               onChange={handleRouteChange}
-              placeholder="예: 서울역"
+              placeholder="예: 서울역 / 내 위치"
               style={{
                 width: "100%",
                 borderRadius: 8,
@@ -1193,7 +1170,7 @@ export default function KakaoMap() {
               name="to"
               value={routeForm.to}
               onChange={handleRouteChange}
-              placeholder="예: 시청역"
+              placeholder="예: 시청역 / 노점 이름"
               style={{
                 width: "100%",
                 borderRadius: 8,
@@ -1215,7 +1192,7 @@ export default function KakaoMap() {
             </div>
           )}
 
-          {/* 하단 버튼 행: 왼쪽 내 위치 / 오른쪽 초기화 + 길찾기 */}
+          {/* 하단 버튼 행 */}
           <div
             style={{
               display: "flex",
@@ -1326,7 +1303,11 @@ export default function KakaoMap() {
                 className="map-select"
               >
                 <option value="">선택해주세요</option>
-                {/* 카테고리 옵션은 필요하면 다시 넣어줘 */}
+                {CATEGORIES.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.label}
+                  </option>
+                ))}
               </select>
 
               <label className="map-label">주소 (직접 수정 가능)</label>
@@ -1407,9 +1388,7 @@ export default function KakaoMap() {
                     {selectedStore.category}
                   </span>
                 )}
-                {selectedStore.storeName ||
-                  selectedStore.name ||
-                  "이름 없는 노점"}
+                {selectedStore.storeName || "이름 없는 노점"}
               </h3>
               <button
                 type="button"
@@ -1444,7 +1423,7 @@ export default function KakaoMap() {
                 padding: "10px 12px",
                 borderRadius: 8,
                 background: "#f9fafb",
-                marginBottom: 14,
+                marginBottom: 10,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
@@ -1470,6 +1449,50 @@ export default function KakaoMap() {
               </div>
             </div>
 
+            {/* AI 리뷰 요약 */}
+            <div
+              style={{
+                padding: "10px 12px",
+                borderRadius: 8,
+                background: "#f3f4ff",
+                marginBottom: 14,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 13,
+                  color: "#4b5563",
+                  marginBottom: 4,
+                  fontWeight: 600,
+                }}
+              >
+                리뷰 한 줄 요약 (AI)
+              </div>
+              {reviewSummaryLoading ? (
+                <div style={{ fontSize: 13, color: "#6b7280" }}>
+                  요약 생성 중...
+                </div>
+              ) : reviewSummaryError ? (
+                <div style={{ fontSize: 13, color: "#dc2626" }}>
+                  {reviewSummaryError}
+                </div>
+              ) : reviewSummary ? (
+                <div
+                  style={{
+                    fontSize: 13,
+                    color: "#111827",
+                    whiteSpace: "pre-wrap",
+                  }}
+                >
+                  {reviewSummary}
+                </div>
+              ) : (
+                <div style={{ fontSize: 13, color: "#9ca3af" }}>
+                  아직 요약이 없습니다.
+                </div>
+              )}
+            </div>
+
             {/* 리뷰 작성 */}
             <form onSubmit={handleReviewSubmit} style={{ marginBottom: 16 }}>
               <div style={{ marginBottom: 8 }}>
@@ -1480,9 +1503,7 @@ export default function KakaoMap() {
                     gap: 12,
                   }}
                 >
-                  <label style={{ fontSize: 13, fontWeight: 600 }}>
-                    별점
-                  </label>
+                  <label style={{ fontSize: 13, fontWeight: 600 }}>별점</label>
                   <div
                     style={{
                       display: "flex",
@@ -1598,6 +1619,7 @@ export default function KakaoMap() {
                 overflowY: "auto",
                 borderTop: "1px solid #e5e7eb",
                 paddingTop: 8,
+                marginBottom: 12,
               }}
             >
               {reviewsLoading ? (
@@ -1663,6 +1685,34 @@ export default function KakaoMap() {
                   </div>
                 ))
               )}
+            </div>
+
+            {/* 왼쪽 하단 길찾기 버튼 */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginTop: 4,
+              }}
+            >
+              <button
+                type="button"
+                onClick={handleSetRouteToHere}
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: 999,
+                  border: "1px solid #2563eb",
+                  background: "#eff6ff",
+                  color: "#1d4ed8",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                이 노점으로 길찾기
+              </button>
+              <div />
             </div>
           </div>
         </div>
