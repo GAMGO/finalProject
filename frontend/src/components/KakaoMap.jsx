@@ -5,21 +5,16 @@ import "./KakaoMap.css";
 
 const APP_KEY = "bdd84bdbed2db3bc5d8b90cd6736a995";
 const API_BASE = import.meta.env.VITE_LOCAL_BASE_URL;
+const DATA_API_BASE =
+  import.meta.env.VITE_DATA_LOCAL_BASE_URL || API_BASE; // 🔥 AI 서버 주소 (없으면 기존 서버로)
 
-// FOOD_INFO / FoodCategory 기준 (백엔드에 아직 안 쓰여도 프론트용)
-const CATEGORIES = [
-  { id: 1, label: "통닭" },
-  { id: 2, label: "타코야끼" },
-  { id: 3, label: "순대곱창" },
-  { id: 4, label: "붕어빵" },
-  { id: 5, label: "군밤/고구마" },
-  { id: 6, label: "닭꼬치" },
-  { id: 7, label: "분식" },
-  { id: 8, label: "해산물" },
-  { id: 9, label: "뻥튀기" },
-  { id: 10, label: "계란빵" },
-  { id: 11, label: "옥수수" },
+// 반경 선택 슬라이더용 옵션 (m 단위)
+const RADIUS_OPTIONS = [
+  10, 20, 30, 50, 100, 200, 300, 400, 500, 1000, 2000,
 ];
+
+// 🔥 백엔드에서 맞춰줄 엔드포인트 (예: FastAPI 쪽에서 /recommend/around-me 로 구현)
+const NEARBY_ENDPOINT = "/recommend/route";
 
 // ✅ Store 객체에서 PK 꺼내는 공통 헬퍼 (idx / id / storeIdx 아무거나 올 수 있음)
 const getStoreIdx = (store) => {
@@ -34,9 +29,10 @@ export default function KakaoMap() {
   const tempMarkerRef = useRef(null);
   const markersRef = useRef([]);
 
-  // ✅ 길찾기용
+  // ✅ 길찾기 + 내 위치
   const routeLineRef = useRef(null);
   const placesRef = useRef(null);
+  const myLocationMarkerRef = useRef(null);
 
   // ===== 노점 등록 모달 =====
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -67,6 +63,21 @@ export default function KakaoMap() {
   const [routeMode, setRouteMode] = useState("CAR"); // CAR / WALK / TRANSIT
   const [routeLoading, setRouteLoading] = useState(false);
   const [routeError, setRouteError] = useState("");
+
+  // ✅ 내 위치 상태
+  const [myLocation, setMyLocation] = useState(null);
+  const [useMyLocationAsFrom, setUseMyLocationAsFrom] = useState(false);
+  const [locating, setLocating] = useState(false);
+
+  // ✅ 내 주변 추천 상태
+  const [radiusIndex, setRadiusIndex] = useState(
+    RADIUS_OPTIONS.indexOf(200) === -1 ? 0 : RADIUS_OPTIONS.indexOf(200)
+  ); // 기본 200m
+  const [nearbyStores, setNearbyStores] = useState([]);
+  const [nearbyLoading, setNearbyLoading] = useState(false);
+  const [nearbyError, setNearbyError] = useState("");
+
+  const selectedRadius = RADIUS_OPTIONS[radiusIndex] ?? RADIUS_OPTIONS[0];
 
   // ==========================
   // 유틸
@@ -99,6 +110,12 @@ export default function KakaoMap() {
     );
   };
 
+  const formatRatingShort = (v) => {
+    const n = Number(v);
+    if (Number.isNaN(n)) return "-";
+    return n.toFixed(1);
+  };
+
   // ==========================
   // 리뷰 + 통계 불러오기 (/with-stats 사용)
   // ==========================
@@ -114,11 +131,7 @@ export default function KakaoMap() {
         `${API_BASE}/api/stores/${storeIdx}/reviews/with-stats?page=0&size=20`
       );
       const text = await res.text();
-      console.log(
-        "GET /api/stores/{id}/reviews/with-stats:",
-        res.status,
-        text
-      );
+      console.log("GET /api/stores/{id}/reviews/with-stats:", res.status, text);
 
       if (!res.ok) {
         console.error("리뷰+통계 불러오기 실패:", res.status, text);
@@ -166,7 +179,6 @@ export default function KakaoMap() {
   const addStoreMarker = (map, store) => {
     if (!window.kakao || !map || !store) return;
 
-    // ✅ DTO(StoreResponse) latitude/longitude + 엔티티 lat/lng 둘 다 지원
     const lat = store.latitude ?? store.lat;
     const lng = store.longitude ?? store.lng;
 
@@ -231,7 +243,6 @@ export default function KakaoMap() {
         return;
       }
 
-      // ✅ 배열 그대로 오거나, { data: [...] } 래핑된 경우 둘 다 처리
       const stores = Array.isArray(json) ? json : json.data || [];
       stores.forEach((s) => addStoreMarker(map, s));
     } catch (err) {
@@ -263,8 +274,6 @@ export default function KakaoMap() {
         mapInstanceRef.current = map;
 
         geocoderRef.current = new window.kakao.maps.services.Geocoder();
-
-        // ✅ 장소 검색 객체 생성 (길찾기에서 사용)
         placesRef.current = new window.kakao.maps.services.Places();
 
         window.kakao.maps.event.addListener(map, "click", (mouseEvent) => {
@@ -364,10 +373,8 @@ export default function KakaoMap() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // 1. 우선 위치 정보 준비 (지도 클릭 or 주소로 검색)
     let finalPos = selectedPos;
 
-    // 지도 안 찍었으면, 주소로 좌표 찾기 시도
     if (!finalPos) {
       const addr = (form.address || "").trim();
       if (!addr) {
@@ -383,7 +390,6 @@ export default function KakaoMap() {
       const geocoder = geocoderRef.current;
       const places = placesRef.current;
 
-      // 주소검색 (도로명/지번)
       const searchByAddress = () =>
         new Promise((resolve, reject) => {
           if (!geocoder) return reject(new Error("지오코더가 없습니다."));
@@ -404,7 +410,6 @@ export default function KakaoMap() {
           });
         });
 
-      // 키워드 검색 (가게 이름 등)
       const searchByKeyword = () =>
         new Promise((resolve, reject) => {
           if (!places) return reject(new Error("장소 검색 객체가 없습니다."));
@@ -426,7 +431,6 @@ export default function KakaoMap() {
         });
 
       try {
-        // 주소 검색 먼저, 안 되면 키워드 검색
         try {
           finalPos = await searchByAddress();
         } catch (e1) {
@@ -434,7 +438,6 @@ export default function KakaoMap() {
           finalPos = await searchByKeyword();
         }
 
-        // 찾은 좌표 state에도 저장해두기 (필요하면)
         setSelectedPos(finalPos);
       } catch (err) {
         console.error("입력한 주소로 좌표 찾기 실패:", err);
@@ -450,7 +453,6 @@ export default function KakaoMap() {
       return;
     }
 
-    // 2. payload 만들기
     const payload = {
       storeName: form.description || "이름 없는 노점",
       storeAddress: form.address || "",
@@ -487,7 +489,6 @@ export default function KakaoMap() {
         if (!Number.isNaN(n)) savedId = n;
       }
 
-      // 지도에 새 마커 추가
       if (mapInstanceRef.current) {
         const newStoreForMarker = {
           idx: savedId,
@@ -505,7 +506,6 @@ export default function KakaoMap() {
       alert("가게 등록에 실패했어 ㅠㅠ 콘솔 로그 한 번 봐줘.");
     }
   };
-
 
   // ==========================
   // 리뷰 작성
@@ -529,7 +529,6 @@ export default function KakaoMap() {
       return;
     }
 
-    // 토큰 키 여러 개 중 하나라도 있으면 사용
     const token =
       localStorage.getItem("jwtToken") ||
       localStorage.getItem("refreshToken") ||
@@ -553,17 +552,14 @@ export default function KakaoMap() {
 
     setReviewSubmitting(true);
     try {
-      const res = await fetch(
-        `${API_BASE}/api/stores/${storeIdx}/reviews`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(payload),
-        }
-      );
+      const res = await fetch(`${API_BASE}/api/stores/${storeIdx}/reviews`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
 
       const text = await res.text();
       console.log("POST /api/stores/{id}/reviews:", res.status, text);
@@ -588,10 +584,169 @@ export default function KakaoMap() {
   };
 
   // ==========================
+  // 공통: 지도 내 위치로 포커스
+  // ==========================
+  const focusMapToMyLocation = (lat, lng) => {
+    if (!mapInstanceRef.current || !window.kakao) return;
+
+    const latLng = new window.kakao.maps.LatLng(lat, lng);
+    mapInstanceRef.current.setCenter(latLng);
+
+    if (!myLocationMarkerRef.current) {
+      myLocationMarkerRef.current = new window.kakao.maps.Marker({
+        position: latLng,
+        map: mapInstanceRef.current,
+      });
+    } else {
+      myLocationMarkerRef.current.setPosition(latLng);
+      myLocationMarkerRef.current.setMap(mapInstanceRef.current);
+    }
+  };
+
+  // ==========================
+  // 내 위치 버튼 (길찾기 출발)
+  // ==========================
+  const handleUseMyLocation = () => {
+    if (!navigator.geolocation) {
+      setRouteError("브라우저에서 위치 정보를 지원하지 않습니다.");
+      return;
+    }
+
+    setLocating(true);
+    setRouteError("");
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+
+        const loc = { lat, lng };
+        setMyLocation(loc);
+        setUseMyLocationAsFrom(true);
+
+        setRouteForm((prev) => ({ ...prev, from: "내 위치" }));
+
+        focusMapToMyLocation(lat, lng);
+        setLocating(false);
+      },
+      (err) => {
+        console.error("geolocation error", err);
+        if (err.code === 1) {
+          setRouteError("위치 권한이 거부되었습니다. 브라우저 설정을 확인해 주세요.");
+        } else {
+          setRouteError("내 위치를 가져오지 못했어요.");
+        }
+        setLocating(false);
+        setUseMyLocationAsFrom(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  };
+
+  // ==========================
+  // 내 주변 노점 추천 (AI 서버)
+  // ==========================
+  const fetchNearbyFromServer = async (lat, lng, radiusM) => {
+    try {
+      setNearbyLoading(true);
+      setNearbyError("");
+
+      const userIdStr =
+        sessionStorage.getItem("userId") ||
+        sessionStorage.getItem("USER_ID") ||
+        null;
+      const userId = userIdStr ? Number(userIdStr) : null;
+
+      const res = await fetch(`${DATA_API_BASE}${NEARBY_ENDPOINT}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: userId,
+          lat,
+          lng,
+          max_radius_m: radiusM,
+        }),
+      });
+
+      const text = await res.text();
+      console.log("POST /recommend/route:", res.status, text);
+
+      if (!res.ok) {
+        throw new Error(`내 주변 추천 실패 (${res.status})`);
+      }
+
+      const json = JSON.parse(text);
+      const data = json.data ?? json;
+
+      // 🔥 백엔드에서 이렇게 리턴해 주는 걸 가정:
+      // {
+      //   center: { lat, lng },
+      //   stores: [ { idx, name, rating, distance_m, recommended, reason? }, ... ]
+      // }
+      setNearbyStores(Array.isArray(data.stores) ? data.stores : []);
+    } catch (err) {
+      console.error("내 주변 추천 에러:", err);
+      setNearbyError(
+        err.message || "내 주변 노점 추천 중 에러가 발생했습니다."
+      );
+      setNearbyStores([]);
+    } finally {
+      setNearbyLoading(false);
+    }
+  };
+
+  const handleNearbySearch = () => {
+    const radiusM = selectedRadius;
+
+    const doFetch = (lat, lng) => {
+      focusMapToMyLocation(lat, lng);
+      fetchNearbyFromServer(lat, lng, radiusM);
+    };
+
+    if (myLocation?.lat && myLocation?.lng) {
+      doFetch(myLocation.lat, myLocation.lng);
+      return;
+    }
+
+    if (!navigator.geolocation) {
+      setNearbyError("브라우저에서 위치 정보를 지원하지 않습니다.");
+      return;
+    }
+
+    setNearbyLoading(true);
+    setNearbyError("");
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        const loc = { lat, lng };
+        setMyLocation(loc);
+        doFetch(lat, lng);
+      },
+      (err) => {
+        console.error("geolocation error (nearby)", err);
+        if (err.code === 1) {
+          setNearbyError(
+            "위치 권한이 거부되었습니다. 브라우저 설정을 확인해 주세요."
+          );
+        } else {
+          setNearbyError("내 위치를 가져오지 못했어요.");
+        }
+        setNearbyLoading(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  };
+
+  // ==========================
   // 길찾기 (출발/도착 입력 → 경로 그리기)
   // ==========================
   const handleRouteChange = (e) => {
     const { name, value } = e.target;
+    if (name === "from") {
+      setUseMyLocationAsFrom(false);
+    }
     setRouteForm((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -600,6 +755,7 @@ export default function KakaoMap() {
     setRouteError("");
     setRouteLoading(false);
     setRouteMode("CAR");
+    setUseMyLocationAsFrom(false);
     if (routeLineRef.current) {
       routeLineRef.current.setMap(null);
       routeLineRef.current = null;
@@ -611,7 +767,12 @@ export default function KakaoMap() {
     if (!mapInstanceRef.current || !window.kakao) return;
 
     const { from, to } = routeForm;
-    if (!from || !to) {
+
+    const hasFrom =
+      (from && from.trim().length > 0) ||
+      (useMyLocationAsFrom && myLocation);
+
+    if (!hasFrom || !to) {
       setRouteError("출발지와 도착지를 모두 입력해 주세요.");
       return;
     }
@@ -641,15 +802,18 @@ export default function KakaoMap() {
       setRouteLoading(true);
       setRouteError("");
 
-      const [fromPlace, toPlace] = await Promise.all([
-        searchKeyword(from),
-        searchKeyword(to),
-      ]);
+      let fromPoint;
+      if (useMyLocationAsFrom && myLocation) {
+        fromPoint = myLocation;
+      } else {
+        const fromPlace = await searchKeyword(from);
+        fromPoint = {
+          lat: parseFloat(fromPlace.y),
+          lng: parseFloat(fromPlace.x),
+        };
+      }
 
-      const fromPoint = {
-        lat: parseFloat(fromPlace.y),
-        lng: parseFloat(fromPlace.x),
-      };
+      const toPlace = await searchKeyword(to);
       const toPoint = {
         lat: parseFloat(toPlace.y),
         lng: parseFloat(toPlace.x),
@@ -661,7 +825,7 @@ export default function KakaoMap() {
         body: JSON.stringify({
           from: fromPoint,
           to: toPoint,
-          mode: routeMode, // 🔥 이동수단 같이 전송
+          mode: routeMode,
         }),
       });
 
@@ -742,6 +906,201 @@ export default function KakaoMap() {
             height: "100%",
           }}
         />
+      </div>
+
+      {/* 🔹 왼쪽 위: 내 주변 노점 패널 */}
+      <div
+        style={{
+          position: "fixed",
+          top: "16px",
+          left: "24px",
+          zIndex: 10000,
+          background: "rgba(255,255,255,0.96)",
+          borderRadius: 12,
+          boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
+          padding: "10px 12px",
+          width: 300,
+          fontSize: 12,
+        }}
+      >
+        <div
+          style={{
+            fontSize: 13,
+            fontWeight: 600,
+            marginBottom: 8,
+          }}
+        >
+          내 주변 노점
+        </div>
+
+        {/* 반경 슬라이더 */}
+        <div style={{ marginBottom: 8 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: 11,
+              color: "#6b7280",
+              marginBottom: 4,
+            }}
+          >
+            <span>반경 설정</span>
+            <span>
+              {selectedRadius >= 1000
+                ? `${selectedRadius / 1000}km`
+                : `${selectedRadius}m`}{" "}
+              이내
+            </span>
+          </div>
+          <input
+            type="range"
+            min={0}
+            max={RADIUS_OPTIONS.length - 1}
+            step={1}
+            value={radiusIndex}
+            onChange={(e) => setRadiusIndex(Number(e.target.value))}
+            style={{ width: "100%" }}
+          />
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginTop: 3,
+              fontSize: 10,
+              color: "#9ca3af",
+            }}
+          >
+            <span>10m</span>
+            <span>100m</span>
+            <span>500m</span>
+            <span>2km</span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleNearbySearch}
+          disabled={nearbyLoading}
+          style={{
+            width: "100%",
+            borderRadius: 999,
+            border: "none",
+            background: nearbyLoading ? "#9ca3af" : "#16a34a",
+            color: "#fff",
+            padding: "6px 10px",
+            fontWeight: 600,
+            cursor: nearbyLoading ? "default" : "pointer",
+            fontSize: 12,
+          }}
+        >
+          {nearbyLoading ? "검색 중..." : "내 주변 노점 보기"}
+        </button>
+
+        {nearbyError && (
+          <div
+            style={{
+              marginTop: 6,
+              fontSize: 11,
+              color: "#dc2626",
+              whiteSpace: "pre-wrap",
+            }}
+          >
+            {nearbyError}
+          </div>
+        )}
+
+        {/* 추천 리스트 */}
+        <div
+          style={{
+            marginTop: 8,
+            maxHeight: 220,
+            overflowY: "auto",
+          }}
+        >
+          {nearbyStores.length === 0 && !nearbyLoading ? (
+            <div style={{ fontSize: 12, color: "#9ca3af" }}>
+              아직 추천 결과가 없어요.
+            </div>
+          ) : (
+            nearbyStores.map((s) => {
+              const key = s.idx ?? s.store_id ?? s.id;
+              const name = s.name || s.store_name || "이름 없는 노점";
+              const dist =
+                s.distance_m ?? s.distance ?? s.distanceFromRoute ?? null;
+
+              return (
+                <div
+                  key={key}
+                  onClick={() => handleMarkerClick(s)}
+                  style={{
+                    padding: "6px 0",
+                    borderBottom: "1px solid #f3f4f6",
+                    cursor: "pointer",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      marginBottom: 2,
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: "#111827",
+                      }}
+                    >
+                      {name}
+                    </span>
+                    {dist != null && (
+                      <span
+                        style={{
+                          fontSize: 11,
+                          color: "#6b7280",
+                        }}
+                      >
+                        {Math.round(Number(dist))}m
+                      </span>
+                    )}
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      fontSize: 11,
+                      color: "#6b7280",
+                    }}
+                  >
+                    <span>★ {formatRatingShort(s.rating)}</span>
+                    {s.recommended && (
+                      <span
+                        style={{
+                          color: "#16a34a",
+                          fontWeight: 600,
+                        }}
+                      >
+                        추천
+                      </span>
+                    )}
+                  </div>
+                  {s.reason && (
+                    <div
+                      style={{
+                        marginTop: 2,
+                        fontSize: 11,
+                        color: "#4b5563",
+                      }}
+                    >
+                      {s.reason}
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
       </div>
 
       {/* 오른쪽 위 길찾기 패널 */}
@@ -855,42 +1214,71 @@ export default function KakaoMap() {
               {routeError}
             </div>
           )}
+
+          {/* 하단 버튼 행: 왼쪽 내 위치 / 오른쪽 초기화 + 길찾기 */}
           <div
             style={{
               display: "flex",
-              justifyContent: "flex-end",
-              gap: 6,
+              justifyContent: "space-between",
+              alignItems: "center",
               marginTop: 4,
+              gap: 8,
             }}
           >
             <button
               type="button"
-              onClick={clearRoute}
+              onClick={handleUseMyLocation}
+              disabled={locating}
               style={{
                 borderRadius: 999,
-                border: "1px solid #e5e7eb",
+                border: "1px solid #d1d5db",
                 background: "#fff",
                 padding: "4px 10px",
-                cursor: "pointer",
+                fontSize: 11,
+                cursor: locating ? "default" : "pointer",
+                whiteSpace: "nowrap",
               }}
             >
-              초기화
+              {locating ? "위치 확인 중..." : "내 위치"}
             </button>
-            <button
-              type="submit"
-              disabled={routeLoading}
+
+            <div
               style={{
-                borderRadius: 999,
-                border: "none",
-                background: routeLoading ? "#9ca3af" : "#2563eb",
-                color: "#fff",
-                padding: "4px 10px",
-                fontWeight: 600,
-                cursor: routeLoading ? "default" : "pointer",
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 6,
+                flexShrink: 0,
               }}
             >
-              {routeLoading ? "검색 중..." : "길찾기"}
-            </button>
+              <button
+                type="button"
+                onClick={clearRoute}
+                style={{
+                  borderRadius: 999,
+                  border: "1px solid #e5e7eb",
+                  background: "#fff",
+                  padding: "4px 10px",
+                  cursor: "pointer",
+                }}
+              >
+                초기화
+              </button>
+              <button
+                type="submit"
+                disabled={routeLoading}
+                style={{
+                  borderRadius: 999,
+                  border: "none",
+                  background: routeLoading ? "#9ca3af" : "#2563eb",
+                  color: "#fff",
+                  padding: "4px 10px",
+                  fontWeight: 600,
+                  cursor: routeLoading ? "default" : "pointer",
+                }}
+              >
+                {routeLoading ? "검색 중..." : "길찾기"}
+              </button>
+            </div>
           </div>
         </form>
       </div>
@@ -938,11 +1326,7 @@ export default function KakaoMap() {
                 className="map-select"
               >
                 <option value="">선택해주세요</option>
-                {CATEGORIES.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.label}
-                  </option>
-                ))}
+                {/* 카테고리 옵션은 필요하면 다시 넣어줘 */}
               </select>
 
               <label className="map-label">주소 (직접 수정 가능)</label>
@@ -1023,7 +1407,9 @@ export default function KakaoMap() {
                     {selectedStore.category}
                   </span>
                 )}
-                {selectedStore.storeName || "이름 없는 노점"}
+                {selectedStore.storeName ||
+                  selectedStore.name ||
+                  "이름 없는 노점"}
               </h3>
               <button
                 type="button"
@@ -1065,9 +1451,7 @@ export default function KakaoMap() {
               }}
             >
               <div>
-                <div style={{ fontSize: 13, color: "#6b7280" }}>
-                  평균 별점
-                </div>
+                <div style={{ fontSize: 13, color: "#6b7280" }}>평균 별점</div>
                 <div
                   style={{
                     display: "flex",
@@ -1088,7 +1472,6 @@ export default function KakaoMap() {
 
             {/* 리뷰 작성 */}
             <form onSubmit={handleReviewSubmit} style={{ marginBottom: 16 }}>
-              {/* 별점 선택 (별 클릭) */}
               <div style={{ marginBottom: 8 }}>
                 <div
                   style={{
@@ -1097,9 +1480,7 @@ export default function KakaoMap() {
                     gap: 12,
                   }}
                 >
-                  <label
-                    style={{ fontSize: 13, fontWeight: 600 }}
-                  >
+                  <label style={{ fontSize: 13, fontWeight: 600 }}>
                     별점
                   </label>
                   <div
