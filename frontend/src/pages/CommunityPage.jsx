@@ -23,7 +23,8 @@ const DEFAULT_THUMB =
 /** 서버(PostResponse) → 커뮤니티 카드용 포맷으로 매핑 */
 function mapPostFromApi(p) {
   return {
-    id: p.id ?? p.postId,
+    // ⚠️ DB 컬럼이 idx여도 프론트에서는 id로 통일
+    id: p.id ?? p.postId ?? p.idx,
     title: p.title ?? "(제목 없음)",
     writer: p.writer ?? "익명",
     board: p.storeCategory ?? p.board ?? "노점",
@@ -32,13 +33,19 @@ function mapPostFromApi(p) {
           hour: "2-digit",
           minute: "2-digit",
         })
-      : "방금 전",
+      : (p.created_at
+          ? new Date(p.created_at).toLocaleTimeString("ko-KR", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : "방금 전"),
     commentCount: p.commentCount ?? 0,
     views: p.viewCount ?? p.views ?? 0,
     category: p.type ?? p.category ?? "제보",
     location: p.locationText ?? p.location ?? "",
     thumbnail: p.imageUrl ?? DEFAULT_THUMB,
-    content: p.content ?? "",
+    // ✅ 게시글 본문은 body로 통일
+    body: p.body ?? p.content ?? "",
   };
 }
 
@@ -47,7 +54,7 @@ function mapPostToEditorInitial(post) {
   return {
     type: post.category ?? "제보",
     title: post.title ?? "",
-    content: post.content ?? "",
+    body: post.body ?? "",                  // ✅ content 대신 body
     locationText: post.location ?? "",
     storeCategory: post.board ?? "",
     writer: post.writer ?? "",
@@ -65,7 +72,8 @@ export default function CommunityPage() {
   // 댓글 상태: { [postId]: [{ id, author, content, createdAt }] }
   const [commentsByPost, setCommentsByPost] = useState({});
 
-  const selectedPost = posts.find((p) => p.id === selectedPostId) || null;
+  const selectedPost =
+    posts.find((p) => p.id === selectedPostId) || null;
 
   // ─────────────────────────────────────────────────────────────
   // 게시글 목록 최초 로드
@@ -86,6 +94,11 @@ export default function CommunityPage() {
   // 상세 진입: 댓글 불러오기(페이지 0 기준)
   // ─────────────────────────────────────────────────────────────
   const handleOpenPost = async (postId) => {
+    if (!postId) {
+      console.warn("postId가 없습니다.");
+      alert("게시글 정보를 불러올 수 없어요.");
+      return;
+    }
     setSelectedPostId(postId);
     setView("detail");
     try {
@@ -144,10 +157,10 @@ export default function CommunityPage() {
       const mapped = list.map(mapPostFromApi);
       setPosts(mapped);
 
-      // 생성된 글로 이동
+      // 생성된 글로 이동 (id / postId / idx 다 대응)
       const createdId =
         (typeof created === "object"
-          ? created.id ?? created.postId
+          ? created.id ?? created.postId ?? created.idx
           : created) ?? mapped[0]?.id;
       setSelectedPostId(createdId ?? null);
       setView("detail");
@@ -267,7 +280,7 @@ function CommunityList({ posts, onOpenPost }) {
       <ul className="community-list">
         {posts.map((post) => (
           <li
-            key={post.id}
+            key={post.id ?? post.idx ?? Math.random()} // idx 대비 방어
             className="community-row"
             onClick={() => onOpenPost(post.id)}
           >
@@ -283,9 +296,13 @@ function CommunityList({ posts, onOpenPost }) {
                 </span>
               </div>
               <div className="community-row-meta">
-                <span className="community-row-writer">{post.writer}</span>
+                <span className="community-row-writer">
+                  {post.writer}
+                </span>
                 <span className="community-row-dot">·</span>
-                <span className="community-row-location">{post.location}</span>
+                <span className="community-row-location">
+                  {post.location}
+                </span>
               </div>
             </div>
 
@@ -352,7 +369,8 @@ function CommunityDetail({
           <img src={post.thumbnail} alt={post.title} />
         </div>
 
-        <pre className="post-detail-content">{post.content}</pre>
+        {/* ✅ 게시글 본문: body 사용 */}
+        <pre className="post-detail-content">{post.body}</pre>
       </div>
 
       <div className="post-detail-layout-bottom">
@@ -397,14 +415,20 @@ function CommunityDetail({
 
         {/* 같은 작성자 글 */}
         <aside className="post-writer-more">
-          <h3 className="post-writer-more-title">{post.writer} 님의 다른 글</h3>
+          <h3 className="post-writer-more-title">
+            {post.writer} 님의 다른 글
+          </h3>
           <ul className="post-writer-more-list">
             {sameWriterPosts.length === 0 ? (
-              <li className="post-writer-more-empty">다른 글이 없습니다.</li>
+              <li className="post-writer-more-empty">
+                다른 글이 없습니다.
+              </li>
             ) : (
               sameWriterPosts.map((p) => (
                 <li key={p.id} className="post-writer-more-row">
-                  <span className="post-writer-more-title-text">{p.title}</span>
+                  <span className="post-writer-more-title-text">
+                    {p.title}
+                  </span>
                   <span className="post-writer-more-count">
                     [{p.commentCount}]
                   </span>
