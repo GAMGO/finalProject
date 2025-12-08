@@ -840,3 +840,99 @@
     justify-self: flex-start;
   }
 }
+
+/* ================================
+   다크 모드 - 즐겨찾기 등록/수정 모달 (fav-form)
+   ================================ */
+
+:root[data-theme="dark"] .fav-form {
+  /* 통닭 카드와 같은 짙은 초콜릿색 */
+  background: #5e3a31;
+  color: #fff7ef;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.7);
+}
+
+/* 제목 / 서브텍스트 */
+:root[data-theme="dark"] .fav-form-title {
+  color: #fff7ef;
+  text-shadow: 2px 2px 2px #2b1812;
+}
+
+:root[data-theme="dark"] .fav-form-subtitle {
+  color: #fbe0c6;
+}
+
+:root[data-theme="dark"] .fav-form-section {
+  border-top-color: rgba(0, 0, 0, 0.35);
+}
+
+/* 라벨 */
+:root[data-theme="dark"] .fav-form-field > label {
+  color: #fff7ef;
+}
+
+/* 입력칸 / 셀렉트 / 텍스트에어리어 – 라이트 브라운 + 갈색 글자 */
+:root[data-theme="dark"] .fav-form-field input[type="text"],
+:root[data-theme="dark"] .fav-form-field textarea,
+:root[data-theme="dark"] .fav-form-field select {
+  background-color: #f5d7b7;
+  color: #5e3a31;
+  border: none;
+  border-radius: 16px;
+  padding: 8px 10px;
+  box-shadow: 2px 2px 0 #3a221c;
+  outline: none;
+}
+
+/* placeholder */
+:root[data-theme="dark"] .fav-form-field input::placeholder,
+:root[data-theme="dark"] .fav-form-field textarea::placeholder {
+  color: #b87346;
+}
+
+/* select option */
+:root[data-theme="dark"] .fav-form-field select {
+  background-color: #f5d7b7;
+}
+
+:root[data-theme="dark"] .fav-form-field select option {
+  background: #f5d7b7;
+  color: #5e3a31;
+}
+
+/* 안내 문구 */
+:root[data-theme="dark"] .fav-form-field small {
+  color: #fbe0c6;
+}
+
+/* 파일 선택 버튼 – 그라디언트 포인트 컬러 */
+:root[data-theme="dark"] .fav-file-label {
+  background: linear-gradient(135deg, #ff9fb3, #f97316);
+  color: #ffffff;
+  border-radius: 999px;
+  border: none;
+  box-shadow: 4px 4px 0 #3a221c;
+}
+
+/* 하단 버튼 – 취소(라이트 브라운), 저장(그라디언트) */
+:root[data-theme="dark"] .fav-form-actions .fav-btn {
+  background-color: #f5d7b7;   /* cancel 등 기본 버튼 */
+  color: #5e3a31;
+  border-radius: 999px;
+  border: 2px solid #3a221c;
+  box-shadow: 4px 4px 0 #3a221c;
+}
+
+/* 저장 버튼 */
+:root[data-theme="dark"] .fav-form-actions .fav-btn.primary {
+  background: linear-gradient(135deg, #ff9fb3, #f97316);
+  color: #ffffff;
+  border: none;
+  box-shadow: 4px 4px 0 #3a221c;
+}
+
+/* hover */
+:root[data-theme="dark"] .fav-file-label:hover,
+:root[data-theme="dark"] .fav-form-actions .fav-btn:hover {
+  filter: brightness(0.95);
+}

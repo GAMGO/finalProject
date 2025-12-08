@@ -1,3 +1,4 @@
+/* src/App.css */
 /* ===== 공통 테마 변수 ===== */
 :root {
   --color-side-bg: #78266a;     /* 왼쪽 보라색 */
@@ -87,4 +88,3 @@ body {
   /* ✅ 여기서는 flex 안 씀 – 커뮤니티가 전체를 다 씀 */
   display: block;
 }
-

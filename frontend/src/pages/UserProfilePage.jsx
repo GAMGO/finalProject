@@ -1,3 +1,4 @@
+// src/pages/UserProfilePage.jsx
 import React, { useState, useEffect } from "react";
 import "./UserProfilePage.css";
 import apiClient from "../api/apiClient";
