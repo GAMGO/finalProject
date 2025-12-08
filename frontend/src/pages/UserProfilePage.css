@@ -1,3 +1,4 @@
+/* src/pages/UserProfilePage.css */
 .profile-root {
   --brand-purple: #78266a;
   --accent-peach: #ffd19d;
@@ -106,4 +107,74 @@
   background: linear-gradient(135deg, #ff6bb3, #f97316);
   color: #fff;
   font-weight: 700;
+}
+
+/* ================================
+   다크 모드 – 로그인/회원가입과 톤 맞추기
+   (배경 적갈색, 카드 초콜릿, 입력칸 라이트 브라운 + 브라운 텍스트)
+   ================================ */
+
+/* 전체 메인 배경 */
+:root[data-theme="dark"] .profile-root {
+  background-color: #120707;
+  color: #fef3e8;
+}
+
+/* 상단 고정 헤더 바 */
+:root[data-theme="dark"] .profile-top {
+  background-color: #4A1010;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.7);
+}
+
+:root[data-theme="dark"] .profile-title {
+  color: #fef3e8;
+}
+
+/* 카드(회원정보 / 비밀번호 변경 박스) – 초콜릿색 */
+:root[data-theme="dark"] .profile-card {
+  background-color: #5e3a31;
+  border-color: rgba(0,0,0,0.45);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+}
+
+/* 라벨 글자 – 연한 베이지 + 살짝 그림자 */
+:root[data-theme="dark"] .profile-row label {
+  color: #F5D7B7;
+  text-shadow: 1px 1px 1px #3a221c;
+}
+
+/* 입력칸 – light brown 배경 + 갈색 텍스트 */
+:root[data-theme="dark"] .profile-row input,
+:root[data-theme="dark"] .profile-row select {
+  background-color: #F5D7B7;   /* 로그인/회원가입에서 쓰던 라이트 브라운 */
+  color: #5e3a31;              /* 로고 카드와 같은 갈색 */
+  border: none;
+  border-radius: 20px;
+  padding: 10px 12px;
+  font-size: 13px;
+  box-shadow: 4px 4px 0 #3a221c;
+}
+
+/* placeholder 색 */
+:root[data-theme="dark"] .profile-row input::placeholder,
+:root[data-theme="dark"] .profile-row select::placeholder {
+  color: #8b5a3c;
+}
+
+/* 저장 버튼 – 기존 그라디언트 유지하면서 다크톤 그림자만 강화 */
+:root[data-theme="dark"] .profile-save {
+  background: linear-gradient(135deg, #ff6bb3, #f97316);
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.6);
+}
+
+/* 다크 모드 – 회원정보 버튼들도 light 브라운 + 갈색 글씨로 통일 */
+:root[data-theme="dark"] .profile-top-inner .profile-edit-btn,
+:root[data-theme="dark"] .profile-card button {
+  background-color: #F5D7B7;   /* 연한 갈색 */
+  color: #5e3a31;              /* 로고 카드 갈색 */
+  border: 2px solid #3a221c;
+  border-radius: 20px;
+  box-shadow: 4px 4px 0 #3a221c;
+  background-image: none;      /* 기존 그라디언트 제거 */
 }

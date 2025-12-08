@@ -1,3 +1,4 @@
+// src/pages/FavoritePage.jsx
 import React, { useMemo, useState, useEffect } from "react";
 import "./FavoritePage.css";
 import { favoriteApi } from "../api/apiClient";
