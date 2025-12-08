@@ -26,103 +26,59 @@ public class EmailController {
 
     /**
      * 이메일 인증 확인
+     * 
      * @param request 인증 요청 (토큰 포함)
      * @return 인증 결과
      */
 
     // 이메일 인증 확인
-    @PostMapping("/verify")
-    public ResponseEntity<EmailVerificationResponse> verifyEmail(@Valid @RequestBody EmailVerificationRequest request) {
-        try {
-            String token = request.getToken();
-            log.info("이메일 인증 요청: {}", token);
+    // EmailController.java 내 verifyEmail 메서드 수정
 
-            // 인증번호 형식 검증 (6자리 숫자)
-            if (token == null || !token.matches("\\d{6}")) {
-                return ResponseEntity.badRequest()
-                        .body(EmailVerificationResponse.failure("6자리 인증번호를 입력해주세요"));
-            }
+@PostMapping("/verify")
+public ResponseEntity<EmailVerificationResponse> verifyEmail(@Valid @RequestBody EmailVerificationRequest request) {
+    try {
+        String email = request.getEmail(); // ✅ DTO에서 이메일 추출
+        String token = request.getToken();
+        log.info("이메일 인증 요청: {} - {}", email, token);
 
-            // 인증번호로 사용자 찾기
-            Optional<CustomersEntity> customerOpt = customersRepository.findByEmailVerificationToken(token);
-            if (customerOpt.isEmpty()) {
-                return ResponseEntity.badRequest()
-                        .body(EmailVerificationResponse.failure("유효하지 않은 인증번호입니다"));
-            }
-
-            CustomersEntity customer = customerOpt.get();
-
-            // 인증번호 만료 확인
-            if (emailService.isTokenExpired(customer.getEmailVerificationExpires())) {
-                return ResponseEntity.badRequest()
-                        .body(EmailVerificationResponse.failure("만료된 인증번호입니다"));
-            }
-
-            // 이미 인증된 사용자인지 확인
-            if (customer.getEmailVerified()) {
-                return ResponseEntity.ok(EmailVerificationResponse.failure("이미 인증된 이메일입니다"));
-            }
-
-            // 이메일 인증 완료 처리
-            customer.setEmailVerified(true);
-            customer.setEmailVerificationToken(null);
-            customer.setEmailVerificationExpires(null);
-            customersRepository.save(customer);
-
-            log.info("이메일 인증 완료: {}", customer.getId());
-
-            return ResponseEntity.ok(EmailVerificationResponse.success(customer.getEmail()));
-
-        } catch (Exception e) {
-            log.error("이메일 인증 처리 중 오류 발생", e);
-            return ResponseEntity.internalServerError()
-                    .body(EmailVerificationResponse.failure("서버 오류가 발생했습니다"));
+        if (token == null || !token.matches("\\d{6}")) {
+            return ResponseEntity.badRequest()
+                    .body(EmailVerificationResponse.failure("6자리 인증번호를 입력해주세요"));
         }
+
+        boolean isValid = emailService.verifyEmailCode(email, token, "SIGNUP"); 
+
+        if (!isValid) {
+            return ResponseEntity.badRequest()
+                    .body(EmailVerificationResponse.failure("인증번호가 틀렸거나 만료되었습니다"));
+        }
+
+        // 3. 인증 성공 처리 (DB 업데이트 로직 제거 - 가입 시점에 처리됨)
+        log.info("이메일 인증 성공: {}", email);
+
+        // 프론트엔드가 이후에 /signup(POST)을 호출할 수 있도록 성공 응답 반환
+        return ResponseEntity.ok(EmailVerificationResponse.success(email));
+
+    } catch (Exception e) {
+        log.error("이메일 인증 처리 중 오류 발생", e);
+        return ResponseEntity.internalServerError()
+                .body(EmailVerificationResponse.failure("서버 오류가 발생했습니다"));
     }
+}
 
     /**
      * 이메일 인증 재발송
+     * 
      * @param email 재발송할 이메일
      * @return 재발송 결과
      */
-
-    // 이메일 인증 재발송
     @PostMapping("/resend")
     public ResponseEntity<EmailVerificationResponse> resendVerificationEmail(@RequestParam String email) {
         try {
             log.info("이메일 인증 재발송 요청: {}", email);
 
-            // 이메일로 사용자 찾기
-            Optional<CustomersEntity> customerOpt = customersRepository.findByEmail(email);
-            if (customerOpt.isEmpty()) {
-                return ResponseEntity.badRequest()
-                        .body(EmailVerificationResponse.failure("존재하지 않는 이메일입니다"));
-            }
-
-            CustomersEntity customer = customerOpt.get();
-
-            // 이미 인증된 사용자인지 확인
-            if (customer.getEmailVerified()) {
-                return ResponseEntity.badRequest()
-                        .body(EmailVerificationResponse.failure("이미 인증된 이메일입니다"));
-            }
-
-            // 새 인증 코드 생성 (UUID 대신 6자리 숫자 사용)
-            String newCode = emailService.generateVerificationCode(); 
-            LocalDateTime expires = LocalDateTime.now().plusMinutes(5); // 만료 시간을 5분으로 설정
-
-            // 코드 업데이트
-            customer.setEmailVerificationToken(newCode); 
-            customer.setEmailVerificationExpires(expires);
-            customersRepository.save(customer);
-
-            // 이메일 재발송
-            log.info("이메일 인증 코드 재생성: {} - 코드: {}", email, newCode);
-            boolean emailSent = emailService.sendVerificationEmail(email, newCode);
-            if (!emailSent) {
-                return ResponseEntity.internalServerError()
-                        .body(EmailVerificationResponse.failure("이메일 발송에 실패했습니다"));
-            }
+            // ✅ EmailService에 구현된 캐시 기반 발송 메서드 사용
+            emailService.sendCodeToEmail(email, "SIGNUP"); // EmailService.java의 sendCodeToEmail 호출
 
             log.info("이메일 인증 재발송 완료: {}", email);
 
@@ -133,7 +89,7 @@ public class EmailController {
                     .build());
 
         } catch (Exception e) {
-            log.error("이메일 재발송 처리 중 오류 발생", e);
+            log.error("이메일 재발송 오류", e);
             return ResponseEntity.internalServerError()
                     .body(EmailVerificationResponse.failure("서버 오류가 발생했습니다"));
         }
@@ -141,6 +97,7 @@ public class EmailController {
 
     /**
      * 이메일 인증 상태 확인
+     * 
      * @param email 확인할 이메일
      * @return 인증 상태
      */

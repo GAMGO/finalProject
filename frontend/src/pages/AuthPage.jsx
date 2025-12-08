@@ -1,5 +1,3 @@
-// src/components/AuthPage.jsx 최종본
-
 import React, { useState } from "react";
 import LoginPage from "./LoginPage";
 import SignupPage from "./SignupPage";
@@ -15,41 +13,50 @@ const AuthPage = ({ onLoginSuccess }) => {
   const toggleMode = () => {
     setAuthMode(prev => prev === 'login' ? 'signup' : 'login');
   };
+  const [signupPayload, setSignupPayload] = useState(null);
 
-  const handleSignupSuccess = (email) => {
+  const handleSignupSuccess = async (email, payload) => {
     setRegisteredEmail(email);
+    setSignupPayload(payload);
+
+    // 🚨 최초 발송 요청 (비동기로 실행하여 화면 전환을 방해하지 않음)
+    const sendUrl = `${import.meta.env.VITE_LOCAL_BASE_URL}/api/email/resend?email=${encodeURIComponent(email)}`;
+    axios.post(sendUrl, null, { withCredentials: true })
+      .then(() => console.log("최초 메일 발송 성공"))
+      .catch(err => console.error("최초 메일 발송 실패", err));
+
+    // 즉시 화면 전환 (useEffect와 겹치지 않게 책임 단일화)
     setAuthMode('EmailAuth');
   };
 
   const handleAuthSuccess = () => {
-    setAuthMode('login');
-    setRegisteredEmail('');
+    onLoginSuccess();
   };
 
   const renderContent = () => {
     switch (authMode) {
       case 'login':
         return (
-          <LoginPage 
-            onToggleMode={toggleMode} 
-            onLoginSuccess={onLoginSuccess} 
+          <LoginPage
+            onToggleMode={toggleMode}
+            onLoginSuccess={onLoginSuccess}
             onWithdrawMode={(id) => {
               setUserIdForWithdrawal(id);
               setAuthMode('withdrawal');
-            }} 
+            }}
           />
         );
       case 'withdrawal':
         return (
-          <WithdrawalPage 
-            userId={userIdForWithdrawal} 
-            onLogout={() => setAuthMode('login')} 
+          <WithdrawalPage
+            userId={userIdForWithdrawal}
+            onLogout={() => setAuthMode('login')}
           />
         );
       case 'recover':
         return (
-          <RecoveringPage 
-            onAuthSuccess={() => setAuthMode('login')} 
+          <RecoveringPage
+            onAuthSuccess={() => setAuthMode('login')}
           />
         );
       case 'signup':
@@ -64,9 +71,9 @@ const AuthPage = ({ onLoginSuccess }) => {
         return (
           <EmailAuth
             registeredEmail={registeredEmail}
+            signupPayload={signupPayload}
             onAuthSuccess={handleAuthSuccess}
-            onRestartSignup={toggleMode}
-            key="EmailAuth"
+            onRestartSignup={() => setAuthMode('signup')}
           />
         );
       default:

@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from "react";
 import axios from "axios";
-import "../theme/theme.css"; 
+import "../theme/theme.css";
 
 const baseURL = import.meta.env.VITE_LOCAL_BASE_URL;
 
@@ -101,23 +101,22 @@ const SignupPage = ({ onToggleMode, onSignupSuccess }) => {
   // ------------------------------------
   // 4. 회원가입 실행 (로직 강화)
   // ------------------------------------
-  const handleRegister = async () => {
-    // 중복 확인 여부 검증
+  const handleRegister = () => {
+    // 1. 유효성 검사 (중복 확인 및 필드 입력 확인)
     if (!idChecked || !emailChecked) {
       setMessage({ text: "아이디와 이메일 중복 확인을 완료해주세요.", type: "error" });
       return;
     }
-
     if (!customer_id || !password || !confirmPassword || !email || !birthDate) {
       setMessage({ text: "모든 필드를 입력해주세요.", type: "error" });
       return;
     }
-
     if (password !== confirmPassword) {
       setMessage({ text: "비밀번호 확인이 일치하지 않습니다.", type: "error" });
       return;
     }
 
+    // 2. 가입 데이터 생성
     const registerData = {
       id: customer_id,
       password: password,
@@ -127,14 +126,7 @@ const SignupPage = ({ onToggleMode, onSignupSuccess }) => {
     };
 
     // 로딩 대기 없이 즉시 이메일 인증 페이지로 전환
-    onSignupSuccess(email);
-
-    try {
-      // 가입 요청은 백그라운드에서 실행
-      await axios.post(`${baseURL}/api/auth/signup`, registerData, { withCredentials: true });
-    } catch (error) {
-      console.error("회원가입 비동기 요청 실패:", error);
-    }
+    onSignupSuccess(email, registerData);
   };
 
   // ------------------------------------
@@ -179,12 +171,12 @@ const SignupPage = ({ onToggleMode, onSignupSuccess }) => {
         <div style={inputGroupStyle}>
           <label style={labelStyle}>ID</label>
           <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-            <input 
-              type="text" 
-              style={{ ...inputStyle, flex: 1, margin: 0 }} 
-              value={customer_id} 
-              onChange={(e) => { setcustomer_id(e.target.value); setIdChecked(false); setMessage({text:"", type:""}); }} 
-              placeholder="아이디" 
+            <input
+              type="text"
+              style={{ ...inputStyle, flex: 1, margin: 0 }}
+              value={customer_id}
+              onChange={(e) => { setcustomer_id(e.target.value); setIdChecked(false); setMessage({ text: "", type: "" }); }}
+              placeholder="아이디"
             />
             <button type="button" style={{ ...buttonStyle, marginTop: 0, fontSize: "11px", padding: "8px 12px", whiteSpace: "nowrap" }} onClick={checkIdDuplicate}>
               {idChecked ? "확인됨" : "중복확인"}
@@ -196,12 +188,12 @@ const SignupPage = ({ onToggleMode, onSignupSuccess }) => {
         <div style={inputGroupStyle}>
           <label style={labelStyle}>Email</label>
           <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-            <input 
-              type="email" 
-              style={{ ...inputStyle, flex: 1, margin: 0 }} 
-              value={email} 
-              onChange={(e) => { setEmail(e.target.value); setEmailChecked(false); setMessage({text:"", type:""}); }} 
-              placeholder="이메일" 
+            <input
+              type="email"
+              style={{ ...inputStyle, flex: 1, margin: 0 }}
+              value={email}
+              onChange={(e) => { setEmail(e.target.value); setEmailChecked(false); setMessage({ text: "", type: "" }); }}
+              placeholder="이메일"
             />
             <button type="button" style={{ ...buttonStyle, marginTop: 0, fontSize: "11px", padding: "8px 12px", whiteSpace: "nowrap" }} onClick={checkEmailDuplicate}>
               {emailChecked ? "확인됨" : "중복확인"}
@@ -224,7 +216,19 @@ const SignupPage = ({ onToggleMode, onSignupSuccess }) => {
         {/* 5. 생년월일 */}
         <div style={inputGroupStyle}>
           <label htmlFor="reg_birthDate" style={labelStyle}>생년월일</label>
-          <input type="date" id="reg_birthDate" style={inputStyle} value={birthDate} onChange={handleBirthDateChange} />
+          <input
+            type="date"
+            id="reg_birthDate"
+            style={inputStyle}
+            value={birthDate}
+            onChange={handleBirthDateChange}
+            max="3000-12-31"
+            onInput={(e) => {
+              if (e.target.value.length > 10) {
+                e.target.value = e.target.value.slice(0, 10);
+              }
+            }}
+          />
           <div style={{ color: darkPurple, marginTop: "5px" }}>
             계산된 나이: <span style={{ fontWeight: "bold" }}>{age} 세</span>
           </div>
