@@ -36,15 +36,19 @@ public class Post {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(name = "comment_count")
+    // 기본값 0 + null 방지
+    @Column(name = "comment_count", nullable = false)
     private int commentCount = 0;   // 댓글 수
 
-    @Column(name = "views")
+    @Column(name = "views", nullable = false)
     private int views = 0;          // 조회수
 
     @PrePersist
     public void onCreate() {
         this.createdAt = LocalDateTime.now();
+        //  null 방지용: 혹시 값이 비어 있으면 0으로 초기화
+        if (this.commentCount < 0) this.commentCount = 0;
+        if (this.views < 0) this.views = 0;
     }
 
     @PreUpdate
