@@ -16,7 +16,7 @@ const calculateAge = (dobString) => {
   }
   return age > 0 ? age : null;
 };
-export default function UserProfilePage() {
+export default function UserProfilePage({ onWithdraw }) {
   const [form, setForm] = useState({
     customer_id: "",
     email: "",
@@ -343,6 +343,21 @@ export default function UserProfilePage() {
               </form>
             </>
           )}
+        </div>
+        {/* 2. 하단에 아주 작게 회원 탈퇴 링크 추가 */}
+        <div style={{ marginTop: "30px", textAlign: "right", paddingRight: "20px" }}>
+          <span 
+            style={{ 
+              fontSize: "12px", 
+              color: "#999", 
+              cursor: "pointer", 
+              textDecoration: "underline",
+              opacity: 0.7 
+            }}
+            onClick={onWithdraw} // App.jsx에서 넘겨준 setPage("withdrawal") 실행
+          >
+            서비스 탈퇴를 원하시나요?
+          </span>
         </div>
       </div>
     </div>

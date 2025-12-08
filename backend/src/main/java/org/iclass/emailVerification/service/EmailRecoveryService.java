@@ -30,7 +30,7 @@ public class EmailRecoveryService {
 
             helper.setFrom(fromEmail);
             helper.setTo(email);
-            helper.setSubject("[서비스명] 회원 탈퇴 처리가 완료되었습니다.");
+            helper.setSubject("[디쉬인사이드] 회원 탈퇴 처리가 완료되었습니다.");
 
             String htmlContent = createWithdrawalHtml(recoveryCode);
             
@@ -42,10 +42,7 @@ public class EmailRecoveryService {
             log.error("회원 탈퇴 이메일 발송 실패: {}", e.getMessage());
         }
     }
-
-    /**
-     * 탈퇴 알림 HTML 템플릿 생성
-     */
+     //탈퇴 알림 HTML 템플릿 생성
     private String createWithdrawalHtml(String recoveryCode) {
         return """
                 <!DOCTYPE html>

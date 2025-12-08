@@ -107,3 +107,12 @@
   color: #fff;
   font-weight: 700;
 }
+
+.withdrawalStyle {
+  font-family:"SchoolSafetyRoundedSmile";
+  font-size:"12px";
+  font-weight:"bold";
+  color: darkPurple;
+  cursor: "pointer";
+  text-decoration: "underline";
+}

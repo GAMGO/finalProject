@@ -57,8 +57,8 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
           setAuthToken(token, refreshToken); //setAuthToken에 Refresh Token을 함께 전달합니다.
           setMessage({ text: "로그인 성공!", type: "success" });
           setTimeout(() => {
-          onLoginSuccess();
-        }, 1500);
+            onLoginSuccess();
+          }, 1500);
         } else {
           // 라우팅 충돌로 인한 props 누락 경고
           console.error("onLoginSuccess props가 유효한 함수가 아닙니다. 라우팅 설정 확인 필요.");
@@ -127,7 +127,6 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
     backgroundColor: darkPurple,
     fontFamily: customFont,
   };
-
   const loginBoxStyle = {
     backgroundColor: lightPeach,
     padding: "60px 40px",

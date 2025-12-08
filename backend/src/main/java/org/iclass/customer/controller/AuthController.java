@@ -14,10 +14,12 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.util.StringUtils;
 import org.iclass.customer.dto.LoginRequest;
@@ -206,5 +208,17 @@ public class AuthController {
                         .refreshToken(refreshToken) // Refresh Token은 재사용 (선택적으로 새로운 토큰을 발급하고 DB에 업데이트 가능)
                         .tokenType("Bearer")
                         .build());
+    }
+
+    @GetMapping("/check-id")
+    public ResponseEntity<?> checkId(@RequestParam String id) {
+        boolean isAvailable = !customersRepository.existsById(id);
+        return ResponseEntity.ok(Map.of("available", isAvailable));
+    }
+
+    @GetMapping("/check-email")
+    public ResponseEntity<?> checkEmail(@RequestParam String email) {
+        boolean isAvailable = customersRepository.findByEmail(email).isEmpty();
+        return ResponseEntity.ok(Map.of("available", isAvailable));
     }
 }
