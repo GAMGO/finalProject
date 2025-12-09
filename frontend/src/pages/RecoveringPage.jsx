@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-const baseURL = import.meta.env.VITE_LOCAL_BASE_URL;
+const baseURL = import.meta.env.VITE_BASE_URL;
 
 const RecoveringPage = ({ onAuthSuccess }) => {
   const [token, setToken] = useState("");

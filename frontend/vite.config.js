@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 const VITE_DATA_LOCAL_BASE_URL = process.env.VITE_DATA_LOCAL_BASE_URL;
-const VITE_LOCAL_BASE_URL = process.env.VITE_LOCAL_BASE_URL;
+const VITE_BASE_URL = process.env.VITE_BASE_URL;
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
@@ -18,7 +18,7 @@ export default defineConfig({
       // 2. 🌸 Spring 백엔드 API 프록시
       // '/api'로 시작하는 나머지 모든 요청을 주 백엔드 서버로 포워딩
       '/api': {
-        target: `${VITE_LOCAL_BASE_URL}`, 
+        target: `${VITE_BASE_URL}`, 
         changeOrigin: true,
         secure: true,
       },

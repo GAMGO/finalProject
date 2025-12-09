@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 
-const baseURL = import.meta.env.VITE_LOCAL_BASE_URL;
+const baseURL = import.meta.env.VITE_BASE_URL;
 
 const EmailAuthPage = ({ registeredEmail, signupPayload, onAuthSuccess, onRestartSignup }) => {
   const [authCode, setAuthCode] = useState("");

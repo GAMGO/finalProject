@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { setAuthToken } from "../api/apiClient";
 import "../theme/theme.css"; // ✅ 테마 CSS
 
-const baseURL = import.meta.env.VITE_LOCAL_BASE_URL;
+const baseURL = import.meta.env.VITE_BASE_URL;
 const dishLogoUrl = "../src/assets/DISH_LOGO.png";
 
 const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
