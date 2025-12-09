@@ -10,20 +10,24 @@ import java.util.Optional;
 public interface CustomersRepository extends JpaRepository<CustomersEntity, Long> {
 
     // ✅ customer_id(=id 필드)로 엔티티 조회
-    Optional<CustomersEntity> findById(String id); // 그대로 둬도 되지만 이름 충돌 우려됨
-
+    Optional<CustomersEntity> findById(String id);
+    // ✅ customer_idx로 엔티티 조회
+    Optional<CustomersEntity> findByIdx(Long idx);
+    
     // ✅ 명시적으로 username(customer_id)으로 찾기
     @Query("SELECT c.idx FROM CustomersEntity c WHERE c.id = :username")
     Optional<Long> findIdxByUsername(@Param("username") String username);
 
-    Optional<CustomersEntity> findByEmail(String email);
-
     boolean existsById(String id);
-
+    
+    Optional<CustomersEntity> findByEmail(String email);
     // 이메일 인증 토큰으로 사용자 조회
     Optional<CustomersEntity> findByEmailVerificationToken(String token);
-    // ✅ customer_idx로 엔티티 조회
-    Optional<CustomersEntity> findByIdx(Long idx);
 
     Optional<CustomersEntity> findByRefreshToken(String refreshToken);
+
+    @Query("SELECT c FROM CustomersEntity c " +
+           "LEFT JOIN WithdrawalEntity w ON c.idx = w.customerIdx " +
+           "WHERE c.id = :id AND (w.isDeleted IS NULL OR w.isDeleted = false)")
+    Optional<CustomersEntity> findByIdAndIsDeletedFalse(@Param("id") String id);
 }

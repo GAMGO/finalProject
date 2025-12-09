@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -14,10 +15,12 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.util.StringUtils;
 import org.iclass.customer.dto.LoginRequest;
@@ -35,6 +38,7 @@ import org.iclass.customer.repository.CustomersRepository;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,13 +56,36 @@ public class AuthController {
     private final CustomersRepository customersRepository;
 
     // 지금까지는 CustomersEntity를 그대로 반환해서 비밀번호 같은 민감한 정보가 노출됐음
-    // 응답 전용 DTO(SignupResponse)로 변환해서 필요한 데이터만 반환
+    // 자동 로그인을 위해 회원가입 엔드포인트에서 토큰 처리
     @PostMapping("/signup")
-    public ResponseEntity<SignupResponse> signup(@Valid @RequestBody SignupRequest request) {
+    public ResponseEntity<SignupResponse> signup(@Valid @RequestBody SignupRequest request,
+            HttpServletResponse response) {
+        // 1. 가입 처리
         CustomersEntity saved = customersService.signup(request);
-        SignupResponse response = SignupResponse.fromEntity(saved);
-        return ResponseEntity.created(URI.create("/api/users/" + saved.getId()))
-                .body(response);
+
+        // 2. 인증 토큰 생성
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getId(), request.getPassword()));
+        String token = jwtTokenProvider.createToken(authentication);
+        String refreshToken = jwtTokenProvider.createRefreshToken(authentication);
+
+        // 3. 리프레시 토큰 DB 저장
+        saved.setRefreshToken(refreshToken);
+        customersRepository.save(saved);
+
+        // 4. 보안 강화: Refresh Token을 HttpOnly 쿠키에 저장
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
+                .httpOnly(true) // JS 접근 불가 (XSS 방어)
+                .secure(true) // HTTPS에서만 전송 (로컬 테스트 시 false 가능)
+                .path("/")
+                .maxAge(7 * 24 * 60 * 60) // 7일
+                .sameSite("Lax") // CSRF 완화
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+        // 5. Access Token만 JSON 응답
+        SignupResponse res = SignupResponse.fromEntity(saved, token);
+        return ResponseEntity.ok(res);
     }
 
     @PostMapping("/login")
@@ -206,5 +233,17 @@ public class AuthController {
                         .refreshToken(refreshToken) // Refresh Token은 재사용 (선택적으로 새로운 토큰을 발급하고 DB에 업데이트 가능)
                         .tokenType("Bearer")
                         .build());
+    }
+
+    @GetMapping("/check-id")
+    public ResponseEntity<?> checkId(@RequestParam String id) {
+        boolean isAvailable = !customersRepository.existsById(id);
+        return ResponseEntity.ok(Map.of("available", isAvailable));
+    }
+
+    @GetMapping("/check-email")
+    public ResponseEntity<?> checkEmail(@RequestParam String email) {
+        boolean isAvailable = customersRepository.findByEmail(email).isEmpty();
+        return ResponseEntity.ok(Map.of("available", isAvailable));
     }
 }
