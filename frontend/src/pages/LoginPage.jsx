@@ -166,7 +166,6 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
     fontFamily: customFont,
     color: isDark ? "#fef3e8" : "#222222",
   };
-
   const loginBoxStyle = {
     backgroundColor: isDark ? logoDarkBrown : lightPeach, // 카드색
     padding: "60px 40px",

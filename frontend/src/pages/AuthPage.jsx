@@ -1,73 +1,93 @@
 // src/pages/AuthPage.jsx
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import LoginPage from "./LoginPage";
 import SignupPage from "./SignupPage";
 import EmailAuth from "./EmailAuth";
-
-const baseURL = import.meta.env.VITE_LOCAL_BASE_URL;
+import WithdrawalPage from "./WithdrawalPage";
+import RecoveringPage from "./RecoveringPage";
 
 const AuthPage = ({ onLoginSuccess }) => {
-  const navigate = useNavigate();
+  const [authMode, setAuthMode] = useState('login');
+  const [registeredEmail, setRegisteredEmail] = useState('');
+  const [userIdForWithdrawal, setUserIdForWithdrawal] = useState("");
 
-  // 🌟 이 상태가 로그인/회원가입 모드를 결정합니다.
-  const [authMode, setAuthMode] = useState("login");
-  const [registeredEmail, setRegisteredEmail] = useState("");
-
-  // 🌟 이 함수를 자식 컴포넌트(LoginPage, SignupPage)에 onToggleMode로 전달합니다.
   const toggleMode = () => {
     setAuthMode((prev) => (prev === "login" ? "signup" : "login"));
   };
+  const [signupPayload, setSignupPayload] = useState(null);
 
-  // 회원가입 성공 시 호출될 함수 (Signup -> EmailAuth 전환)
-  const handleSignupSuccess = (email) => {
-    setRegisteredEmail(email); // 이메일 저장
-    setAuthMode("EmailAuth"); // 모드를 'EmailAuth'로 변경
-  };
+  const handleSignupSuccess = async (email, payload) => {
+    setRegisteredEmail(email);
+    setSignupPayload(payload);
+    setAuthMode('EmailAuth');
+};
 
-  // 인증 성공 시 호출될 함수 (EmailAuth -> login 전환)
   const handleAuthSuccess = () => {
-    setAuthMode("login");
-    setRegisteredEmail("");
-    navigate("/"); // ✅ Navigate → navigate 수정
+    onLoginSuccess();
   };
 
   const renderContent = () => {
     switch (authMode) {
-      case "login":
-        // LoginPage가 onToggleMode를 통해 signup으로 이동합니다.
+      case 'login':
         return (
           <LoginPage
             onToggleMode={toggleMode}
             onLoginSuccess={onLoginSuccess}
-            key="login"
+            onWithdrawMode={(id) => {
+              setUserIdForWithdrawal(id);
+              setAuthMode('withdrawal');
+            }}
           />
         );
-      case "signup":
+      case 'withdrawal':
         return (
-          // SignupPage에 다음 단계 전환 함수 전달
+          <WithdrawalPage
+            userId={userIdForWithdrawal}
+            onLogout={() => setAuthMode('login')}
+          />
+        );
+      case 'recover':
+        return (
+          <RecoveringPage
+            onAuthSuccess={() => setAuthMode('login')}
+          />
+        );
+      case 'signup':
+        return (
           <SignupPage
-            onToggleMode={toggleMode} // login <-> signup 전환
-            onSignupSuccess={handleSignupSuccess} // ⭐️ EmailAuth 전환용
+            onToggleMode={toggleMode}
+            onSignupSuccess={handleSignupSuccess}
             key="signup"
           />
         );
-      case "EmailAuth":
+      case 'EmailAuth':
         return (
-          // EmailAuth 렌더링 및 데이터/콜백 전달
           <EmailAuth
-            registeredEmail={registeredEmail} // ⭐️ 전달받은 이메일
-            onAuthSuccess={handleAuthSuccess} // 인증 성공 시 login으로 전환
-            onRestartSignup={toggleMode} // 필요하다면 Signup으로 돌아가기
-            key="EmailAuth"
+            registeredEmail={registeredEmail}
+            signupPayload={signupPayload}
+            onAuthSuccess={handleAuthSuccess}
+            onRestartSignup={() => setAuthMode('signup')}
           />
         );
       default:
         return null;
     }
+  }
+
+  const containerStyle = {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100vw",
+    height: "100vh",
+    backgroundColor: "#78266A", // 다크 퍼플 배경
   };
 
-  return <>{renderContent()}</>;
+  return (
+    <div style={containerStyle}>
+      {renderContent()}
+    </div>
+  );
 };
 
 export default AuthPage;

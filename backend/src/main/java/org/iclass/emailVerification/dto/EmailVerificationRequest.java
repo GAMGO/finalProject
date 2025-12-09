@@ -12,8 +12,11 @@ import lombok.Setter;
 @AllArgsConstructor
 public class EmailVerificationRequest {
     
+    @NotBlank(message = "이메일은 필수입니다")
+    private String email;
+
     @NotBlank(message = "토큰은 필수입니다")
     private String token;
 
-    private String purpose; // ✅ 추가
+    private String purpose; 
 }
