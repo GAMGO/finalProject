@@ -128,23 +128,54 @@ export default function KakaoMap() {
   const [useMyLocationAsFrom, setUseMyLocationAsFrom] = useState(false);
   const [locating, setLocating] = useState(false);
 
-  // ==========================
-  // 유틸
-  // ==========================
   const formatDateTime = (str) => {
     if (!str) return "";
     return str.replace("T", " ").slice(0, 16);
   };
 
-  const getAvgRatingText = () => {
-    if (!reviewStats || reviewStats.avgRating == null) return "0.0";
-    const n =
-      typeof reviewStats.avgRating === "number"
-        ? reviewStats.avgRating
-        : Number(reviewStats.avgRating);
-    if (Number.isNaN(n)) return "0.0";
-    return n.toFixed(1);
+  // 🔥 평균 별점 계산: 백엔드 통계가 없으면 리뷰 배열로 직접 계산
+  const computeAvgRating = () => {
+    // 1순위: 백엔드에서 보내주는 통계 값
+    if (
+      reviewStats &&
+      reviewStats.avgRating != null &&
+      (reviewStats.ratingCount ?? 0) > 0
+    ) {
+      const n =
+        typeof reviewStats.avgRating === "number"
+          ? reviewStats.avgRating
+          : Number(reviewStats.avgRating);
+      if (!Number.isNaN(n)) return n;
+    }
+    // 2순위: 리뷰 배열에서 직접 평균 계산
+    if (reviews.length > 0) {
+      const total = reviews.reduce((sum, r) => sum + Number(r.rating || 0), 0);
+      return total / reviews.length;
+    }
+
+    // 리뷰 없으면 0
+    return 0;
   };
+
+  const getAvgRatingText = () => {
+    const avg = computeAvgRating();
+    return avg.toFixed(1);
+  };
+
+ const getRatingCount = () => {
+  // 통계에 값이 “정상적으로” 있을 때만 사용 (1개 이상)
+  if (
+    reviewStats &&
+    typeof reviewStats.ratingCount === "number" &&
+    reviewStats.ratingCount > 0
+  ) {
+    return reviewStats.ratingCount;
+  }
+
+  // 아니면 항상 현재 리뷰 배열 길이 기준
+  return reviews.length;
+};
+
 
   const renderStars = (value) => {
     const num = typeof value === "number" ? value : Number(value || 0);
@@ -227,7 +258,9 @@ export default function KakaoMap() {
     setReviewSummary("");
 
     try {
-      const res = await fetch(`${DATA_API_BASE}/api/stores/${storeIdx}/summary`);
+      const res = await fetch(
+        `${DATA_API_BASE}/api/stores/${storeIdx}/summary`
+      );
       const text = await res.text();
       console.log("GET /api/stores/{id}/summary:", res.status, text);
 
@@ -728,7 +761,9 @@ export default function KakaoMap() {
       (err) => {
         console.error("geolocation error", err);
         if (err.code === 1) {
-          setRouteError("위치 권한이 거부되었습니다. 브라우저 설정을 확인해 주세요.");
+          setRouteError(
+            "위치 권한이 거부되었습니다. 브라우저 설정을 확인해 주세요."
+          );
         } else {
           setRouteError("내 위치를 가져오지 못했어요.");
         }
@@ -880,8 +915,7 @@ export default function KakaoMap() {
     const { from, to } = routeForm;
 
     const hasFrom =
-      (from && from.trim().length > 0) ||
-      (useMyLocationAsFrom && myLocation);
+      (from && from.trim().length > 0) || (useMyLocationAsFrom && myLocation);
 
     if (!hasFrom || !to) {
       setRouteError("출발지와 도착지를 모두 입력해 주세요.");
@@ -1008,49 +1042,48 @@ export default function KakaoMap() {
     }
   };
 
-  // ==========================
-  // 상세 모달에서 "카카오맵 길찾기" 버튼
-  // ==========================
   const handleSetRouteToHere = () => {
-    if (!selectedStore) return;
+  if (!selectedStore) return;
 
-    const { lat, lng } = getLatLngFromStore(selectedStore);
+  const { lat, lng } = getLatLngFromStore(selectedStore);
 
-    let placeName =
-      selectedStore.storeName ||
-      selectedStore.name ||
+  // 🔥 주소를 먼저 사용하고, 없을 때만 이름 사용
+  let placeName =
+    selectedStore.address ||
+    selectedStore.storeAddress ||
+    selectedStore.storeName ||
+    selectedStore.name ||
+    "노점";
+
+  placeName = encodeURIComponent(placeName);
+
+  let url = "";
+
+  if (
+    lat != null &&
+    lng != null &&
+    !Number.isNaN(lat) &&
+    !Number.isNaN(lng)
+  ) {
+    // 좌표가 있으면: 도착지 지정된 길찾기
+    url = `https://map.kakao.com/link/to/${placeName},${lat},${lng}`;
+  } else {
+    // 좌표 없으면: 주소 검색으로라도 띄우기
+    const query =
       selectedStore.address ||
       selectedStore.storeAddress ||
-      "노점";
-
-    placeName = encodeURIComponent(placeName);
-
-    let url = "";
-
-    if (
-      lat != null &&
-      lng != null &&
-      !Number.isNaN(lat) &&
-      !Number.isNaN(lng)
-    ) {
-      // 좌표가 있으면: 도착지가 지정된 길찾기 화면으로
-      url = `https://map.kakao.com/link/to/${placeName},${lat},${lng}`;
-    } else {
-      // 좌표가 없으면: 검색 화면이라도 열어주기
-      const query =
-        selectedStore.address ||
-        selectedStore.storeAddress ||
-        selectedStore.storeName ||
-        "";
-      if (!query) {
-        alert("이 노점의 위치 정보가 없어 카카오맵을 열 수 없어요.");
-        return;
-      }
-      url = `https://map.kakao.com/link/search/${encodeURIComponent(query)}`;
+      selectedStore.storeName ||
+      "";
+    if (!query) {
+      alert("이 노점의 위치 정보가 없어 카카오맵을 열 수 없어요.");
+      return;
     }
+    url = `https://map.kakao.com/link/search/${encodeURIComponent(query)}`;
+  }
 
-    window.open(url, "_blank", "noopener,noreferrer");
-  };
+  window.open(url, "_blank", "noopener,noreferrer");
+};
+
 
   // ==========================
   // 렌더
@@ -1395,12 +1428,12 @@ export default function KakaoMap() {
                     gap: 8,
                   }}
                 >
-                  {renderStars(reviewStats?.avgRating)}
+                  {renderStars(computeAvgRating())}
                   <span style={{ fontWeight: 600, fontSize: 16 }}>
                     {getAvgRatingText()}
                   </span>
                   <span style={{ fontSize: 12, color: "#6b7280" }}>
-                    ({reviewStats?.ratingCount || 0}개)
+                    ({getRatingCount()}개)
                   </span>
                 </div>
               </div>
