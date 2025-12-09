@@ -55,7 +55,7 @@ public class SecurityConfig {
                                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                                 .requestMatchers(PUBLIC_WHITELIST).permitAll()
                                                 // 이메일 인증, 가게 목록 (POST 포함 전체) 허용
-                                                .requestMatchers("/api/email/**", "/api/stores/**",
+                                                .requestMatchers("/api/stores/**",
                                                                 "/api/stores/{storeIdx}/reviews", "/api/routes/**","/api/auth/restore",
                                                                 "/api/posts/**")
                                                 .permitAll()

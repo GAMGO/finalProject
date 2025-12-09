@@ -18,16 +18,8 @@ const AuthPage = ({ onLoginSuccess }) => {
   const handleSignupSuccess = async (email, payload) => {
     setRegisteredEmail(email);
     setSignupPayload(payload);
-
-    // 🚨 최초 발송 요청 (비동기로 실행하여 화면 전환을 방해하지 않음)
-    const sendUrl = `${import.meta.env.VITE_LOCAL_BASE_URL}/api/email/resend?email=${encodeURIComponent(email)}`;
-    axios.post(sendUrl, null, { withCredentials: true })
-      .then(() => console.log("최초 메일 발송 성공"))
-      .catch(err => console.error("최초 메일 발송 실패", err));
-
-    // 즉시 화면 전환 (useEffect와 겹치지 않게 책임 단일화)
     setAuthMode('EmailAuth');
-  };
+};
 
   const handleAuthSuccess = () => {
     onLoginSuccess();
