@@ -1,24 +1,10 @@
-<svg
-  width="512"
-  height="512"
-  viewBox="0 0 512 512"
-  fill="none"
-  xmlns="http://www.w3.org/2000/svg"
->
-  <!-- 보라색 동그라미 배경 -->
-  <circle cx="256" cy="256" r="256" fill="#5E3A31" />
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- 배경 원 -->
+  <circle cx="256" cy="256" r="256" fill="#5E3A31"></circle>
 
-  <!-- 흰색 플러스 아이콘 -->
-  <path
-    d="M256 136
-       C262.627 136 268 141.373 268 148V244H364
-       C370.627 244 376 249.373 376 256
-       C376 262.627 370.627 268 364 268H268V364
-       C268 370.627 262.627 376 256 376
-       C249.373 376 244 370.627 244 364V268H148
-       C141.373 268 136 262.627 136 256
-       C136 249.373 141.373 244 148 244H244V148
-       C244 141.373 249.373 136 256 136Z"
-    fill="#FFFFFF"
-  />
+  <!-- 세로 플러스 막대 (완전히 동일 위치/두께) -->
+  <line x1="256" y1="144" x2="256" y2="368" stroke="#FFFFFF" stroke-width="64" stroke-linecap="round"></line>
+
+  <!-- 가로 플러스 막대 -->
+  <line x1="144" y1="256" x2="368" y2="256" stroke="#FFFFFF" stroke-width="64" stroke-linecap="round"></line>
 </svg>
