@@ -29,7 +29,6 @@ public class FavoriteService {
     public List<FavoriteResponse> getMyFavorites() {
         Long customerIdx = getCustomerIdx();
 
-        // ☆ repository 메서드명도 같이 수정했음
         return favoriteRepository.findByCustomerIdxOrderByCreatedAtDesc(customerIdx)
                 .stream()
                 .map(this::toResponse)
@@ -41,11 +40,12 @@ public class FavoriteService {
 
         entity.setCustomerIdx(getCustomerIdx());
 
-        // ☆ 카테고리 / 상호 / 주소 세팅
+        // 🔥 노점 PK 저장 (지도에서 넘어오는 값)
+        entity.setFavoriteStoreIdx(req.getFavoriteStoreIdx());
+
         entity.setCategory(req.getCategory());
         entity.setTitle(req.getTitle());
 
-        // 프론트에서 favoriteAddress 로 보내고 있으므로 둘 중 있는 값 사용
         String addr = req.getFavoriteAddress();
         if (addr == null || addr.isBlank()) {
             addr = req.getAddress();
@@ -65,7 +65,9 @@ public class FavoriteService {
         FavoriteEntity entity = favoriteRepository.findById(idx)
                 .orElseThrow(() -> new NoSuchElementException("즐겨찾기를 찾을 수 없음: " + idx));
 
-        // ☆ 수정 시에도 카테고리 / 상호 / 주소 반영
+        // 🔥 필요하면 수정도 가능
+        entity.setFavoriteStoreIdx(req.getFavoriteStoreIdx());
+
         entity.setCategory(req.getCategory());
         entity.setTitle(req.getTitle());
 
@@ -92,9 +94,11 @@ public class FavoriteService {
     private FavoriteResponse toResponse(FavoriteEntity entity) {
         FavoriteResponse dto = new FavoriteResponse();
         dto.setIdx(entity.getIdx());
-        dto.setCategory(entity.getCategory());   // ☆ 추가
-        dto.setTitle(entity.getTitle());         // ☆ 추가
-        dto.setAddress(entity.getAddress());     // ☆ 추가
+        dto.setFavoriteStoreIdx(entity.getFavoriteStoreIdx());  // 🔥 추가
+
+        dto.setCategory(entity.getCategory());
+        dto.setTitle(entity.getTitle());
+        dto.setAddress(entity.getAddress());
 
         dto.setNote(entity.getNote());
         dto.setRating(entity.getRating());
