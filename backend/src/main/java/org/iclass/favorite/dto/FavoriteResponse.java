@@ -3,6 +3,8 @@ package org.iclass.favorite.dto;
 public class FavoriteResponse {
 
     private Long idx;
+    private Long favoriteStoreIdx;   // 🔥 추가
+
     private String category;
     private String title;
     private String address;
@@ -19,6 +21,14 @@ public class FavoriteResponse {
 
     public void setIdx(Long idx) {
         this.idx = idx;
+    }
+
+    public Long getFavoriteStoreIdx() {
+        return favoriteStoreIdx;
+    }
+
+    public void setFavoriteStoreIdx(Long favoriteStoreIdx) {
+        this.favoriteStoreIdx = favoriteStoreIdx;
     }
 
     public String getCategory() {

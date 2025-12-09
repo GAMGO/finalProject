@@ -3,6 +3,8 @@ package org.iclass.favorite.dto;
 public class FavoriteRequest {
 
     private Long idx;
+    private Long favoriteStoreIdx;   // 🔥 추가: 어떤 노점인지 PK
+
     private String category;
     private String title;
 
@@ -17,13 +19,20 @@ public class FavoriteRequest {
 
     // ---- getter / setter ----
 
-    // ☆ 오타 수정: getIDx -> getIdx
     public Long getIdx() {
         return idx;
     }
 
     public void setIdx(Long idx) {
         this.idx = idx;
+    }
+
+    public Long getFavoriteStoreIdx() {
+        return favoriteStoreIdx;
+    }
+
+    public void setFavoriteStoreIdx(Long favoriteStoreIdx) {
+        this.favoriteStoreIdx = favoriteStoreIdx;
     }
 
     public String getCategory() {
