@@ -17,7 +17,7 @@ export default defineConfig({
       // 2. 🌸 Spring 백엔드 API 프록시
       // '/api'로 시작하는 나머지 모든 요청을 주 백엔드 서버로 포워딩
       '/api': {
-        target: `${VITE_BASE_URL}`, 
+        target: `${VITE_LOCAL_BASE_URL}`, 
         changeOrigin: true,
         secure: true,
       },

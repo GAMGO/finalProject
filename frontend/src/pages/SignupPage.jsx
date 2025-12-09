@@ -2,7 +2,7 @@ import React, { useState, useCallback } from "react";
 import axios from "axios";
 import "../theme/theme.css";
 
-const baseURL = import.meta.env.VITE_BASE_URL;
+const baseURL = import.meta.env.VITE_LOCAL_BASE_URL;
 
 
 const SignupPage = ({ onToggleMode, onSignupSuccess }) => {

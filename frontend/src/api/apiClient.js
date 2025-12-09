@@ -5,7 +5,7 @@ import axios from "axios";
 // 기본 axios 인스턴스 (모든 API 공용)
 // ===================================================
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_BASE_URL
+  baseURL: import.meta.env.VITE_LOCAL_BASE_URL
 });
 
 // 공통 언랩 헬퍼

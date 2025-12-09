@@ -8,7 +8,7 @@ import { favoriteApi } from "../api/apiClient";
 const APP_KEY = "bdd84bdbed2db3bc5d8b90cd6736a995";
 
 // 스프링(8080) 쪽
-const API_BASE = import.meta.env.VITE_BASE_URL;
+const API_BASE = import.meta.env.VITE_LOCAL_BASE_URL;
 // AI 서버(8000) 쪽
 const DATA_API_BASE =
   import.meta.env.VITE_DATA_LOCAL_BASE_URL || "http://127.0.0.1:8000";
