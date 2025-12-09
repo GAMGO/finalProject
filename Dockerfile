@@ -20,14 +20,14 @@ RUN ./gradlew clean build --no-daemon -x test
 FROM python:3.11-slim AS python-build
 WORKDIR /app/ai
 
-# requirements.txt 파일 복사 (finalProject/ai 폴더에 위치)
-COPY finalProject/ai/requirements.txt .
+# requirements.txt 파일 복사 (/ai 폴더에 위치)
+COPY /ai/requirements.txt .
 
 # requirements.txt에 명시된 종속성 설치
 RUN pip install --no-cache-dir -r requirements.txt
 
 # AI 코드 파일 자체를 복사
-COPY finalProject/ai /app/ai
+COPY /ai /app/ai
 
 # 2단계: 실행 환경
 FROM openjdk:17.0.2-jdk-slim
