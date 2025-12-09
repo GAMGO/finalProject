@@ -178,3 +178,11 @@
   box-shadow: 4px 4px 0 #3a221c;
   background-image: none;      /* 기존 그라디언트 제거 */
 }
+.withdrawalStyle {
+  font-family:"SchoolSafetyRoundedSmile";
+  font-size:"12px";
+  font-weight:"bold";
+  color: darkPurple;
+  cursor: "pointer";
+  text-decoration: "underline";
+}
