@@ -50,7 +50,6 @@ const WithdrawalPage = ({ userId, onLogout }) => {
     padding: "30px 40px",
     width: "400px",
     maxWidth: "90%",
-    backgroundColor: "var(--color-bg-primary)", // 테마에 맞는 배경색 사용
     borderRadius: "15px",
     boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
     textAlign: "center",
