@@ -1,6 +1,7 @@
 // src/components/KakaoMap.jsx
 import React, { useEffect, useRef, useState } from "react";
 import plusIcon from "../assets/plus.svg";
+import plusBrownIcon from "../assets/plus-brown.svg";
 import "./KakaoMap.css";
 
 const APP_KEY = "bdd84bdbed2db3bc5d8b90cd6736a995";
@@ -29,7 +30,7 @@ const CATEGORIES = [
   { id: 11, label: "옥수수" },
 ];
 
-// ✅ Store 객체에서 PK 꺼내는 공통 헬퍼 (idx / id / storeIdx 아무거나 올 수 있음)
+// ✅ Store 객체에서 PK 꺼내는 공통 헬퍼
 const getStoreIdx = (store) => {
   if (!store) return null;
   return store.idx ?? store.id ?? store.storeIdx ?? store.store_id ?? null;
@@ -796,7 +797,7 @@ export default function KakaoMap() {
 
       const payload = {
         start: startPoint,
-        waypoints: [], // 필요하면 나중에 경유지 넣기
+        waypoints: [],
         end: endPoint,
         user_id: 10, // TODO: 실제 로그인 유저 ID로 교체
       };
@@ -826,7 +827,6 @@ export default function KakaoMap() {
       const data = json.data ?? json;
       console.log("상점 추천 원본 데이터:", data);
 
-      // { start: [...], waypoints: [ [...], ... ], end: [...] } → flat
       let candidates = [];
       if (Array.isArray(data.start)) candidates.push(...data.start);
       if (Array.isArray(data.end)) candidates.push(...data.end);
@@ -856,7 +856,6 @@ export default function KakaoMap() {
           return minDist <= RADIUS_M;
         });
       } else {
-        // 혹시 routePoints 없으면 출발/도착 중간 기준 2km
         const centerLat = (startPoint.lat + endPoint.lat) / 2;
         const centerLng = (startPoint.lng + endPoint.lng) / 2;
         filtered = candidates.filter((store) => {
@@ -871,7 +870,6 @@ export default function KakaoMap() {
         `경로 2km 필터 후 노점 개수: ${filtered.length} / 원본: ${candidates.length}`
       );
 
-      // 🔥 이전 추천 마커 모두 제거
       clearRecommendedMarkers();
 
       if (!filtered.length) {
@@ -879,7 +877,6 @@ export default function KakaoMap() {
         return;
       }
 
-      // 🔥 추천 노점만 지도에 찍기
       filtered.forEach((store) => {
         addStoreMarker(mapInstanceRef.current, store, { recommended: true });
       });
@@ -900,7 +897,6 @@ export default function KakaoMap() {
       routeLineRef.current = null;
     }
 
-    // 🔥 추천 마커 지우고, 기본 노점 다시 로드
     clearRecommendedMarkers();
     if (mapInstanceRef.current) {
       clearBaseMarkers();
@@ -964,11 +960,9 @@ export default function KakaoMap() {
         lng: parseFloat(toPlace.x),
       };
 
-      // 🔥 길찾기 시작할 때 기본 노점은 모두 숨기기
       clearBaseMarkers();
       clearRecommendedMarkers();
 
-      // 1) Spring 서버로 길찾기 요청
       const res = await fetch(`${API_BASE}/api/routes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1025,13 +1019,11 @@ export default function KakaoMap() {
       path.forEach((latlng) => bounds.extend(latlng));
       mapInstanceRef.current.setBounds(bounds);
 
-      // 2) FastAPI로 상점 추천 요청 (경로 포인트 전달)
       await callRecommendRoute(fromPoint, toPoint, points);
     } catch (err) {
       console.error("길찾기 에러:", err);
       setRouteError(err.message || "길찾기 중 에러가 발생했습니다.");
 
-      // 에러난 경우 지도 상태 복구: 추천 마커 지우고 기본 노점 다시 그림
       if (mapInstanceRef.current) {
         clearRecommendedMarkers();
         clearBaseMarkers();
@@ -1045,45 +1037,21 @@ export default function KakaoMap() {
   const handleSetRouteToHere = () => {
   if (!selectedStore) return;
 
-  const { lat, lng } = getLatLngFromStore(selectedStore);
-
-  // 🔥 주소를 먼저 사용하고, 없을 때만 이름 사용
-  let placeName =
-    selectedStore.address ||
-    selectedStore.storeAddress ||
-    selectedStore.storeName ||
-    selectedStore.name ||
-    "노점";
-
-  placeName = encodeURIComponent(placeName);
-
-  let url = "";
-
-  if (
-    lat != null &&
-    lng != null &&
-    !Number.isNaN(lat) &&
-    !Number.isNaN(lng)
-  ) {
-    // 좌표가 있으면: 도착지 지정된 길찾기
-    url = `https://map.kakao.com/link/to/${placeName},${lat},${lng}`;
-  } else {
-    // 좌표 없으면: 주소 검색으로라도 띄우기
-    const query =
+    const address =
       selectedStore.address ||
       selectedStore.storeAddress ||
       selectedStore.storeName ||
       "";
-    if (!query) {
-      alert("이 노점의 위치 정보가 없어 카카오맵을 열 수 없어요.");
-      return;
-    }
-    url = `https://map.kakao.com/link/search/${encodeURIComponent(query)}`;
-  }
 
-  window.open(url, "_blank", "noopener,noreferrer");
-};
+    setUseMyLocationAsFrom(true);
+    setRouteForm({
+      from: "내 위치",
+      to: address,
+    });
 
+    handleUseMyLocation();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   // ==========================
   // 렌더
@@ -1136,6 +1104,52 @@ export default function KakaoMap() {
           길찾기
         </div>
 
+        {/* 이동 수단 선택 */}
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            marginBottom: 6,
+            fontSize: 12,
+            alignItems: "center",
+          }}
+        >
+          <span style={{ color: "#6b7280", marginRight: 4 }}>이동 수단</span>
+          <label style={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <input
+              type="radio"
+              name="routeMode"
+              value="CAR"
+              checked={routeMode === "CAR"}
+              onChange={(e) => setRouteMode(e.target.value)}
+              className="route-mode-radio"
+            />
+            차량
+          </label>
+          <label style={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <input
+              type="radio"
+              name="routeMode"
+              value="WALK"
+              checked={routeMode === "WALK"}
+              onChange={(e) => setRouteMode(e.target.value)}
+              className="route-mode-radio"
+            />
+            도보
+          </label>
+          <label style={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <input
+              type="radio"
+              name="routeMode"
+              value="TRANSIT"
+              checked={routeMode === "TRANSIT"}
+              onChange={(e) => setRouteMode(e.target.value)}
+              className="route-mode-radio"
+            />
+            대중교통
+          </label>
+        </div>
+
         <form onSubmit={handleRouteSearch}>
           <div style={{ marginBottom: 6 }}>
             <div style={{ marginBottom: 2 }}>출발</div>
@@ -1180,7 +1194,7 @@ export default function KakaoMap() {
             </div>
           )}
 
-          {/* 하단 버튼 행: 왼쪽 내 위치 / 오른쪽 초기화 + 길찾기 */}
+          {/* 하단 버튼 행 */}
           <div
             style={{
               display: "flex",
@@ -1194,15 +1208,13 @@ export default function KakaoMap() {
               type="button"
               onClick={handleUseMyLocation}
               disabled={locating}
+              className="btn-cta-outline"
               style={{
-                borderRadius: 999,
-                border: `1px solid ${THEME_COLOR}`,
-                background: "#fff",
-                color: THEME_COLOR,
                 padding: "4px 10px",
                 fontSize: 11,
-                cursor: locating ? "default" : "pointer",
                 whiteSpace: "nowrap",
+                opacity: locating ? 0.7 : 1,
+                cursor: locating ? "default" : "pointer",
               }}
             >
               {locating ? "위치 확인 중..." : "내 위치"}
@@ -1219,12 +1231,9 @@ export default function KakaoMap() {
               <button
                 type="button"
                 onClick={clearRoute}
+                className="btn-cta-outline"
                 style={{
-                  borderRadius: 999,
-                  border: "1px solid #e5e7eb",
-                  background: "#fff",
                   padding: "4px 10px",
-                  cursor: "pointer",
                   fontSize: 11,
                 }}
               >
@@ -1233,13 +1242,12 @@ export default function KakaoMap() {
               <button
                 type="submit"
                 disabled={routeLoading}
+                className="btn-cta"
                 style={{
-                  borderRadius: 999,
-                  border: "none",
-                  background: routeLoading ? "#d1b5cc" : THEME_COLOR,
-                  color: "#fff",
-                  padding: "4px 10px",
+                  padding: "4px 14px",
+                  fontSize: 12,
                   fontWeight: 600,
+                  opacity: routeLoading ? 0.7 : 1,
                   cursor: routeLoading ? "default" : "pointer",
                 }}
               >
@@ -1270,11 +1278,12 @@ export default function KakaoMap() {
         <img
           src={plusIcon}
           alt="노점 추가"
-          style={{
-            width: "100%",
-            height: "100%",
-            display: "block",
-          }}
+          className="fab-icon fab-icon-light"
+        />
+        <img
+          src={plusBrownIcon}
+          alt="노점 추가"
+          className="fab-icon fab-icon-dark"
         />
       </button>
 
@@ -1690,16 +1699,8 @@ export default function KakaoMap() {
               <button
                 type="button"
                 onClick={handleSetRouteToHere}
-                style={{
-                  padding: "6px 12px",
-                  borderRadius: 999,
-                  border: `1px solid ${THEME_COLOR}`,
-                  background: "#fff",
-                  color: THEME_COLOR,
-                  fontSize: 13,
-                  fontWeight: 600,
-                  cursor: "pointer",
-                }}
+                className="btn-cta-outline"
+                style={{ fontSize: 13, padding: "6px 12px" }}
               >
                 카카오맵으로 길찾기
               </button>
@@ -1710,3 +1711,4 @@ export default function KakaoMap() {
     </>
   );
 }
+

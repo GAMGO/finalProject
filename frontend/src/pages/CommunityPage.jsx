@@ -2,7 +2,10 @@
 import React, { useEffect, useState } from "react";
 import "../components/community/Community.css";
 import PostEditor from "../components/community/PostEditor";
-import writeFabIcon from "../assets/write-icon.svg";
+
+// 플로팅 버튼 아이콘 (라이트/다크)
+import writeFabLight from "../assets/write-icon.svg";
+import writeFabDark from "../assets/write-icon-brown.svg";
 
 // API
 import {
@@ -55,7 +58,7 @@ function mapPostToEditorInitial(post) {
   return {
     type: post.category ?? "제보",
     title: post.title ?? "",
-    body: post.body ?? "",                  // content 대신 body
+    body: post.body ?? "", // content 대신 body
     locationText: post.location ?? "",
     storeCategory: post.board ?? "",
     writer: post.writer ?? "",
@@ -234,7 +237,16 @@ export default function CommunityPage() {
             className="community-fab"
             onClick={handleOpenWrite}
           >
-            <img src={writeFabIcon} alt="글쓰기" />
+            <img
+              src={writeFabLight}
+              alt="글쓰기"
+              className="community-fab-icon community-fab-icon-light"
+            />
+            <img
+              src={writeFabDark}
+              alt="글쓰기"
+              className="community-fab-icon community-fab-icon-dark"
+            />
           </button>
         </>
       )}
