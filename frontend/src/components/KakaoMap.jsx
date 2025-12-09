@@ -1,5 +1,6 @@
 // src/components/KakaoMap.jsx
 import React, { useEffect, useRef, useState } from "react";
+import apiClient from "../api/apiClient";
 import plusIcon from "../assets/plus.svg";
 import "./KakaoMap.css";
 import { favoriteApi } from "../api/apiClient";
@@ -66,9 +67,9 @@ const distanceMeters = (lat1, lng1, lat2, lng2) => {
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(toRad(lat1)) *
-      Math.cos(toRad(lat2)) *
-      Math.sin(dLng / 2) *
-      Math.sin(dLng / 2);
+    Math.cos(toRad(lat2)) *
+    Math.sin(dLng / 2) *
+    Math.sin(dLng / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 };
@@ -120,6 +121,8 @@ export default function KakaoMap() {
   const mapInstanceRef = useRef(null);
   const geocoderRef = useRef(null);
   const tempMarkerRef = useRef(null);
+  const [reviewText, setReviewText] = useState("");
+  const [reviewLoading, setReviewLoading] = useState(false);
 
   // ✅ 기본 노점 마커들
   const markersRef = useRef([]);
@@ -372,17 +375,15 @@ export default function KakaoMap() {
 
     const content = `
       <div style="padding:8px 12px;font-size:12px;max-width:220px;">
-        ${
-          categoryText
-            ? `<div style="font-weight:600;margin-bottom:4px;">${categoryText}</div>`
-            : ""
-        }
+        ${categoryText
+        ? `<div style="font-weight:600;margin-bottom:4px;">${categoryText}</div>`
+        : ""
+      }
         ${nameText ? `<div style="margin-bottom:4px;">${nameText}</div>` : ""}
-        ${
-          addressText
-            ? `<div style="font-size:11px;color:#555;">${addressText}</div>`
-            : ""
-        }
+        ${addressText
+        ? `<div style="font-size:11px;color:#555;">${addressText}</div>`
+        : ""
+      }
       </div>
     `;
 
@@ -1087,8 +1088,8 @@ export default function KakaoMap() {
       const points = Array.isArray(data?.path)
         ? data.path
         : Array.isArray(data?.points)
-        ? data.points
-        : [];
+          ? data.points
+          : [];
 
       if (!points.length) {
         throw new Error("경로 데이터가 비어 있습니다.");

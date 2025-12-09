@@ -1,4 +1,3 @@
-// src/pages/UserProfilePage.jsx
 import React, { useState, useEffect } from "react";
 import "./UserProfilePage.css";
 import apiClient from "../api/apiClient";
@@ -17,6 +16,7 @@ const calculateAge = (dobString) => {
   }
   return age > 0 ? age : null;
 };
+
 export default function UserProfilePage({ onWithdraw }) {
   const [form, setForm] = useState({
     customer_id: "",
