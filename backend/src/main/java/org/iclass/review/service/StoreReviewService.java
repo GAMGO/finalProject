@@ -1,3 +1,4 @@
+// src/main/java/org/iclass/review/service/StoreReviewService.java
 package org.iclass.review.service;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -43,10 +44,10 @@ public class StoreReviewService {
         StoreReview r = new StoreReview();
         r.setStore(store);
         r.setCustomerIdx(customerIdx);
-        r.setRating(req.rating);
-        r.setReviewText(req.reviewText);
-        r.setAiTopics(req.aiTopics);
-        // r.setCreatedAt(LocalDateTime.now());    // [REMOVED] @PrePersist가 처리
+        r.setRating(req.getRating());
+        r.setReviewText(req.getReviewText());
+        r.setAiTopics(req.getAiTopics());
+        // r.setCreatedAt(LocalDateTime.now());    // @PrePersist 에서 처리한다고 가정
 
         return reviewRepository.save(r).getId();   // 트리거가 통계 갱신
     }
@@ -64,10 +65,10 @@ public class StoreReviewService {
             throw new SecurityException("본인 리뷰만 수정할 수 있습니다.");
         }
 
-        r.setRating(req.rating);
-        r.setReviewText(req.reviewText);
-        if (req.aiTopics != null) {
-            r.setAiTopics(req.aiTopics);
+        r.setRating(req.getRating());
+        r.setReviewText(req.getReviewText());
+        if (req.getAiTopics() != null) {
+            r.setAiTopics(req.getAiTopics());
         }
         // 저장 시 트리거가 통계 자동 반영 (AFTER UPDATE)
     }
