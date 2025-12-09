@@ -74,3 +74,20 @@
   color: #f9fafb;
   box-shadow: 0 0 0 1px rgba(249, 250, 251, 0.2);
 }
+
+/* ================================
+   다크 모드 – 사이드바 버튼 / hover 가독성 강화
+   ================================ */
+
+:root[data-theme="dark"] .sidebar button {
+  background-color: #68231b;   /* 기존 진한 갈색 */
+  color: #ffe9c6;              /* 기본 크림색 글씨 */
+}
+
+/* hover 시 : 배경만 조금 밝게, 글씨는 더 밝은 피치톤으로 변경 */
+:root[data-theme="dark"] .sidebar button:hover,
+:root[data-theme="dark"] .sidebar button:focus,
+:root[data-theme="dark"] .sidebar button:active {
+  background-color: #a73c2f;   /* 살짝 밝은 브라운 */
+  color: #ffd19d !important;   /* 보라색 덮어쓰기, 눈에 잘 보이는 피치톤 */
+}

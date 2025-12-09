@@ -936,3 +936,32 @@
 :root[data-theme="dark"] .fav-form-actions .fav-btn:hover {
   filter: brightness(0.95);
 }
+
+/* ================================
+   다크 모드 – 카드 안 수정 / 초점 조절 버튼
+   ================================ */
+
+/* 카드 헤더 오른쪽 '수정' 버튼 */
+:root[data-theme="dark"] .fav-edit {
+  background-color: #8b5a44;   /* 옅은 초콜릿 */
+  color: #fff7ef;
+  border: none;
+  border-radius: 999px;
+  padding: 5px 12px;
+}
+
+:root[data-theme="dark"] .fav-edit:hover {
+  filter: brightness(1.05);
+}
+
+/* 이미지 오른쪽 아래 '초점 조절' 버튼 */
+:root[data-theme="dark"] .fav-image-edit-btn {
+  background-color: rgba(139, 90, 68, 0.95); /* 옅은 초콜릿 */
+  color: #fff7ef;
+  border: none;
+  border-radius: 999px;
+}
+
+:root[data-theme="dark"] .fav-image-edit-btn:hover {
+  filter: brightness(1.08);
+}
