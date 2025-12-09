@@ -38,6 +38,7 @@
   color: #fff;
 }
 
+/* ✅ 상단 "수정하기" – 예전 오렌지 그라데이션 */
 .profile-edit-btn {
   height: 34px;
   padding: 0 14px;
@@ -98,6 +99,7 @@
   margin-top: 6px;
 }
 
+/* ✅ 비밀번호 카드 안 "열기" 같은 버튼 – 예전 오렌지 그라데이션 */
 .profile-save {
   border-radius: 999px;
   padding: 7px 14px;
@@ -111,7 +113,6 @@
 
 /* ================================
    다크 모드 – 로그인/회원가입과 톤 맞추기
-   (배경 적갈색, 카드 초콜릿, 입력칸 라이트 브라운 + 브라운 텍스트)
    ================================ */
 
 /* 전체 메인 배경 */
@@ -146,8 +147,8 @@
 /* 입력칸 – light brown 배경 + 갈색 텍스트 */
 :root[data-theme="dark"] .profile-row input,
 :root[data-theme="dark"] .profile-row select {
-  background-color: #F5D7B7;   /* 로그인/회원가입에서 쓰던 라이트 브라운 */
-  color: #5e3a31;              /* 로고 카드와 같은 갈색 */
+  background-color: #F5D7B7;
+  color: #5e3a31;
   border: none;
   border-radius: 20px;
   padding: 10px 12px;
@@ -161,20 +162,42 @@
   color: #8b5a3c;
 }
 
-/* 저장 버튼 – 기존 그라디언트 유지하면서 다크톤 그림자만 강화 */
-:root[data-theme="dark"] .profile-save {
-  background: linear-gradient(135deg, #ff6bb3, #f97316);
+/* ✅ 다크 모드에서도 수정하기/열기만 고정 오렌지 그라데이션 */
+:root[data-theme="dark"] .profile-edit-btn {
+  background: linear-gradient(135deg, #ff58b9, #ff760b);
   color: #fff;
   box-shadow: 0 6px 16px rgba(0,0,0,0.6);
 }
 
-/* 다크 모드 – 회원정보 버튼들도 light 브라운 + 갈색 글씨로 통일 */
-:root[data-theme="dark"] .profile-top-inner .profile-edit-btn,
-:root[data-theme="dark"] .profile-card button {
-  background-color: #F5D7B7;   /* 연한 갈색 */
-  color: #5e3a31;              /* 로고 카드 갈색 */
-  border: 2px solid #3a221c;
-  border-radius: 20px;
-  box-shadow: 4px 4px 0 #3a221c;
-  background-image: none;      /* 기존 그라디언트 제거 */
+:root[data-theme="dark"] .profile-save {
+  background: linear-gradient(135deg, #ff58b9, #ff760b);
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.6);
+}
+
+/* ================================
+   다크 모드 – 회원정보 페이지 버튼 스타일
+   (이메일 인증 등 나머지 버튼들은 여전히 CTA 색 사용)
+   ================================ */
+
+/* 🔸 수정하기/열기 제외한 버튼들만 CTA 그라데이션 적용 */
+:root[data-theme="dark"] .profile-root button:not(.profile-edit-btn):not(.profile-save) {
+  background: var(--cta-bg);   /* 🧡 공통 CTA */
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  padding: 8px 22px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
+}
+
+/* hover 시 살짝만 밝게 (수정/열기 포함해서 같이) */
+:root[data-theme="dark"] .profile-root button:not(.profile-edit-btn):not(.profile-save):hover {
+  filter: brightness(0.97);
+}
+
+:root[data-theme="dark"] .profile-edit-btn:hover,
+:root[data-theme="dark"] .profile-save:hover {
+  filter: brightness(0.97);
 }
