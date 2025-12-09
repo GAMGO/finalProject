@@ -16,10 +16,12 @@ import DISH_LOGO from "./assets/DISH_LOGO.png";
 
 const Logout = ({ onLogoutSuccess }) => {
   const [message, setMessage] = useState("로그아웃을 시도 중...");
+
   useEffect(() => {
     const handleLogout = async () => {
       try {
-        //apiClient 사용: /api/auth/logout 엔드포인트에 요청합니다. apiClient의 인터셉터가 Authorization 헤더를 자동으로 추가합니다.
+        // apiClient 사용: /api/auth/logout 엔드포인트에 요청합니다.
+        // apiClient의 인터셉터가 Authorization 헤더를 자동으로 추가합니다.
         await apiClient.post(`/api/auth/logout`, {});
         setMessage("로그아웃에 성공했습니다. 잠시 후 로그인 화면으로 돌아갑니다.");
         // 성공 시 onLogoutSuccess 호출 -> App 컴포넌트에서 토큰 삭제 및 isLoggedIn=false 처리
@@ -60,34 +62,42 @@ export default function App() {
   const [page, setPage] = useState("map"); // map / community / profile / favorite / logout
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // ✅ 추가: 테마 상태 (light / dark)
+  // ✅ 테마 상태 (light / dark)
   const [theme, setTheme] = useState(() => {
     if (typeof window === "undefined") return "light";
     return localStorage.getItem("theme") || "light";
   });
 
   useEffect(() => {
-    const token = localStorage.getItem('jwtToken');
-    const refreshToken = localStorage.getItem('refreshToken');
+    const token = localStorage.getItem("jwtToken");
+    const refreshToken = localStorage.getItem("refreshToken");
     if (token) {
       setAuthToken(token, refreshToken);
       setIsLoggedIn(true);
     }
   }, []);
 
-  // ✅ 추가: theme 값이 바뀔 때마다 <html data-theme="..."> 달기
+  // ✅ theme 값이 바뀔 때마다 <html data-theme="..."> + localStorage 동기화
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("theme", theme);
   }, [theme]);
 
-  // ✅ 추가: 토글 함수
+  // ✅ 사이드바에서 쓰는 토글 함수
   const toggleTheme = () => {
     setTheme((prev) => (prev === "light" ? "dark" : "light"));
   };
 
-  // 로그인 성공 콜백: 토큰을 받아 메모리에 저장합니다.
+  // ✅ 로그인 성공 콜백
   const handleLoginSuccess = () => {
+    // 로그인/회원가입 화면에서 마지막으로 저장한 theme 값 읽어서 App state에 반영
+    if (typeof window !== "undefined") {
+      const savedTheme = localStorage.getItem("theme");
+      if (savedTheme) {
+        setTheme(savedTheme);
+      }
+    }
+
     setIsLoggedIn(true);
     setPage("map");
   };

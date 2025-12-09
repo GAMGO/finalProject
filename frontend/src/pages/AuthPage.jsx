@@ -1,3 +1,4 @@
+// src/pages/AuthPage.jsx
 import React, { useState } from "react";
 import LoginPage from "./LoginPage";
 import SignupPage from "./SignupPage";
@@ -11,7 +12,7 @@ const AuthPage = ({ onLoginSuccess }) => {
   const [userIdForWithdrawal, setUserIdForWithdrawal] = useState("");
 
   const toggleMode = () => {
-    setAuthMode(prev => prev === 'login' ? 'signup' : 'login');
+    setAuthMode((prev) => (prev === "login" ? "signup" : "login"));
   };
   const [signupPayload, setSignupPayload] = useState(null);
 

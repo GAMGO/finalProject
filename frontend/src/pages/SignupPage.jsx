@@ -4,7 +4,12 @@ import "../theme/theme.css";
 
 const baseURL = import.meta.env.VITE_LOCAL_BASE_URL;
 
+
 const SignupPage = ({ onToggleMode, onSignupSuccess }) => {
+  const toggleTheme = () => {
+    console.log("테마 변경 기능은 아직 구현되지 않았습니다.");
+  };
+  const theme = "light";
   // ------------------------------------
   // 1. 상태 관리
   // ------------------------------------
@@ -32,6 +37,7 @@ const SignupPage = ({ onToggleMode, onSignupSuccess }) => {
     []
   );
 
+
   const calculateAge = (dobString) => {
     if (!dobString) return 0;
     const today = new Date();
@@ -49,6 +55,7 @@ const SignupPage = ({ onToggleMode, onSignupSuccess }) => {
     }
     return calculatedAge > 0 ? calculatedAge : 0;
   };
+
 
   const handleBirthDateChange = useCallback((e) => {
     const newDate = e.target.value;
@@ -133,9 +140,11 @@ const SignupPage = ({ onToggleMode, onSignupSuccess }) => {
   // 5. 스타일 정의 (기존 스타일 엄격 유지)
   // ------------------------------------
   const darkPurple = "#78266A";
-  const deppDarkPurple = "#5B2C6F";
   const lightPeach = "#F5D7B7";
   const white = "#FFFFFF";
+  const logoDarkBrown = "#5e3a31";
+  const chocolateShadow = "#3a221c";
+
   const customFont = "PartialSans,SchoolSafetyRoundedSmile,sans-serif";
   const clearCustomFont = "SchoolSafetyRoundedSmile,sans-serif";
 
@@ -161,6 +170,16 @@ const SignupPage = ({ onToggleMode, onSignupSuccess }) => {
   return (
     <div style={containerStyle}>
       <style>{fontSet}</style>
+
+      {/* ✅ 회원가입 화면용 라이트/다크 토글 */}
+      <button
+        type="button"
+        className="side-nav-btn theme-toggle-btn auth-theme-toggle"
+        onClick={toggleTheme}
+      >
+        {theme === "light" ? "다크 모드" : "라이트 모드"}
+      </button>
+
       <div style={loginBoxStyle}>
         <div><h2 style={titleStyle}>회원가입</h2></div>
 
@@ -233,6 +252,7 @@ const SignupPage = ({ onToggleMode, onSignupSuccess }) => {
             계산된 나이: <span style={{ fontWeight: "bold" }}>{age} 세</span>
           </div>
         </div>
+
 
         <div>
           <button type="button" style={buttonStyle} onClick={handleRegister}>회원가입 및 이메일 인증</button>

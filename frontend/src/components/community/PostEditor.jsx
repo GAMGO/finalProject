@@ -6,7 +6,7 @@ export default function PostEditor({ onClose, onSubmit, initial }) {
   const [form, setForm] = useState({
     type: "제보",
     title: "",
-    content: "",
+    body: "",
     locationText: "",
     storeCategory: "",
     writer: "",
@@ -37,7 +37,7 @@ export default function PostEditor({ onClose, onSubmit, initial }) {
     onSubmit({
       type: form.type,
       title: form.title,
-      content: form.content,
+      body: form.body,
       locationText: form.locationText,
       storeCategory: form.storeCategory,
       writer: form.writer,
@@ -122,8 +122,8 @@ export default function PostEditor({ onClose, onSubmit, initial }) {
           <div className="post-editor-row post-editor-row-textarea">
             <label>내용</label>
             <textarea
-              name="content"
-              value={form.content}
+              name="body"
+              value={form.body}
               onChange={handleChange}
               rows={6}
               placeholder="오늘 본 노점, 후기, TIP 등을 적어주세요."
