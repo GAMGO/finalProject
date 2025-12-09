@@ -5,15 +5,21 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    // 프론트엔드가 5173 포트에서 실행 중일 때,
     proxy: {
-      // '/api'로 시작하는 모든 요청을 백엔드 서버로 포워딩
-      '/api': {
-        // 여기에 백엔드 서버의 실제 주소를 입력하세요 (예: http://localhost:8080)
-        target: 'https://api.dishinside.shop', 
+      // 1. 🤖 AI 서버 API 프록시 (더 구체적인 경로를 먼저 정의)
+      // '/api/data'로 시작하는 모든 요청을 로컬 AI 서버로 포워딩
+      '/api/data': {
+        target: `${VITE_DATA_LOCAL_BASE_URL}`, // ⭐️ 로컬 AI 서버 주소
         changeOrigin: true,
-        secure: false, // HTTPS가 아닐 경우
-        // rewrite: (path) => path.replace(/^\/api/, '') // 백엔드 경로에 /api가 포함되지 않는다면 필요
+        secure: false, 
+      },
+      
+      // 2. 🌸 Spring 백엔드 API 프록시
+      // '/api'로 시작하는 나머지 모든 요청을 주 백엔드 서버로 포워딩
+      '/api': {
+        target: `${VITE_BASE_URL}`, 
+        changeOrigin: true,
+        secure: true,
       },
     },
   },

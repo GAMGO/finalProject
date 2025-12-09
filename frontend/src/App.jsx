@@ -21,8 +21,7 @@ const Logout = ({ onLogoutSuccess }) => {
   useEffect(() => {
     const handleLogout = async () => {
       try {
-        // apiClient 사용: /api/auth/logout 엔드포인트에 요청합니다.
-        // apiClient의 인터셉터가 Authorization 헤더를 자동으로 추가합니다.
+        // apiClient 사용: /api/auth/logout 엔드포인트에 요청합니다. apiClient의 인터셉터가 Authorization 헤더를 자동으로 추가합니다.
         await apiClient.post(`/api/auth/logout`, {});
         setMessage("로그아웃에 성공했습니다. 잠시 후 로그인 화면으로 돌아갑니다.");
         // 성공 시 onLogoutSuccess 호출 -> App 컴포넌트에서 토큰 삭제 및 isLoggedIn=false 처리

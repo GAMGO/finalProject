@@ -91,15 +91,17 @@ public class StoreReviewService {
 
     /**
      * 가게별 리뷰 목록 조회 (Page)
+     * [수정 사항]: Lazy Loading 방지를 위해 Fetch Join 쿼리 사용
      */
     public Page<StoreReviewResponse> list(Long storeIdx, Pageable pageable) {
+        // [수정]: findByStore_IdxOrderByCreatedAtDesc 대신 findByStoreIdxWithStore 사용
         Page<StoreReview> p = reviewRepository
-                .findByStore_IdxOrderByCreatedAtDesc(storeIdx, pageable);
+                .findByStoreIdxWithStore(storeIdx, pageable);
 
         return p.map(r -> {
             StoreReviewResponse d = new StoreReviewResponse();
             d.id = r.getId();
-            d.storeIdx = r.getStore().getIdx();
+            d.storeIdx = r.getStore().getIdx(); // Store가 로딩되어 LazyInitializationException이 발생하지 않음
             d.customerIdx = r.getCustomerIdx();
             d.rating = r.getRating();
             d.reviewText = r.getReviewText();
