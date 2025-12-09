@@ -1,3 +1,4 @@
+/* src/components/community/Community.css */
 /* -------- 커뮤니티 전용 팔레트 (App 변수 재사용) -------- */
 :root {
   --brand-purple: #78266a;
@@ -417,7 +418,6 @@
 .community-fab img {
   width: 100%;
   height: 100%;
-  display: block;
 }
 /* ===========================
  *   글쓰기(PostEditor) 레이아웃
@@ -571,4 +571,23 @@
 .post-editor-btn-secondary {
   background: #f3f4f6;
   color: #4b5563;
+}
+
+/* 커뮤니티 글쓰기 플로팅 아이콘 라이트/다크 전환 */
+.community-fab-icon {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.community-fab-icon-dark {
+  display: none;
+}
+
+:root[data-theme="dark"] .community-fab-icon-light {
+  display: none;
+}
+
+:root[data-theme="dark"] .community-fab-icon-dark {
+  display: block;
 }

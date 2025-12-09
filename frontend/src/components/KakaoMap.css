@@ -1,3 +1,4 @@
+/* src/components/KakaoMap.css */
 /* 모달 배경 */
 .map-modal-backdrop {
   position: fixed;
@@ -113,4 +114,23 @@
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+}
+
+/* 플로팅 plus 아이콘 라이트/다크 전환 */
+.map-fab-icon {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.map-fab-icon-dark {
+  display: none;
+}
+
+:root[data-theme="dark"] .map-fab-icon-light {
+  display: none;
+}
+
+:root[data-theme="dark"] .map-fab-icon-dark {
+  display: block;
 }

@@ -1,0 +1,327 @@
+/* src/theme/theme.css */
+
+/* 부드러운 전환 */
+body,
+.app,
+.main-content,
+.side-bar {
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* =========================
+   LIGHT (기존 라이트 유지)
+   ========================= */
+[data-theme="light"] .main-content {
+  background-color: #fff7f1;
+}
+
+/* =========================
+   DARK 공통 베이스
+   ========================= */
+[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+[data-theme="dark"] body,
+[data-theme="dark"] .app {
+  background-color: #120707;
+  color: #fef3e8;
+}
+
+[data-theme="dark"] .main-content {
+  background-color: #120707;
+}
+
+/* ===== 사이드바 ===== */
+[data-theme="dark"] .side-bar {
+  background-color: #430b0b; /* 적갈색 */
+  color: #ffffff;
+}
+
+[data-theme="dark"] .side-nav-btn {
+  background-color: #4b1b1b;
+  color: #fde68a;
+  border: 1px solid #402523;
+}
+
+[data-theme="dark"] .side-nav-btn:hover {
+  background-color: #5c2626;
+}
+
+/* 라이트/다크 토글 버튼 */
+[data-theme="dark"] .theme-toggle-btn {
+  background-color: #fde68a;
+  color: #2b0b0b;
+}
+
+/* ===== 상단 바 공통 (헤더) ===== */
+/* 즐겨찾기 / 회원정보 / 커뮤니티 / 지도 검색 바 */
+[data-theme="dark"] .favorite-top,
+[data-theme="dark"] .profile-top,
+[data-theme="dark"] .community-top,
+[data-theme="dark"] .community-header,
+[data-theme="dark"] .map-search-bar,
+[data-theme="dark"] .floating-search-bar {
+  background-color: #430b0b;
+  color: #fef3e8;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* =========================
+   즐겨찾기 페이지
+   ========================= */
+
+/* 👉 즐겨찾기는 CSS 변수만 갈아끼우면 됨 */
+[data-theme="dark"] .favorite-root {
+  --brand-purple: #430b0b;  /* 상단 바 색을 적갈색으로 */
+  --bg-main: #120707;       /* 전체 배경 */
+  --accent-peach: #5e3a31;  /* 카드 배경 (초콜릿) */
+  --accent-brown: #ffd19d;  /* 제목/강조 텍스트 */
+  --text-main: #fef3e8;
+  --text-muted: #f3d7c2;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+}
+
+/* 빈 상태 텍스트 */
+[data-theme="dark"] .fav-empty {
+  background: rgba(94, 58, 49, 0.7);
+  color: #fef3e8;
+}
+
+/* 카드 안 보조 텍스트 조금 밝게 */
+[data-theme="dark"] .fav-card-addr,
+[data-theme="dark"] .fav-card-note {
+  color: #f3d7c2;
+}
+
+/* =========================
+   회원정보(마이페이지) 페이지
+   ========================= */
+
+/* 프로필도 변수 + 카드만 어둡게 */
+[data-theme="dark"] .profile-root {
+  --brand-purple: #430b0b;  /* 헤더 적갈색 */
+  --bg-main: #120707;
+  --accent-peach: #5e3a31;
+  --accent-brown: #ffd19d;
+  --text-main: #fef3e8;
+  --text-muted: #f3d7c2;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+}
+
+/* 카드 박스 (회원정보 / 비밀번호 변경) */
+[data-theme="dark"] .profile-root .profile-card {
+  background-color: #5e3a31;
+  border: 1px solid #7b4a3c;
+  color: #fef3e8;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+}
+
+/* 라벨/에러/보조 텍스트 */
+[data-theme="dark"] .profile-row label,
+[data-theme="dark"] .profile-inline-text,
+[data-theme="dark"] .profile-error,
+[data-theme="dark"] .profile-pw-message {
+  color: #f3d7c2;
+}
+
+/* 입력 요소 */
+[data-theme="dark"] .profile-card input,
+[data-theme="dark"] .profile-card select,
+[data-theme="dark"] .profile-card textarea {
+  background-color: #120707;
+  border-color: #f3b498;
+  color: #fef3e8;
+}
+
+[data-theme="dark"] .profile-card input::placeholder,
+[data-theme="dark"] .profile-card textarea::placeholder {
+  color: #b78c7a;
+}
+
+/* =========================
+   커뮤니티 / 기타
+   ========================= */
+
+[data-theme="dark"] .community-root,
+[data-theme="dark"] .community-page,
+[data-theme="dark"] .community-wrapper {
+  background-color: #120707;
+  color: #fef3e8;
+}
+
+/* 게시글 카드 */
+[data-theme="dark"] .community-card,
+[data-theme="dark"] .post-card {
+  background-color: #5e3a31;
+  border: 1px solid #7b4a3c;
+  color: #fef3e8;
+}
+
+/* 글 목록 비어 있을 때 */
+[data-theme="dark"] .community-list-empty {
+  background-color: #120707;
+  color: #f3d7c2;
+}
+
+/* =========================
+   커뮤니티 입력 박스 & 글쓰기 버튼 (DARK)
+   ========================= */
+
+/* (예전 버전 클래스들 커버용) */
+[data-theme="dark"] .community-root .floating-search-bar,
+[data-theme="dark"] .community-page .floating-search-bar,
+[data-theme="dark"] .community-root .community-search-bar,
+[data-theme="dark"] .community-root .community-search-input {
+  background-color: #5e3a31;   /* 초콜릿 색 */
+  color: #fef3e8;
+  box-shadow: 0 0 0 2px #7b4a3c;
+}
+
+/* 안의 input 이 따로 있을 경우 대비 */
+[data-theme="dark"] .community-root .floating-search-bar input,
+[data-theme="dark"] .community-root .community-search-bar input {
+  background-color: transparent;
+  color: #fef3e8;
+}
+
+[data-theme="dark"] .community-root .floating-search-bar input::placeholder,
+[data-theme="dark"] .community-root .community-search-bar input::placeholder {
+  color: #fcd9b2;
+}
+
+/* ↘↘ 현재 네 CSS에서 쓰는 상단 메인 입력창(.community-main-input) 대응 */
+[data-theme="dark"] .community-main-input {
+  background-color: #5e3a31;
+  color: #fef3e8;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="dark"] .community-main-input::placeholder {
+  color: #fcd9b2;
+}
+
+/* 우측 하단 글쓰기 플로팅 버튼 (클래스 이름 다양한 버전 대응) */
+[data-theme="dark"] .community-root .floating-write-button,
+[data-theme="dark"] .community-root .community-write-btn,
+[data-theme="dark"] .community-root .write-post-btn {
+  background-color: #5e3a31;   /* 초콜릿 */
+  color: #ffd19d;              /* 살구색 아이콘/텍스트 */
+  box-shadow: 0 0 0 2px #7b4a3c, 0 8px 16px rgba(0, 0, 0, 0.6);
+}
+
+/* 새로 만든 community-fab 버튼 래퍼가 있어도 최소한 충돌 없게 */
+[data-theme="dark"] .community-fab {
+  background-color: transparent;
+}
+
+/* =========================
+   Kakao 길찾기 패널 (DARK)
+   JSX는 그대로 두고 CSS로만 색 갈아끼우기
+   ========================= */
+
+/* 오른쪽 위 고정 패널 div를 위치/크기로 식별해서 스타일 오버라이드 */
+[data-theme="dark"]
+  div[style*="position: fixed"][style*="top: 16px"][style*="right: 24px"][style*="width: 280px"] {
+  background-color: #430b0b !important;  /* 패널 배경: 적갈색 */
+  border-radius: 12px !important;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.85) !important;
+  color: #fef3e8 !important;
+}
+
+/* 그 안의 일반 텍스트들 */
+[data-theme="dark"]
+  div[style*="position: fixed"][style*="top: 16px"][style*="right: 24px"][style*="width: 280px"]
+  div {
+  color: #fef3e8;
+}
+
+/* 출발/도착 인풋 */
+[data-theme="dark"]
+  div[style*="position: fixed"][style*="top: 16px"][style*="right: 24px"][style*="width: 280px"]
+  input[name="from"],
+[data-theme="dark"]
+  div[style*="position: fixed"][style*="top: 16px"][style*="right: 24px"][style*="width: 280px"]
+  input[name="to"] {
+  background-color: #120707 !important;
+  border-color: #f3b498 !important;
+  color: #fef3e8 !important;
+}
+
+[data-theme="dark"]
+  div[style*="position: fixed"][style*="top: 16px"][style*="right: 24px"][style*="width: 280px"]
+  input[name="from"]::placeholder,
+[data-theme="dark"]
+  div[style*="position: fixed"][style*="top: 16px"][style*="right: 24px"][style*="width: 280px"]
+  input[name="to"]::placeholder {
+  color: #b78c7a !important;
+}
+
+/* 에러 문구 살짝 부드러운 톤으로 */
+[data-theme="dark"]
+  div[style*="position: fixed"][style*="top: 16px"][style*="right: 24px"][style*="width: 280px"]
+  div[style*="color: #dc2626"] {
+  color: #fecaca !important;
+}
+
+/* 하단 '초기화' 버튼 */
+[data-theme="dark"]
+  div[style*="position: fixed"][style*="top: 16px"][style*="right: 24px"][style*="width: 280px"]
+  button[type="button"] {
+  border-radius: 999px !important;
+  border: 1px solid #facc15 !important;
+  background-color: #fef9c3 !important;
+  color: #2b0b0b !important;
+}
+
+/* 하단 '길찾기' 버튼 */
+[data-theme="dark"]
+  div[style*="position: fixed"][style*="top: 16px"][style*="right: 24px"][style*="width: 280px"]
+  button[type="submit"] {
+  border-radius: 999px !important;
+  border: none !important;
+  background-color: #5e3a31 !important; /* 초콜릿 */
+  color: #ffd19d !important;
+}
+
+/* =========================
+   즐겨찾기 카드 카테고리 뱃지 (DARK 전용)
+   ========================= */
+[data-theme="dark"] .fav-card-badge {
+  background: rgba(251, 191, 36, 0.16);   /* 노란빛 살짝 */
+  border-color: #fbbf24;                  /* 좀 더 밝은 노랑 테두리 */
+  color: #fef3c7;                         /* 텍스트 밝은 노랑 */
+}
+
+/* 로그인/회원가입 화면에서 테마 토글 버튼 위치 고정
+   (사이드바 토글이 왼쪽 아래 붙는 느낌을 유지) */
+.auth-theme-toggle {
+  position: fixed;
+  left: 24px;
+  bottom: 24px;
+  z-index: 100;
+}
+
+/* =========================================
+   로그인 / 회원가입용 다크모드 토글 위치
+   (사이드바 맨 아래 버튼 위치랑 맞추기)
+   ========================================= */
+
+.auth-theme-toggle {
+  position: fixed;
+  /* 사이드바 폭에 맞춰서 왼쪽에 붙이기 */
+  left: 32px;        /* 필요하면 24~40px 사이로 조금씩 조절 */
+  bottom: 32px;      /* 화면 하단에서 살짝 띄움 */
+
+  /* 사이드바 버튼처럼 좁은 폭만 쓰게 */
+  width: 180px;      /* 사이드바 버튼이랑 비슷한 폭 */
+  max-width: 200px;
+
+  /* 로그인 카드 위로 올라오게 */
+  z-index: 2000;
+
+  /* 전체 폭 버튼이 되지 않도록 */
+  transform: none;
+}

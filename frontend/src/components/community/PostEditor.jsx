@@ -1,17 +1,24 @@
 // src/components/community/PostEditor.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./Community.css";
 
-export default function PostEditor({ onClose, onSubmit }) {
+export default function PostEditor({ onClose, onSubmit, initial }) {
   const [form, setForm] = useState({
     type: "제보",
     title: "",
-    content: "",
+    body: "",
     locationText: "",
     storeCategory: "",
     writer: "",
     imageUrl: "",
   });
+
+  // 초기값 반영 (수정 모드일 때)
+  useEffect(() => {
+    if (initial) {
+      setForm((prev) => ({ ...prev, ...initial }));
+    }
+  }, [initial]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -22,33 +29,31 @@ export default function PostEditor({ onClose, onSubmit }) {
     const file = e.target.files?.[0];
     if (!file) return;
     const url = URL.createObjectURL(file);
-    setForm((prev) => ({ ...prev, imageUrl: url }));
+    setForm((prev) => ({ ...prev, imageUrl: url, file }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     onSubmit({
       type: form.type,
       title: form.title,
-      content: form.content,
+      body: form.body,
       locationText: form.locationText,
       storeCategory: form.storeCategory,
       writer: form.writer,
       imageUrl: form.imageUrl,
+      file: form.file, // (선택) 파일 업로드 분리형이면 services에서 처리
     });
   };
+
+  const isEdit = Boolean(initial);
 
   return (
     <div className="post-editor-root">
       <div className="post-editor-card">
         <div className="post-editor-header">
-          <h2>글쓰기</h2>
-          <button
-            type="button"
-            className="post-editor-close"
-            onClick={onClose}
-          >
+          <h2>{isEdit ? "글 수정" : "글쓰기"}</h2>
+          <button type="button" className="post-editor-close" onClick={onClose}>
             ✕
           </button>
         </div>
@@ -77,6 +82,7 @@ export default function PostEditor({ onClose, onSubmit }) {
               onChange={handleChange}
               placeholder="제목을 입력하세요"
               className="post-editor-input"
+              required
             />
           </div>
 
@@ -116,12 +122,13 @@ export default function PostEditor({ onClose, onSubmit }) {
           <div className="post-editor-row post-editor-row-textarea">
             <label>내용</label>
             <textarea
-              name="content"
-              value={form.content}
+              name="body"
+              value={form.body}
               onChange={handleChange}
               rows={6}
               placeholder="오늘 본 노점, 후기, TIP 등을 적어주세요."
               className="post-editor-textarea"
+              required
             />
           </div>
 
@@ -145,11 +152,8 @@ export default function PostEditor({ onClose, onSubmit }) {
             >
               취소
             </button>
-            <button
-              type="submit"
-              className="post-editor-btn post-editor-btn-primary"
-            >
-              게시하기
+            <button type="submit" className="post-editor-btn post-editor-btn-primary">
+              {isEdit ? "수정하기" : "게시하기"}
             </button>
           </div>
         </form>

@@ -1,3 +1,4 @@
+/* src/pages/UserProfilePage.css */
 .profile-root {
   --brand-purple: #78266a;
   --accent-peach: #ffd19d;
@@ -37,6 +38,7 @@
   color: #fff;
 }
 
+/* ✅ 상단 "수정하기" – 예전 오렌지 그라데이션 */
 .profile-edit-btn {
   height: 34px;
   padding: 0 14px;
@@ -97,6 +99,7 @@
   margin-top: 6px;
 }
 
+/* ✅ 비밀번호 카드 안 "열기" 같은 버튼 – 예전 오렌지 그라데이션 */
 .profile-save {
   border-radius: 999px;
   padding: 7px 14px;
@@ -106,4 +109,103 @@
   background: linear-gradient(135deg, #ff6bb3, #f97316);
   color: #fff;
   font-weight: 700;
+}
+
+/* ================================
+   다크 모드 – 로그인/회원가입과 톤 맞추기
+   ================================ */
+
+/* 전체 메인 배경 */
+:root[data-theme="dark"] .profile-root {
+  background-color: #120707;
+  color: #fef3e8;
+}
+
+/* 상단 고정 헤더 바 */
+:root[data-theme="dark"] .profile-top {
+  background-color: #4A1010;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.7);
+}
+
+:root[data-theme="dark"] .profile-title {
+  color: #fef3e8;
+}
+
+/* 카드(회원정보 / 비밀번호 변경 박스) – 초콜릿색 */
+:root[data-theme="dark"] .profile-card {
+  background-color: #5e3a31;
+  border-color: rgba(0,0,0,0.45);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+}
+
+/* 라벨 글자 – 연한 베이지 + 살짝 그림자 */
+:root[data-theme="dark"] .profile-row label {
+  color: #F5D7B7;
+  text-shadow: 1px 1px 1px #3a221c;
+}
+
+/* 입력칸 – light brown 배경 + 갈색 텍스트 */
+:root[data-theme="dark"] .profile-row input,
+:root[data-theme="dark"] .profile-row select {
+  background-color: #F5D7B7;
+  color: #5e3a31;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 12px;
+  font-size: 13px;
+  box-shadow: 4px 4px 0 #3a221c;
+}
+
+/* placeholder 색 */
+:root[data-theme="dark"] .profile-row input::placeholder,
+:root[data-theme="dark"] .profile-row select::placeholder {
+  color: #8b5a3c;
+}
+
+/* ✅ 다크 모드에서도 수정하기/열기만 고정 오렌지 그라데이션 */
+:root[data-theme="dark"] .profile-edit-btn {
+  background: linear-gradient(135deg, #ff58b9, #ff760b);
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.6);
+}
+
+:root[data-theme="dark"] .profile-save {
+  background: linear-gradient(135deg, #ff58b9, #ff760b);
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.6);
+}
+
+/* ================================
+   다크 모드 – 회원정보 페이지 버튼 스타일
+   (이메일 인증 등 나머지 버튼들은 여전히 CTA 색 사용)
+   ================================ */
+
+/* 🔸 수정하기/열기 제외한 버튼들만 CTA 그라데이션 적용 */
+:root[data-theme="dark"] .profile-root button:not(.profile-edit-btn):not(.profile-save) {
+  background: var(--cta-bg);   /* 🧡 공통 CTA */
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  padding: 8px 22px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
+}
+
+/* hover 시 살짝만 밝게 (수정/열기 포함해서 같이) */
+:root[data-theme="dark"] .profile-root button:not(.profile-edit-btn):not(.profile-save):hover {
+  filter: brightness(0.97);
+}
+
+:root[data-theme="dark"] .profile-edit-btn:hover,
+:root[data-theme="dark"] .profile-save:hover {
+  filter: brightness(0.97);
+}
+.withdrawalStyle {
+  font-family:"SchoolSafetyRoundedSmile";
+  font-size:"12px";
+  font-weight:"bold";
+  color: darkPurple;
+  cursor: "pointer";
+  text-decoration: "underline";
 }

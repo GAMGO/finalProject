@@ -18,7 +18,6 @@ public class KakaoRouteController {
     private final KakaoRouteService kakaoRouteService;
 
     /**
-     * 프론트에서 호출하는 엔드포인트
      * POST /api/routes
      *
      * {
@@ -36,13 +35,18 @@ public class KakaoRouteController {
         LatLngDto from = request.getFrom();
         LatLngDto to   = request.getTo();
 
+        TransportMode mode = request.getMode();
+        if (mode == null) {
+            mode = TransportMode.CAR;
+        }
+
+        // ✅ 모든 모드(CAR/WALK/TRANSIT)를 Naver 기반 서비스 한 군데로 처리
         RouteSummaryResponse result = kakaoRouteService.searchRoute(
-                request.getMode(),
-                from.getLat(),
-                from.getLng(),
-                to.getLat(),
-                to.getLng()
+                mode,
+                from.getLat(), from.getLng(),
+                to.getLat(), to.getLng()
         );
+
         return ResponseEntity.ok(result);
     }
 

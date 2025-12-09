@@ -1,3 +1,5 @@
+/* src/pages/FavoritePage.css */
+
 .favorite-root {
   --brand-purple: #78266a;
   --accent-peach: #ffd19d;
@@ -115,25 +117,33 @@
   line-height: 1.2;
 }
 
-/* + 등록하기 버튼 */
+/* + 등록하기 버튼 – 공통 CTA 색상 사용 (라이트: 파랑 / 다크: 오렌지 그라데이션) */
 
 .fav-add-btn {
-  padding: 6px 12px;
+  padding: 6px 16px;
   border-radius: 999px;
   border: none;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  background: #fff;
-  color: var(--brand-purple);
+  background: var(--cta-bg);
+  color: var(--cta-text-color);
   white-space: nowrap;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.75);
-  transition: background 0.12s ease, transform 0.12s ease;
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.18);
+  transition: transform 0.1s ease-out,
+    box-shadow 0.15s ease-out,
+    filter 0.15s ease-out;
 }
 
 .fav-add-btn:hover {
-  background: #ffe2f7;
+  filter: brightness(1.03);
   transform: translateY(-1px);
+}
+
+.fav-add-btn:active {
+  filter: brightness(0.95);
+  transform: translateY(0);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.22);
 }
 
 /* ===== 메인 영역 ===== */
@@ -184,8 +194,8 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;              /* 11 → 13 */
-  padding: 5px 10px;            /* 살짝 키움 */
+  font-size: 13px;
+  padding: 5px 10px;
   border-radius: 999px;
   background: rgba(52, 211, 153, 0.18);
   border: 1px solid rgba(16, 185, 129, 0.85);
@@ -199,28 +209,40 @@
   gap: 6px;
 }
 
-/* 수정 버튼 */
+/* 수정 버튼 – 공통 CTA 색상 */
+
 .fav-edit {
   border: none;
-  background: rgba(0, 0, 0, 0.18);
-  color: #fff;
-  font-size: 13px;              /* 11 → 13 */
+  background: var(--cta-bg);
+  color: var(--cta-text-color);
+  font-size: 13px;
   font-weight: 600;
-  padding: 5px 12px;            /* 크기 업 */
+  padding: 5px 12px;
   border-radius: 999px;
   cursor: pointer;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.18);
+  transition: transform 0.1s ease-out,
+    box-shadow 0.15s ease-out,
+    filter 0.15s ease-out;
 }
 
 .fav-edit:hover {
-  background: rgba(0, 0, 0, 0.28);
+  filter: brightness(1.03);
+  transform: translateY(-1px);
 }
 
-/* 해제 버튼 (하트 제거 + 글자 키움) */
+.fav-edit:active {
+  filter: brightness(0.95);
+  transform: translateY(0);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.22);
+}
+
+/* 해제 버튼 */
 .fav-unlike {
   border: none;
   background: transparent;
   cursor: pointer;
-  font-size: 13px;              /* 12 → 13 */
+  font-size: 13px;
   font-weight: 700;
   color: var(--accent-brown);
 }
@@ -233,7 +255,7 @@
   border-radius: 14px;
   overflow: hidden;
   background: #000;
-  height: 620px; /* 기본 카드 이미지 높이 */
+  height: 620px; /* 기준 높이 */
 }
 
 .fav-card-image {
@@ -244,6 +266,18 @@
   transform: scale(var(--crop-zoom, 1));
   transform-origin: center center;
   transition: transform 0.06s linear, object-position 0.06s linear;
+}
+
+/* 사진 없는 카드용 (기타 등) */
+.fav-card-noimage {
+  width: 100%;
+  height: 100%;
+  background: #4b5563;
+  color: #f9fafb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
 }
 
 /* MediaEmbed에서 쓰는 공용 클래스 */
@@ -282,7 +316,7 @@
   background: rgba(0, 0, 0, 0.8);
 }
 
-/* 초점 조절 버튼 */
+/* 초점 조절 버튼 – 공통 CTA 색상 */
 
 .fav-image-edit-btn {
   position: absolute;
@@ -291,10 +325,22 @@
   padding: 4px 10px;
   border-radius: 999px;
   border: none;
-  background: rgba(0, 0, 0, 0.55);
-  color: #fff;
+  background: var(--cta-bg);
+  color: var(--cta-text-color);
   font-size: 11px;
   cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  transition: filter 0.15s ease-out, transform 0.1s ease-out;
+}
+
+.fav-image-edit-btn:hover {
+  filter: brightness(1.03);
+  transform: translateY(-1px);
+}
+
+.fav-image-edit-btn:active {
+  filter: brightness(0.95);
+  transform: translateY(0);
 }
 
 /* ===== 카드 본문 ===== */
@@ -424,17 +470,20 @@
 }
 
 .fav-crop-modal {
-  width: 880px;
-  max-width: min(960px, calc(100% - 40px));
+  width: 980px;
+  max-width: min(980px, calc(100% - 40px));
   background: #111;
   border-radius: 18px;
   padding: 16px 18px 14px;
   color: #f9fafb;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .fav-crop-modal-header {
-  margin-bottom: 10px;
+  margin-bottom: 4px;
 }
 
 .fav-crop-modal-header > span {
@@ -449,10 +498,11 @@
   color: #9ca3af;
 }
 
+/* 이 프레임 크기 = 카드 이미지와 100% 동일 (데스크탑 기준 620px) */
 .fav-crop-frame {
   position: relative;
   width: 100%;
-  height: 430px;
+  height: 620px;
   background: #000;
   overflow: hidden;
   border-radius: 12px;
@@ -506,8 +556,10 @@
     );
 }
 
+/* 컨트롤 */
+
 .fav-crop-controls {
-  margin-top: 10px;
+  margin-top: 4px;
 }
 
 .fav-crop-zoom-row {
@@ -527,7 +579,7 @@
 }
 
 .fav-crop-modal-actions {
-  margin-top: 12px;
+  margin-top: 8px;
   display: flex;
   justify-content: flex-end;
   gap: 8px;
@@ -554,9 +606,25 @@
   color: var(--text-main);
 }
 
+/* 🔵 라이트 모드 기본 primary = 공통 CTA (파랑) */
 .fav-btn.primary {
-  background: var(--brand-purple);
-  color: #fff;
+  background: var(--cta-bg);
+  color: var(--cta-text-color);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.18);
+  transition: transform 0.1s ease-out,
+    box-shadow 0.15s ease-out,
+    filter 0.15s ease-out;
+}
+
+.fav-btn.primary:hover {
+  filter: brightness(1.03);
+  transform: translateY(-1px);
+}
+
+.fav-btn.primary:active {
+  filter: brightness(0.95);
+  transform: translateY(0);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.22);
 }
 
 /* ===== 등록/수정 폼 모달 ===== */
@@ -692,8 +760,7 @@
   border: 1px solid #ddd;
 }
 
-/* 파일 선택 버튼 */
-
+/* 파일 선택 버튼 - 라이트: 파랑 CTA */
 .fav-file-label {
   display: inline-flex;
   align-items: center;
@@ -701,12 +768,28 @@
   padding: 6px 12px;
   border-radius: 999px;
   border: none;
-  background: var(--brand-purple);
-  color: #fff;
+  background: var(--cta-bg);          /* 🔵 라이트 모드에서 파랑 */
+  color: var(--cta-text-color);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.18);
+  transition: transform 0.1s ease-out,
+    box-shadow 0.15s ease-out,
+    filter 0.15s ease-out;
 }
+
+.fav-file-label:hover {
+  filter: brightness(1.03);
+  transform: translateY(-1px);
+}
+
+.fav-file-label:active {
+  filter: brightness(0.95);
+  transform: translateY(0);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.22);
+}
+
 
 /* 폼 내 별점 */
 
@@ -775,6 +858,10 @@
   .fav-card-image-wrap {
     height: 500px;
   }
+
+  .fav-crop-frame {
+    height: 500px; /* 카드랑 동일 */
+  }
 }
 
 @media (max-width: 640px) {
@@ -797,12 +884,12 @@
     padding: 12px 12px 10px;
   }
 
-  .fav-crop-frame {
-    height: 260px;
-  }
-
   .fav-card-image-wrap {
     height: 360px;
+  }
+
+  .fav-crop-frame {
+    height: 360px; /* 카드랑 동일 */
   }
 
   .fav-card-body-main {
@@ -815,4 +902,128 @@
     align-items: flex-start;
     justify-self: flex-start;
   }
+}
+
+/* ================================
+   다크 모드 - 즐겨찾기 등록/수정 모달 (fav-form)
+   ================================ */
+
+:root[data-theme="dark"] .fav-form {
+  /* 통닭 카드와 같은 짙은 초콜릿색 */
+  background: #5e3a31;
+  color: #fff7ef;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.7);
+}
+
+/* 제목 / 서브텍스트 */
+:root[data-theme="dark"] .fav-form-title {
+  color: #fff7ef;
+  text-shadow: 2px 2px 2px #2b1812;
+}
+
+:root[data-theme="dark"] .fav-form-subtitle {
+  color: #fbe0c6;
+}
+
+:root[data-theme="dark"] .fav-form-section {
+  border-top-color: rgba(0, 0, 0, 0.35);
+}
+
+/* 라벨 */
+:root[data-theme="dark"] .fav-form-field > label {
+  color: #fff7ef;
+}
+
+/* 입력칸 / 셀렉트 / 텍스트에어리어 – 라이트 브라운 + 갈색 글자 */
+:root[data-theme="dark"] .fav-form-field input[type="text"],
+:root[data-theme="dark"] .fav-form-field textarea,
+:root[data-theme="dark"] .fav-form-field select {
+  background-color: #f5d7b7;
+  color: #5e3a31;
+  border: none;
+  border-radius: 16px;
+  padding: 8px 10px;
+  box-shadow: 2px 2px 0 #3a221c;
+  outline: none;
+}
+
+/* placeholder */
+:root[data-theme="dark"] .fav-form-field input::placeholder,
+:root[data-theme="dark"] .fav-form-field textarea::placeholder {
+  color: #b87346;
+}
+
+/* select option */
+:root[data-theme="dark"] .fav-form-field select {
+  background-color: #f5d7b7;
+}
+
+:root[data-theme="dark"] .fav-form-field select option {
+  background: #f5d7b7;
+  color: #5e3a31;
+}
+
+/* 안내 문구 */
+:root[data-theme="dark"] .fav-form-field small {
+  color: #fbe0c6;
+}
+
+/* 파일 선택 버튼 – 그라디언트 포인트 컬러 */
+:root[data-theme="dark"] .fav-file-label {
+  background: linear-gradient(135deg, #ff9fb3, #f97316);
+  color: #ffffff;
+  border-radius: 999px;
+  border: none;
+  box-shadow: 4px 4px 0 #3a221c;
+}
+
+/* 하단 버튼 – 취소(라이트 브라운), 저장(그라디언트) */
+:root[data-theme="dark"] .fav-form-actions .fav-btn {
+  background-color: #f5d7b7;   /* cancel 등 기본 버튼 */
+  color: #5e3a31;
+  border-radius: 999px;
+  border: 2px solid #3a221c;
+  box-shadow: 4px 4px 0 #3a221c;
+}
+
+/* 저장 버튼 */
+:root[data-theme="dark"] .fav-form-actions .fav-btn.primary {
+  background: linear-gradient(135deg, #ff9fb3, #f97316);
+  color: #ffffff;
+  border: none;
+  box-shadow: 4px 4px 0 #3a221c;
+}
+
+/* hover */
+:root[data-theme="dark"] .fav-file-label:hover,
+:root[data-theme="dark"] .fav-form-actions .fav-btn:hover {
+  filter: brightness(0.95);
+}
+
+/* ================================
+   다크 모드 – 사진 위치 조정(크롭) 모달 버튼
+   ================================ */
+
+/* 크롭 모달 하단 버튼 공통 */
+:root[data-theme="dark"] .fav-crop-modal-actions .fav-btn {
+  background-color: #f5d7b7;   /* 라이트 브라운 */
+  color: #5e3a31;              /* 짙은 갈색 글씨 */
+  border-radius: 999px;
+  border: 2px solid #3a221c;
+  padding: 6px 14px;
+  box-shadow: 3px 3px 0 #3a221c;
+  font-weight: 600;
+}
+
+/* 완료 버튼(primary)은 그대로 강조 색 유지 */
+:root[data-theme="dark"] .fav-crop-modal-actions .fav-btn.primary {
+  background: linear-gradient(135deg, #ff6bb3, #f97316);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 0 0 0;
+}
+
+/* hover 시 살짝만 어둡게 */
+:root[data-theme="dark"] .fav-crop-modal-actions .fav-btn:hover {
+  filter: brightness(0.95);
 }

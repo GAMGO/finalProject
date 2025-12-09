@@ -17,26 +17,11 @@ const calculateAge = (dobString) => {
   return age > 0 ? age : null;
 };
 
-// 백엔드 Gender(M/F/null) → UI 값
-const mapGenderToUi = (gender) => {
-  if (gender === "M") return "M";
-  if (gender === "F") return "F";
-  return "NONE"; // 비공개/기타
-};
-
-// UI 값 → 백엔드 Gender
-const mapUiToGender = (uiGender) => {
-  if (uiGender === "M") return "M";
-  if (uiGender === "F") return "F";
-  return null;
-};
-
-export default function UserProfilePage() {
+export default function UserProfilePage({ onWithdraw }) {
   const [form, setForm] = useState({
     customer_id: "",
     email: "",
     birthDate: "",
-    gender: "NONE", // M / F / NONE
     address: "",
   });
 
@@ -71,7 +56,6 @@ export default function UserProfilePage() {
           customer_id: data.id || "",
           email: data.email || "",
           birthDate: (data.birth || "").slice(0, 10), // "YYYY-MM-DD..." -> 앞 10자리만
-          gender: mapGenderToUi(data.gender),
           address: data.address || "",
         });
         setEmailVerified(Boolean(data.emailVerified));
@@ -117,7 +101,6 @@ export default function UserProfilePage() {
     const payload = {
       birth: form.birthDate || null,
       age: age,
-      gender: mapUiToGender(form.gender),
       address: form.address || null,
     };
 
@@ -128,7 +111,6 @@ export default function UserProfilePage() {
       setForm((prev) => ({
         ...prev,
         birthDate: (data.birth || "").slice(0, 10),
-        gender: mapGenderToUi(data.gender),
         address: data.address || "",
       }));
       setEmailVerified(Boolean(data.emailVerified));
@@ -271,21 +253,6 @@ export default function UserProfilePage() {
               disabled={!isEditing}
             />
           </div>
-
-          <div className="profile-row">
-            <label>성별</label>
-            <select
-              name="gender"
-              value={form.gender}
-              onChange={onChange}
-              disabled={!isEditing}
-            >
-              <option value="M">남</option>
-              <option value="F">여</option>
-              <option value="NONE">비공개</option>
-            </select>
-          </div>
-
           <div className="profile-row">
             <label>주소</label>
             <input
@@ -377,6 +344,21 @@ export default function UserProfilePage() {
               </form>
             </>
           )}
+        </div>
+        {/* 2. 하단에 아주 작게 회원 탈퇴 링크 추가 */}
+        <div style={{ marginTop: "30px", textAlign: "right", paddingRight: "20px" }}>
+          <span 
+            style={{ 
+              fontSize: "12px", 
+              color: "#999", 
+              cursor: "pointer", 
+              textDecoration: "underline",
+              opacity: 0.7 
+            }}
+            onClick={onWithdraw} // App.jsx에서 넘겨준 setPage("withdrawal") 실행
+          >
+            서비스 탈퇴를 원하시나요?
+          </span>
         </div>
       </div>
     </div>

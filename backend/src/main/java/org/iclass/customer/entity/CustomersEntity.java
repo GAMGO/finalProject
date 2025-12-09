@@ -4,8 +4,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.*;
 import java.time.LocalDateTime;
-
-import org.iclass.customer.entity.Gender;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 @Getter
@@ -27,7 +25,7 @@ public class CustomersEntity {
 
     @Column(name = "password_hash", length = 255, nullable = false)
     private String password;
-    
+
     @Email
     @Column(name = "email")
     private String email;
@@ -39,14 +37,10 @@ public class CustomersEntity {
     private String birth;
 
     @Column(name = "address")
-    private String address;    
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "gender", length = 1)
-    private Gender gender;
+    private String address;
 
     @Column(name = "email_verified")
-    private Boolean emailVerified; // 이메일 인증 
+    private Boolean emailVerified; // 이메일 인증
 
     @Column(name = "email_verification_token")
     private String emailVerificationToken; // 이메일 인증 토큰
@@ -54,4 +48,7 @@ public class CustomersEntity {
     @Column(name = "email_verification_expires")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime emailVerificationExpires;
+
+    @Column(name = "refresh_token", length = 1024)
+    private String refreshToken;
 }

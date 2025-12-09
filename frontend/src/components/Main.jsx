@@ -1,3 +1,4 @@
+// src/components/Main.jsx
 import React from "react";
 import KakaoMap from "./KakaoMap";
 
