@@ -1,8 +1,8 @@
 // src/components/KakaoMap.jsx
 import React, { useEffect, useRef, useState } from "react";
+import apiClient from "../api/apiClient";
 import plusIcon from "../assets/plus.svg";
 import "./KakaoMap.css";
-
 const APP_KEY = "bdd84bdbed2db3bc5d8b90cd6736a995";
 
 // 스프링(8080) 쪽
@@ -62,9 +62,9 @@ const distanceMeters = (lat1, lng1, lat2, lng2) => {
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(toRad(lat1)) *
-      Math.cos(toRad(lat2)) *
-      Math.sin(dLng / 2) *
-      Math.sin(dLng / 2);
+    Math.cos(toRad(lat2)) *
+    Math.sin(dLng / 2) *
+    Math.sin(dLng / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 };
@@ -74,6 +74,8 @@ export default function KakaoMap() {
   const mapInstanceRef = useRef(null);
   const geocoderRef = useRef(null);
   const tempMarkerRef = useRef(null);
+  const [reviewText, setReviewText] = useState("");
+  const [reviewLoading, setReviewLoading] = useState(false);
 
   // ✅ 기본 노점 마커들
   const markersRef = useRef([]);
@@ -296,17 +298,15 @@ export default function KakaoMap() {
 
     const content = `
       <div style="padding:8px 12px;font-size:12px;max-width:220px;">
-        ${
-          categoryText
-            ? `<div style="font-weight:600;margin-bottom:4px;">${categoryText}</div>`
-            : ""
-        }
+        ${categoryText
+        ? `<div style="font-weight:600;margin-bottom:4px;">${categoryText}</div>`
+        : ""
+      }
         ${nameText ? `<div style="margin-bottom:4px;">${nameText}</div>` : ""}
-        ${
-          addressText
-            ? `<div style="font-size:11px;color:#555;">${addressText}</div>`
-            : ""
-        }
+        ${addressText
+        ? `<div style="font-size:11px;color:#555;">${addressText}</div>`
+        : ""
+      }
       </div>
     `;
 
@@ -619,77 +619,54 @@ export default function KakaoMap() {
     setReviewForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleReviewSubmit = async (e) => {
-    e.preventDefault();
-    if (!selectedStore) {
-      alert("선택된 노점이 없습니다.");
-      return;
-    }
-
-    const storeIdx = getStoreIdx(selectedStore);
-    if (!storeIdx) {
-      alert("가게 ID를 찾을 수 없어서 리뷰를 저장할 수 없습니다.");
-      console.error("handleReviewSubmit: storeIdx 없음", selectedStore);
-      return;
-    }
-
-    const token =
-      sessionStorage.getItem("jwtToken") ||
-      sessionStorage.getItem("accessToken") ||
-      sessionStorage.getItem("token");
-
-    if (!token) {
-      alert("로그인 후 리뷰를 작성할 수 있어요.");
-      return;
-    }
-
-    const ratingNum = Number(reviewForm.rating);
-    if (!ratingNum || ratingNum < 1 || ratingNum > 5) {
-      alert("평점은 1~5 사이 숫자만 가능합니다.");
-      return;
-    }
-
-    const payload = {
-      rating: ratingNum,
-      reviewText: reviewForm.text || "",
-    };
-
-    setReviewSubmitting(true);
-    try {
-      const res = await fetch(
-        `${API_BASE}/api/stores/${storeIdx}/reviews`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(payload),
+  const handleReviewSubmit = async () => {
+        // 인포윈도우가 열려있는 노점 ID 확인
+        if (!selectedStall || !selectedStall.id) return;
+        
+        // 리뷰 내용 검증
+        const trimmedReview = reviewText.trim();
+        if (!trimmedReview) return;
+        
+        // 🚨 [핵심 수정] 클라이언트 측에서 'jwtToken'의 유무를 명확하게 확인합니다.
+        // 이 검사가 실패하면 API 요청 자체가 나가지 않습니다.
+        const token = localStorage.getItem("jwtToken"); 
+        if (!token) {
+            // 이 메시지가 사용자님께 보였을 가능성이 높습니다.
+            alert("리뷰를 등록하려면 먼저 로그인해야 합니다."); 
+            // 토큰이 없으므로 API 요청 없이 여기서 즉시 종료됩니다.
+            return; 
         }
-      );
+        
+        setReviewLoading(true);
 
-      const text = await res.text();
-      console.log("POST /api/stores/{id}/reviews:", res.status, text);
+        try {
+            const reviewPayload = {
+                stallId: selectedStall.id,
+                reviewText: trimmedReview,
+                // rating: rating, // 별점 기능이 있다면 추가
+            };
 
-      if (!res.ok) {
-        console.error("리뷰 작성 실패:", res.status, text);
-        alert(
-          `리뷰 등록에 실패했어 ㅠㅠ\n(status: ${res.status})\n콘솔 로그도 한 번 봐줘.`
-        );
-        return;
-      }
+            // ✅ apiClient 사용: 인터셉터가 'jwtToken'을 자동으로 Authorization 헤더에 추가합니다.
+            await apiClient.post(`/api/reviews`, reviewPayload); 
 
-      setReviewForm({ rating: 5, text: "" });
-      setHoverRating(0);
-      await loadReviews(storeIdx);
-      await loadReviewSummary(storeIdx);
-    } catch (err) {
-      console.error("리뷰 작성 에러:", err);
-      alert("리뷰 등록 중 에러가 발생했어 ㅠㅠ");
-    } finally {
-      setReviewSubmitting(false);
-    }
-  };
+            alert("리뷰가 성공적으로 등록되었습니다.");
+            setReviewText("");
+            // 성공 후 리뷰 목록을 새로고침하는 함수를 호출하여 업데이트합니다.
+            // fetchReviews(selectedStall.id); 
+
+        } catch (error) {
+            console.error("Review submission failed:", error);
+            
+            // 백엔드에서 401 Unauthorized 오류가 왔다면 토큰 만료 처리 메시지
+            if (error.response?.status === 401) {
+                alert("인증 정보가 만료되었습니다. 다시 로그인해주세요."); 
+            } else {
+                alert("리뷰 등록 중 오류가 발생했습니다.");
+            }
+        } finally {
+            setReviewLoading(false);
+        }
+    };
 
   // ==========================
   // 내 위치 버튼
@@ -964,8 +941,8 @@ export default function KakaoMap() {
       const points = Array.isArray(data?.path)
         ? data.path
         : Array.isArray(data?.points)
-        ? data.points
-        : [];
+          ? data.points
+          : [];
 
       if (!points.length) {
         throw new Error("경로 데이터가 비어 있습니다.");
@@ -984,8 +961,8 @@ export default function KakaoMap() {
         routeMode === "WALK"
           ? "#16a34a"
           : routeMode === "TRANSIT"
-          ? "#a855f7"
-          : "#2563eb";
+            ? "#a855f7"
+            : "#2563eb";
 
       const polyline = new window.kakao.maps.Polyline({
         path,
