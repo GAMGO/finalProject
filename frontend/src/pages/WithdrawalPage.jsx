@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import apiClient from "../api/apiClient";
 import "../theme/theme.css";
-
-const baseURL = import.meta.env.VITE_LOCAL_BASE_URL;
 
 const WithdrawalPage = ({ userId, onLogout }) => {
   const [checks, setChecks] = useState({ info: false, email: false, law: false });
@@ -18,17 +16,19 @@ const WithdrawalPage = ({ userId, onLogout }) => {
   };
 
   const handleWithdraw = async () => {
-    if (confirmText !== targetText) return;
+    if (confirmText !== targetText) {
+      setMessage({ text: "입력된 문장이 일치하지 않습니다.", type: "error" });
+      return;
+    }
 
     try {
-      const token = localStorage.getItem("jwtToken");
-      await axios.delete(`${baseURL}/api/auth/withdrawal`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setMessage({ text: "탈퇴 처리가 완료되었습니다. 이메일을 확인해주세요.", type: "success" });
-      setTimeout(() => onLogout(), 2000); // 탈퇴 후 로그아웃 처리
+      await apiClient.delete(`/api/auth/withdrawal`);
+      setMessage({ text: "탈퇴 처리가 완료되었습니다. 복구 코드가 이메일로 발송되었습니다.", type: "success" });
+      setTimeout(() => onLogout(), 2000); // App.jsx의 handleLogoutSuccess 호출
     } catch (error) {
-      setMessage({ text: "탈퇴 처리 중 오류가 발생했습니다.", type: "error" });
+      const errorMessage = error.response?.data?.message || "탈퇴 처리 중 알 수 없는 오류가 발생했습니다.";
+      console.error("Withdrawal API Error:", error);
+      setMessage({ text: errorMessage, type: "error" });
     }
   };
 
@@ -37,21 +37,32 @@ const WithdrawalPage = ({ userId, onLogout }) => {
   const lightPeach = "#F5D7B7";
   const white = "#FFFFFF";
 
+  const containerStyle = {
+    display: "flex",
+    justifyContent: "center", // 가로 중앙 정렬
+    alignItems: "center", // 세로 중앙 정렬
+    width: "100vw", // 전체 뷰포트 너비
+    height: "100vh", // 전체 뷰포트 높이
+  };
+
+  // 🚨 [수정 2] 실제 콘텐츠 박스 스타일 (로그인/회원가입 박스와 유사하게 설정)
   const boxStyle = {
-    backgroundColor: lightPeach,
-    padding: "40px",
-    borderRadius: "40px",
-    width: "45vh",
+    padding: "30px 40px",
+    width: "400px",
+    maxWidth: "90%",
+    backgroundColor: "var(--color-bg-primary)", // 테마에 맞는 배경색 사용
+    borderRadius: "15px",
+    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
     textAlign: "center",
-    fontFamily: "PartialSans, sans-serif",
+    backgroundColor: lightPeach,
   };
 
   const checkGroupStyle = {
     textAlign: "left",
     marginBottom: "15px",
     color: darkPurple,
-    fontSize: "14px",
-    lineHeight: "1.6",
+    fontSize: "15px",
+    lineHeight: "2",
   };
 
   const inputStyle = {
@@ -76,9 +87,9 @@ const WithdrawalPage = ({ userId, onLogout }) => {
   };
 
   return (
-    <div style={boxStyle}>
+    <div style={containerStyle}><div style={boxStyle}>
       <h2 style={{ color: darkPurple, marginBottom: "20px" }}>회원 탈퇴</h2>
-      
+
       <div style={checkGroupStyle}>
         <input type="checkbox" name="info" onChange={handleCheck} /> 1. 개인정보 파기 동의: 즉시 파기됨을 확인합니다.
       </div>
@@ -90,10 +101,10 @@ const WithdrawalPage = ({ userId, onLogout }) => {
       </div>
 
       {/* 부드러운 애니메이션 효과를 위한 조건부 렌더링 */}
-      <div style={{ 
-        maxHeight: isAllChecked ? "200px" : "0", 
-        overflow: "hidden", 
-        transition: "max-height 0.5s ease-in-out" 
+      <div style={{
+        maxHeight: isAllChecked ? "200px" : "0",
+        overflow: "hidden",
+        transition: "max-height 0.5s ease-in-out"
       }}>
         <p style={{ color: darkPurple, fontSize: "12px", marginTop: "10px" }}>아래 문장을 똑같이 입력해주세요:</p>
         <p style={{ color: "red", fontWeight: "bold", fontSize: "12px" }}>"{targetText}"</p>
@@ -113,7 +124,7 @@ const WithdrawalPage = ({ userId, onLogout }) => {
           {message.text}
         </div>
       )}
-    </div>
+    </div></div>
   );
 };
 

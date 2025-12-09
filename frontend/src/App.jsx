@@ -4,6 +4,7 @@ import axios from "axios";
 import KakaoMap from "./components/KakaoMap";
 import CommunityPage from "./pages/CommunityPage";
 import UserProfilePage from "./pages/UserProfilePage";
+import WithdrawalPage from "./pages/WithdrawalPage";
 import AuthPage from "./pages/AuthPage";
 import FavoritePage from "./pages/FavoritePage";
 import apiClient, { setAuthToken, clearAuthToken } from "./api/apiClient";
@@ -77,18 +78,18 @@ export default function App() {
     }
   }, []);
 
-  // ✅ theme 값이 바뀔 때마다 <html data-theme="..."> + localStorage 동기화
+  // theme 값이 바뀔 때마다 <html data-theme="..."> + localStorage 동기화
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("theme", theme);
   }, [theme]);
 
-  // ✅ 사이드바에서 쓰는 토글 함수
+  // 사이드바에서 쓰는 토글 함수
   const toggleTheme = () => {
     setTheme((prev) => (prev === "light" ? "dark" : "light"));
   };
 
-  // ✅ 로그인 성공 콜백
+  // 로그인 성공 콜백
   const handleLoginSuccess = () => {
     // 로그인/회원가입 화면에서 마지막으로 저장한 theme 값 읽어서 App state에 반영
     if (typeof window !== "undefined") {
@@ -106,6 +107,7 @@ export default function App() {
   const handleLogoutSuccess = () => {
     clearAuthToken();
     setIsLoggedIn(false);
+    setPage("map");
   };
 
   // 현재 활성화된 버튼 스타일 (원하면 나중에 사용)
@@ -181,11 +183,14 @@ export default function App() {
         ) : page === "community" ? (
           <CommunityPage />
         ) : page === "profile" ? (
-          <UserProfilePage />
+          // ✅ 수정: UserProfilePage에서 '서비스 탈퇴를 원하시나요?' 링크 클릭 시 상태를 'withdraw'로 변경
+          <UserProfilePage onWithdraw={() => setPage("withdraw")} />
         ) : page === "favorite" ? (
           <FavoritePage />
         ) : page === "logout" ? (
           <Logout onLogoutSuccess={handleLogoutSuccess} />
+        ) : page === "withdraw" ? ( // ✅ 핵심: 'withdraw' 상태일 때 WithdrawalPage 전체를 렌더링
+          <WithdrawalPage onLogout={handleLogoutSuccess} /> 
         ) : (
           <p style={{ color: "red" }}>404 Page Not Found</p>
         )}
