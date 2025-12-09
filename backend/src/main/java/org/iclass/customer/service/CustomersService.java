@@ -36,30 +36,15 @@ public class CustomersService implements UserDetailsService {
 
         @Transactional
         public CustomersEntity signup(SignupRequest req) {
-                log.debug("[SIGNUP:SERVICE] existsById? id={}", req.getId()); // log 확인
+                // 1. ID 중복 체크 (선 인증 후 가입 흐름에서는 중복 ID 체크만 하고, 인증 재발송 로직은 제거)
                 if (customersRepository.existsById(req.getId())) {
                         log.warn("[SIGNUP:SERVICE] duplicate id={}", req.getId());
-                        // 중복 ID인 경우 기존 사용자 정보 반환 (이메일 인증만 재발송)
-                        CustomersEntity existingUser = customersRepository.findById(req.getId()).orElse(null);
-                        if (existingUser != null && !existingUser.getEmailVerified()) {
-                                // 이메일 인증이 안된 경우 인증번호 재생성
-                                String newCode = emailService.generateVerificationCode(); // UUID 대신 6자리 숫자 생성
-                                LocalDateTime newExpires = LocalDateTime.now().plusMinutes(5); // 만료 시간 5분으로 설정
-                                existingUser.setEmailVerificationToken(newCode); // 인증번호 저장
-                                existingUser.setEmailVerificationExpires(newExpires);
-                                customersRepository.save(existingUser);
-
-                                // 이메일 재발송
-                                emailService.sendVerificationEmail(req.getId(), newCode); // 6자리 인증번호를 발송
-                                log.info("[SIGNUP:SERVICE] 이메일 인증번호 재발송: {}", req.getEmail());
-                        }
-                        return existingUser;
+                        // 기존 사용자가 인증된 상태라면 (혹은 프론트에서 재인증을 유도했다면)
+                        // 여기서는 에러를 발생시켜야 프론트가 '이미 가입된 사용자'임을 인지하고 로그인으로 유도할 수 있습니다.
+                        throw new IllegalStateException("이미 가입된 사용자 ID입니다.");
                 }
 
-                // 이메일 인증번호 생성
-                String verificationCode = emailService.generateVerificationCode();
-                LocalDateTime codeExpires = LocalDateTime.now().plusMinutes(5);
-
+                // 2. 새로운 사용자 생성 (인증 완료를 전제로 생성)
                 CustomersEntity user = CustomersEntity.builder()
                                 .id(req.getId())
                                 .password(passwordEncoder.encode(req.getPassword())) // 비밀번호 암호화
@@ -67,21 +52,15 @@ public class CustomersService implements UserDetailsService {
                                 .address(req.getAddress())
                                 .birth(req.getBirth().toString())
                                 .email(req.getEmail())
-                                .emailVerified(false) // 이메일 인증 대기 상태
-                                .emailVerificationToken(verificationCode) // 인증번호
-                                .emailVerificationExpires(codeExpires) // 인증번호 만료 시간
+                                // ✅ [수정] 이메일 인증 성공 후 API가 호출되었으므로, DB에 '인증 완료(true)'로 저장합니다.
+                                .emailVerified(true)
+                                // ✅ [수정] 인증 코드는 EmailService 캐시에서 이미 검증되었으므로 DB 필드는 null 유지
+                                .emailVerificationToken(null)
+                                .emailVerificationExpires(null)
                                 .build();
 
                 CustomersEntity savedUser = customersRepository.save(user);
-
-                // 이메일 인증번호 발송
-                boolean emailSent = emailService.sendVerificationEmail(req.getEmail(), verificationCode);
-                if (emailSent) {
-                        log.info("[SIGNUP:SERVICE] 이메일 인증번호 발송 성공: {}", req.getEmail());
-                } else {
-                        log.warn("[SIGNUP:SERVICE] 이메일 인증번호 발송 실패: {}", req.getEmail());
-                }
-
+                log.info("[SIGNUP:SERVICE] 새로운 사용자 가입 및 인증 완료: {}", req.getId());
                 return savedUser;
         }
 

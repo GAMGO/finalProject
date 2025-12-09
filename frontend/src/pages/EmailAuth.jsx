@@ -31,11 +31,11 @@ const EmailAuthPage = ({ registeredEmail, signupPayload, onAuthSuccess, onRestar
     const sec = seconds % 60;
     return `${min}:${sec < 10 ? "0" : ""}${sec}`;
   };
-  
+
   //최초 발송 중복 요청 물리적 차단 (StrictMode 대응)
   useEffect(() => {
     if (!registeredEmail || hasSentInitialMail.current) return;
-    
+
     const triggerInitialMail = async () => {
       hasSentInitialMail.current = true; // 통신 시작 전 즉시 잠금
       try {
@@ -66,62 +66,61 @@ const EmailAuthPage = ({ registeredEmail, signupPayload, onAuthSuccess, onRestar
   };
 
   const handleVerifyCode = async () => {
-    if (isVerifying) return; 
+    if (isVerifying) return;
     setIsVerifying(true);
 
     try {
-        // 1. 이메일 코드 검증
-        await axios.post(`${baseURL}/api/email/verify`, {
-            email: registeredEmail,
-            token: authCode 
-        }, { withCredentials: true });
+      // 1. 이메일 코드 검증
+      await axios.post(`${baseURL}/api/email/verify`, {
+        email: registeredEmail,
+        token: authCode
+      }, { withCredentials: true });
 
-        // 2. 가입 처리 (백엔드 수정본 적용: 토큰 수신)
-        const res = await axios.post(`${baseURL}/api/auth/signup`, signupPayload, { withCredentials: true });
-        
-        // 백엔드 응답에서 Access Token 추출
-        const { token } = res.data;
-        
-        if (token) {
-            // ✅ 인증 성공 상태 확정 - useEffect의 메일 발송 로직 차단
-            hasSentInitialMail.current = true; 
+      // 2. 가입 처리 (백엔드 수정본 적용: 토큰 수신)
+      const res = await axios.post(`${baseURL}/api/auth/signup`, signupPayload, { withCredentials: true });
+      // 백엔드 응답에서 Access Token 추출
+      const { token } = res.data;
+      if (token) {
+        // ✅ 인증 성공 상태 확정 - useEffect의 메일 발송 로직 차단
+        hasSentInitialMail.current = true;
 
-            // Access Token 저장
-            localStorage.setItem("jwtToken", token);
-            
-            // ✅ 핵심: AuthCheck.jsx가 즉시 감지하도록 강제 이벤트 발생
-            window.dispatchEvent(new Event('storage'));
+        // Access Token 저장
+        localStorage.setItem("jwtToken", token);
 
-            setMessage({ text: "인증 성공! 메인 화면으로 이동합니다.", type: "success" });
+        // ✅ 핵심: AuthCheck.jsx가 즉시 감지하도록 강제 이벤트 발생
+        window.dispatchEvent(new Event('storage'));
 
-            // 3. 페이지 전환 지연 실행 (토큰 안착 보장)
-            setTimeout(() => {
-                // 부모(AuthPage) 상태를 'authSuccess'로 변경하여 App 렌더링 유도
-                onAuthSuccess(); 
-                // 강제 리프레시가 필요한 경우: window.location.href = "/";
-            }, 500);
-        }
+        setMessage({ text: "인증 성공! 메인 화면으로 이동합니다.", type: "success" });
+
+        // 3. 페이지 전환 지연 실행 (토큰 안착 보장)
+        setTimeout(() => {
+          // 부모(AuthPage) 상태를 'authSuccess'로 변경하여 App 렌더링 유도
+          onAuthSuccess();
+          // 강제 리프레시가 필요한 경우: window.location.href = "/";
+        }, 500);
+      }
     } catch (error) {
-        setMessage({ text: error.response?.data?.message || "처리 중 오류 발생", type: "error" });
+      setMessage({ text: error.response?.data?.message || "처리 중 오류 발생", type: "error" });
     } finally {
-        setIsVerifying(false);
+      setIsVerifying(false);
     }
-};
-// 메일 중복 발송 방지 useEffect 수정
-useEffect(() => {
+  };
+  // 메일 중복 발송 방지 useEffect 수정
+  useEffect(() => {
     // 이미 인증 성공했거나 발송 기록이 있다면 발송 차단
     if (!registeredEmail || hasSentInitialMail.current) return;
-    
+
     const triggerInitialMail = async () => {
-        hasSentInitialMail.current = true; // 통신 직전 잠금
-        try {
-            await axios.post(`${baseURL}/api/email/resend?email=${encodeURIComponent(registeredEmail)}`, null, { withCredentials: true });
-        } catch (error) {
-            hasSentInitialMail.current = false; // 실패 시에만 해제
-        }
+      hasSentInitialMail.current = true; // 통신 직전 잠금
+      try {
+        await axios.post(`${baseURL}/api/email/resend?email=${encodeURIComponent(registeredEmail)}`, null, { withCredentials: true });
+      } catch (error) {
+        hasSentInitialMail.current = false; // 실패 시에만 해제
+      }
     };
     triggerInitialMail();
-}, [registeredEmail]);
+  }, [registeredEmail]);
+
   return (
     <div style={containerStyle}>
       <style>{fontFaceCss}</style>
