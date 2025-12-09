@@ -1,291 +1,172 @@
-// src/pages/EmailAuth.jsx
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 
-// API 기본 URL 설정 (SignupPage와 동일해야 합니다)
 const baseURL = import.meta.env.VITE_LOCAL_BASE_URL;
 
-// ----------------------------------------------------------------------
-// 1. 공통 스타일 정의 (AuthPage의 스타일과 일치하도록)
-// ----------------------------------------------------------------------
-const darkPurple = "#78266A";
-const deepDarkPurple = "#5B2C6F";
-const white = "#FFFFFF";
-const customFont = "PartialSans, sans-serif";
-
-const textShadowStyle = { textShadow: `4px 4px 2px ${darkPurple}` };
-
-const titleStyle = {
-  fontSize: "32px",
-  fontWeight: "100",
-  color: white,
-  margin: "25px",
-  display: "block",
-  letterSpacing: "2px",
-  ...textShadowStyle,
-};
-
-const inputStyle = {
-  width: "100%",
-  padding: "12px 10px",
-  margin: "8px 0",
-  border: "none",
-  borderRadius: "20px",
-  boxSizing: "border-box",
-  outline: "none",
-  fontSize: "16px",
-  backgroundColor: white,
-  color: darkPurple,
-  fontFamily: customFont,
-  boxShadow: `4px 4px 0px ${darkPurple}`,
-};
-
-const buttonStyle = {
-  backgroundColor: white,
-  color: darkPurple,
-  padding: "10px 30px",
-  fontSize: "18px",
-  fontWeight: "100",
-  borderRadius: "20px",
-  border: `2px solid ${darkPurple}`,
-  cursor: "pointer",
-  marginTop: "10px",
-  margin: "5px",
-  transition: "background-color 0.3s",
-  fontFamily: customFont,
-  boxShadow: `4px 4px 0px ${darkPurple}`,
-};
-
-const secondaryButtonStyle = {
-  ...buttonStyle,
-  backgroundColor: 'transparent',
-  border: 'none',
-  color: deepDarkPurple,
-  boxShadow: 'none',
-  padding: '8px 0',
-  fontSize: '15px',
-};
-
-
-const inputGroupStyle = { marginBottom: "20px", textAlign: "left" };
-
-// ----------------------------------------------------------------------
-// 2. 유틸리티 함수
-// ----------------------------------------------------------------------
-
-// 시간 포맷팅 함수 (MM:SS 형식)
-const formatTime = (seconds) => {
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
-  return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-};
-
-// 범용 입력 핸들러 함수
-const createHandleChange = (setter) => (e) => setter(e.target.value);
-
-
-// ----------------------------------------------------------------------
-// 3. EmailAuthPage 컴포넌트
-// ----------------------------------------------------------------------
-
-const EmailAuthPage = ({ registeredEmail, onAuthSuccess, onRestartSignup }) => {
-  const [authCode, setAuthCode] = useState('');
-  const [countdown, setCountdown] = useState(300); // 5분 = 300초
+const EmailAuthPage = ({ registeredEmail, signupPayload, onAuthSuccess, onRestartSignup }) => {
+  const [authCode, setAuthCode] = useState("");
+  const [countdown, setCountdown] = useState(300);
   const [isVerifying, setIsVerifying] = useState(false);
   const [isResending, setIsResending] = useState(false);
-  const [message, setMessage] = useState(''); // 사용자 메시지 표시용
+  const [message, setMessage] = useState({ text: "", type: "" });
+  const hasSentInitialMail = useRef(false);//중복 발송을 원천 차단하는 불변의 가드
+  // 스타일 정의 (사용자 원본 그대로 유지)
+  const darkPurple = "#78266A";
+  const lightPeach = "#F5D7B7";
+  const white = "#FFFFFF";
+  const customFont = "PartialSans, SchoolSafetyRoundedSmile, sans-serif";
+  const clearCustomFont = "SchoolSafetyRoundedSmile, sans-serif";
+  const fontFaceCss = `@font-face { font-family: 'PartialSans'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2307-1@1.1/PartialSansKR-Regular.woff2') format('woff2'); } @font-face { font-family: 'SchoolSafetyRoundedSmile'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-5@1.0/HakgyoansimDunggeunmisoTTF-R.woff2') format('woff2'); }`;
+  const containerStyle = { display: "flex", justifyContent: "center", alignItems: "center", width: "100vw", height: "100vh", backgroundColor: darkPurple, fontFamily: customFont };
+  const boxStyle = { backgroundColor: lightPeach, padding: "60px 40px", borderRadius: "40px", boxShadow: "0 4px 15px rgba(0, 0, 0, 0.3)", width: "45vh", textAlign: "center" };
 
-  // 카운트다운 타이머 설정
   useEffect(() => {
-    // 0초가 되면 경고를 띄우고 재시작 요청
-    if (countdown <= 0) {
-        if (countdown === 0) {
-            setMessage("인증 시간이 만료되었습니다. 재발송하거나 다시 회원가입해 주세요.");
-        }
-        return;
-    }
-
-    // 1초마다 카운트다운
-    const interval = setInterval(() => {
-      setCountdown(prev => prev - 1);
-    }, 1000);
-
-    // 컴포넌트 unmount 또는 countdown 변경 시 타이머 정리
+    if (countdown <= 0) return;
+    const interval = setInterval(() => setCountdown((prev) => prev - 1), 1000);
     return () => clearInterval(interval);
-  }, [countdown, onRestartSignup]);
+  }, [countdown]);
 
-
-  // 인증 코드 검증 핸들러
-  const handleVerifyCode = async () => {
-    setMessage('');
-    if (!authCode || authCode.length !== 6) {
-      setMessage("6자리 인증번호를 정확히 입력해주세요.");
-      return;
-    }
-    if (countdown === 0) {
-        setMessage("인증 시간이 만료되었습니다. 인증을 다시 시도해주세요.");
-        return;
-    }
-
-    setIsVerifying(true);
-    try {
-      // ⭐️ 백엔드 DTO에 맞게 'code' 대신 'token' 키 사용 (수정 1)
-      const verifyData = {
-        email: registeredEmail,
-        token: authCode, 
-      };
-
-      // ⭐️ API 경로를 /api/email/verify로 수정 (수정 2)
-      await axios.post(
-        `${baseURL}/api/email/verify`, 
-        verifyData,
-        { withCredentials: true }
-      );
-
-      // 🚨 alert() 사용 대신 커스텀 메시지 사용 (추가 수정)
-      setMessage("인증에 성공했습니다! 자동으로 로그인됩니다.");
-      setTimeout(() => onAuthSuccess(), 1000); // 메시지를 보여준 후 1초 뒤 전환
-
-    } catch (error) {
-      if (error.response && error.response.status === 400) {
-        // 백엔드 응답 메시지 사용
-        setMessage(error.response.data.message || "인증번호가 유효하지 않거나 만료되었습니다.");
-      } else {
-        setMessage("인증 서버에 문제가 발생했습니다. 다시 시도해 주세요.");
-      }
-      console.error("인증 에러:", error.response || error.message);
-    } finally {
-      setIsVerifying(false);
-    }
+  const formatTime = (seconds) => {
+    const min = Math.floor(seconds / 60);
+    const sec = seconds % 60;
+    return `${min}:${sec < 10 ? "0" : ""}${sec}`;
   };
-  
-  // 인증 코드 재발송 핸들러
+
+  //최초 발송 중복 요청 물리적 차단 (StrictMode 대응)
+  useEffect(() => {
+    if (!registeredEmail || hasSentInitialMail.current) return;
+
+    const triggerInitialMail = async () => {
+      hasSentInitialMail.current = true; // 통신 시작 전 즉시 잠금
+      try {
+        const sendUrl = `${baseURL}/api/email/resend?email=${encodeURIComponent(registeredEmail)}`;
+        await axios.post(sendUrl, null, { withCredentials: true });
+        console.log("[DEBUG] 최초 인증 메일 발송 성공");
+      } catch (error) {
+        hasSentInitialMail.current = false; // 에러 시에는 다시 보낼 수 있게 해제
+        console.error("최초 메일 발송 실패", error);
+      }
+    };
+    triggerInitialMail();
+  }, [registeredEmail]);
+
   const handleResendCode = async () => {
-    setMessage('');
+    if (isResending) return;
     setIsResending(true);
     try {
-      // ⭐️ API 경로 /api/email/resend 호출 (POST, @RequestParam)
-      await axios.post(
-        `${baseURL}/api/email/resend?email=${registeredEmail}`, 
-        null, // @RequestParam 이므로 body는 null
-        { withCredentials: true }
-      );
-
-      // 성공 시 타이머를 5분으로 재설정
-      setCountdown(300); 
-      setMessage("새로운 인증 이메일이 발송되었습니다. 5분 안에 인증해 주세요.");
-
+      const resendUrl = `${baseURL}/api/email/resend?email=${encodeURIComponent(registeredEmail)}`;
+      await axios.post(resendUrl, null, { withCredentials: true });
+      setCountdown(300);
+      setMessage({ text: "인증 이메일이 발송되었습니다.", type: "success" });
     } catch (error) {
-      if (error.response && error.response.status === 400) {
-        setMessage(error.response.data.message || "재발송 요청에 실패했습니다.");
-      } else {
-        setMessage("재발송 처리 중 서버 오류가 발생했습니다.");
-      }
-      console.error("재발송 에러:", error.response || error.message);
+      setMessage({ text: error.response?.data?.message || "재발송 실패", type: "error" });
     } finally {
       setIsResending(false);
     }
   };
 
+  const handleVerifyCode = async () => {
+    if (isVerifying) return;
+    setIsVerifying(true);
+
+    try {
+      // 1. 이메일 코드 검증
+      await axios.post(`${baseURL}/api/email/verify`, {
+        email: registeredEmail,
+        token: authCode
+      }, { withCredentials: true });
+
+      // 2. 가입 처리 (백엔드 수정본 적용: 토큰 수신)
+      const res = await axios.post(`${baseURL}/api/auth/signup`, signupPayload, { withCredentials: true });
+      // 백엔드 응답에서 Access Token 추출
+      const { token } = res.data;
+      if (token) {
+        // ✅ 인증 성공 상태 확정 - useEffect의 메일 발송 로직 차단
+        hasSentInitialMail.current = true;
+
+        // Access Token 저장
+        localStorage.setItem("jwtToken", token);
+
+        // ✅ 핵심: AuthCheck.jsx가 즉시 감지하도록 강제 이벤트 발생
+        window.dispatchEvent(new Event('storage'));
+
+        setMessage({ text: "인증 성공! 메인 화면으로 이동합니다.", type: "success" });
+
+        // 3. 페이지 전환 지연 실행 (토큰 안착 보장)
+        setTimeout(() => {
+          // 부모(AuthPage) 상태를 'authSuccess'로 변경하여 App 렌더링 유도
+          onAuthSuccess();
+          // 강제 리프레시가 필요한 경우: window.location.href = "/";
+        }, 500);
+      }
+    } catch (error) {
+      setMessage({ text: error.response?.data?.message || "처리 중 오류 발생", type: "error" });
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+  // 메일 중복 발송 방지 useEffect 수정
+  useEffect(() => {
+    // 이미 인증 성공했거나 발송 기록이 있다면 발송 차단
+    if (!registeredEmail || hasSentInitialMail.current) return;
+
+    const triggerInitialMail = async () => {
+      hasSentInitialMail.current = true; // 통신 직전 잠금
+      try {
+        await axios.post(`${baseURL}/api/email/resend?email=${encodeURIComponent(registeredEmail)}`, null, { withCredentials: true });
+      } catch (error) {
+        hasSentInitialMail.current = false; // 실패 시에만 해제
+      }
+    };
+    triggerInitialMail();
+  }, [registeredEmail]);
 
   return (
-    <>
-      <h2 style={{...titleStyle, marginBottom: '40px'}}>이메일 인증</h2>
-      <p style={{ color: deepDarkPurple, marginBottom: '20px', fontSize: '16px' }}>
-        회원님 이메일 주소
-        <span style={{ fontWeight: 'bold', fontSize: '18px', display: 'block', marginTop: '5px' }}>
-          {registeredEmail}
-        </span>
-        (으)로 6자리 인증 코드를 전송했습니다.
-      </p>
-
-      {/* 타이머 표시 영역 */}
-      <div style={{ marginBottom: '30px', backgroundColor: darkPurple, padding: '15px', borderRadius: '15px' }}>
-        <p style={{ 
-            fontSize: '56px', 
-            fontWeight: 'bold', 
-            color: countdown <= 20 ? '#FF5555' : white, 
-        }}>
+    <div style={containerStyle}>
+      <style>{fontFaceCss}</style>
+      <div style={boxStyle}>
+        <h2 style={{ color: darkPurple, fontSize: "32px", marginBottom: "10px" }}>이메일 인증</h2>
+        <p style={{ color: darkPurple, fontSize: "14px", marginBottom: "20px", fontFamily: clearCustomFont }}>
+          <b>{registeredEmail}</b>로 인증번호를 보냈습니다.
+        </p>
+        <div style={{ fontSize: "28px", fontWeight: "bold", marginBottom: "15px", color: countdown <= 30 ? "red" : darkPurple }}>
           {formatTime(countdown)}
-        </p>
-        <p style={{ color: white, fontSize: '14px', marginTop: '5px' }}>
-          남은 인증 유효 시간
-        </p>
-      </div>
-
-      {/* 인증 코드 입력 필드 */}
-      <div style={inputGroupStyle}>
+        </div>
         <input
           type="text"
-          maxLength="6"
-          placeholder="6자리 코드를 입력하세요"
-          style={{
-              ...inputStyle,
-              textAlign: 'center',
-              fontSize: '24px',
-              letterSpacing: '0.5em', // 코드 구분을 위한 자간
-              padding: '15px 10px',
-              borderRadius: '10px'
-          }}
+          maxLength={6}
+          placeholder="000000"
+          style={{ width: "100%", padding: "15px", borderRadius: "20px", border: "none", textAlign: "center", fontSize: "24px", letterSpacing: "8px", boxShadow: `4px 4px 0px ${darkPurple}`, outline: "none", marginBottom: "20px" }}
           value={authCode}
-          onChange={createHandleChange(setAuthCode)}
-          disabled={countdown === 0 || isVerifying || isResending}
+          onChange={(e) => setAuthCode(e.target.value.replace(/[^0-9]/g, ""))}
         />
-      </div>
-
-      {/* 메시지 영역 */}
-      {message && (
-        <p style={{ color: countdown <= 20 ? '#FF5555' : deepDarkPurple, textAlign: 'center', marginBottom: '15px', fontWeight: 'bold' }}>
-          {message}
-        </p>
-      )}
-
-      {/* 재발송 버튼 */}
-      <button 
-        type="button" 
-        onClick={handleResendCode}
-        style={{
-          ...secondaryButtonStyle,
-          width: '100%',
-          cursor: isVerifying || isResending ? 'not-allowed' : 'pointer',
-          color: isVerifying || isResending ? '#aaa' : deepDarkPurple,
-        }}
-        disabled={isVerifying || isResending}
-      >
-        {isResending ? '재발송 중...' : '인증 이메일 재발송'}
-      </button>
-
-      {/* 인증 버튼 */}
-      <div>
-        <button 
-          type="button" 
+        <button
+          style={{ width: "100%", padding: "15px", borderRadius: "20px", border: `2px solid ${darkPurple}`, backgroundColor: white, color: darkPurple, fontWeight: "bold", cursor: "pointer", boxShadow: `4px 4px 0px ${darkPurple}` }}
           onClick={handleVerifyCode}
-          style={{
-            ...buttonStyle,
-            width: '100%',
-            padding: '15px 0',
-            fontSize: '20px',
-            backgroundColor: countdown === 0 || isVerifying || isResending ? '#ccc' : white,
-            color: countdown === 0 || isVerifying || isResending ? '#666' : darkPurple,
-            cursor: countdown === 0 || isVerifying || isResending ? 'not-allowed' : 'pointer',
-            boxShadow: countdown === 0 || isVerifying || isResending ? 'none' : `4px 4px 0px ${darkPurple}`,
-            border: countdown === 0 || isVerifying || isResending ? 'none' : `2px solid ${darkPurple}`,
-          }}
-          disabled={countdown === 0 || isVerifying || isResending}
+          disabled={isVerifying}
         >
-          {isVerifying ? '인증 중...' : '인증하고 자동 로그인'}
+          {isVerifying ? "가입 처리 중..." : "인증하고 로그인"}
         </button>
-        
-        <button 
-          type="button" 
+        <button
+          style={{ background: "none", border: "none", color: darkPurple, textDecoration: "underline", marginTop: "15px", cursor: "pointer", fontSize: "14px", fontFamily: clearCustomFont }}
+          onClick={handleResendCode}
+          disabled={isResending}
+        >
+          {isResending ? "재발송 중..." : "코드 재발송하기"}
+        </button>
+        <button
+          style={{ background: "none", border: "none", color: darkPurple, marginTop: "10px", cursor: "pointer", fontSize: "14px", fontFamily: clearCustomFont }}
           onClick={onRestartSignup}
-          style={{...secondaryButtonStyle, width: '100%', marginTop: '15px', color: deepDarkPurple}}
-          disabled={isVerifying || isResending}
         >
-          회원가입 다시 시작
+          가입 다시 시작하기
         </button>
+        {message.text && (
+          <div style={{ marginTop: "15px", padding: "10px", borderRadius: "10px", backgroundColor: message.type === "error" ? "#D9534F" : message.type === "success" ? "#5CB85C" : "#007BFF", color: "white", fontSize: "13px" }}>
+            {message.text}
+          </div>
+        )}
       </div>
-    </>
+    </div>
   );
 };
 
