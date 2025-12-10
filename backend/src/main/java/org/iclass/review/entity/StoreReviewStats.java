@@ -1,9 +1,13 @@
 package org.iclass.review.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@Getter@Setter
 @Entity
 @Table(name = "store_review_stats")
 public class StoreReviewStats {
@@ -27,18 +31,4 @@ public class StoreReviewStats {
     @Column(name = "updated_at", nullable = false, columnDefinition = "DATETIME")
     private LocalDateTime updatedAt;
 
-    public Long getStoreIdx() { return storeIdx; }
-    public void setStoreIdx(Long storeIdx) { this.storeIdx = storeIdx; }
-
-    public Integer getRatingCount() { return ratingCount; }
-    public void setRatingCount(Integer ratingCount) { this.ratingCount = ratingCount; }
-
-    public BigDecimal getAvgRating() { return avgRating; }
-    public void setAvgRating(BigDecimal avgRating) { this.avgRating = avgRating; }
-
-    public String getRatingHistogram() { return ratingHistogram; }
-    public void setRatingHistogram(String ratingHistogram) { this.ratingHistogram = ratingHistogram; }
-
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

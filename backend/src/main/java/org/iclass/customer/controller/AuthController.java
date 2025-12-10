@@ -79,7 +79,7 @@ public class AuthController {
                 .secure(true) // HTTPS에서만 전송 (로컬 테스트 시 false 가능)
                 .path("/")
                 .maxAge(7 * 24 * 60 * 60) // 7일
-                .sameSite("Lax") // CSRF 완화
+                .sameSite("None") // CSRF 완화
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
