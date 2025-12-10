@@ -55,7 +55,7 @@ public class AuthController {
     private final TokenBlacklistService tokenBlacklistService;
     private final CustomersRepository customersRepository;
 
-    // 지금까지는 CustomersEntity를 그대로 반환해서 비밀번호 같은 민감한 정보가 노출됐음
+    // CustomersEntity를 그대로 반환해서 비밀번호 같은 민감한 정보가 노출될 수 있다고 함.
     // 자동 로그인을 위해 회원가입 엔드포인트에서 토큰 처리
     @PostMapping("/signup")
     public ResponseEntity<SignupResponse> signup(@Valid @RequestBody SignupRequest request,

@@ -67,9 +67,9 @@ const distanceMeters = (lat1, lng1, lat2, lng2) => {
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(toRad(lat1)) *
-    Math.cos(toRad(lat2)) *
-    Math.sin(dLng / 2) *
-    Math.sin(dLng / 2);
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 };
@@ -375,15 +375,19 @@ export default function KakaoMap() {
 
     const content = `
       <div style="padding:8px 12px;font-size:12px;max-width:220px;">
-        ${categoryText
-        ? `<div style="font-weight:600;margin-bottom:4px;">${categoryText}</div>`
-        : ""
-      }
-        ${nameText ? `<div style="margin-bottom:4px;">${nameText}</div>` : ""}
-        ${addressText
-        ? `<div style="font-size:11px;color:#555;">${addressText}</div>`
-        : ""
-      }
+        ${
+          categoryText
+            ? `<div style="font-weight:600;margin-bottom:4px;">${categoryText}</div>`
+            : ""
+        }
+        ${
+          nameText ? `<div style="margin-bottom:4px;">${nameText}</div>` : ""
+        }
+        ${
+          addressText
+            ? `<div style="font-size:11px;color:#555;">${addressText}</div>`
+            : ""
+        }
       </div>
     `;
 
@@ -700,7 +704,7 @@ export default function KakaoMap() {
     }
   };
 
-  // ==========================
+   // ==========================
   // 리뷰 작성
   // ==========================
   const handleReviewFormChange = (e) => {
@@ -710,6 +714,7 @@ export default function KakaoMap() {
 
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
+
     if (!selectedStore) {
       alert("선택된 노점이 없습니다.");
       return;
@@ -722,10 +727,11 @@ export default function KakaoMap() {
       return;
     }
 
+    // ✅ 로그인 여부 체크: localStorage 기준
     const token =
-      sessionStorage.getItem("jwtToken") ||
-      sessionStorage.getItem("accessToken") ||
-      sessionStorage.getItem("token");
+      localStorage.getItem("jwtToken") ||
+      localStorage.getItem("accessToken") ||
+      localStorage.getItem("token");
 
     if (!token) {
       alert("로그인 후 리뷰를 작성할 수 있어요.");
@@ -745,33 +751,41 @@ export default function KakaoMap() {
 
     setReviewSubmitting(true);
     try {
-      const res = await fetch(`${API_BASE}/api/stores/${storeIdx}/reviews`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+      // ✅ apiClient 사용: JWT 자동 첨부 + 401 시 자동 refresh
+      const res = await apiClient.post(
+        `/api/stores/${storeIdx}/reviews`,
+        payload
+      );
 
-      const text = await res.text();
-      console.log("POST /api/stores/{id}/reviews:", res.status, text);
-
-      if (!res.ok) {
-        console.error("리뷰 작성 실패:", res.status, text);
-        alert(
-          `리뷰 등록에 실패했어 ㅠㅠ\n(status: ${res.status})\n콘솔 로그도 한 번 봐줘.`
-        );
-        return;
-      }
+      console.log("POST /api/stores/{id}/reviews:", res.status, res.data);
 
       setReviewForm({ rating: 5, text: "" });
       setHoverRating(0);
+
+      // 새로 등록한 리뷰 반영
       await loadReviews(storeIdx);
       await loadReviewSummary(storeIdx);
     } catch (err) {
-      console.error("리뷰 작성 에러:", err);
-      alert("리뷰 등록 중 에러가 발생했어 ㅠㅠ");
+      console.error(
+        "리뷰 작성 에러:",
+        err.response?.status,
+        err.response?.data,
+        err
+      );
+
+      const status = err.response?.status;
+      if (status === 401 || status === 403) {
+        alert("로그인 정보가 만료되었어요. 다시 로그인해 주세요.");
+      } else if (status === 400) {
+        // 욕설/비하 등으로 Gemini가 BLOCK한 경우 (컨트롤러에서 400 리턴함)
+        const msg =
+          typeof err.response?.data === "string"
+            ? err.response.data
+            : "리뷰 내용이 정책을 위반하여 등록할 수 없습니다.";
+        alert(msg);
+      } else {
+        alert("리뷰 등록 중 에러가 발생했어 ㅠㅠ");
+      }
     } finally {
       setReviewSubmitting(false);
     }
@@ -806,18 +820,17 @@ export default function KakaoMap() {
         await favoriteApi.remove(existing.id);
         setFavorites((prev) => prev.filter((f) => f.id !== existing.id));
       }
-   } catch (err) {
-  console.error(
-    "찜 토글 실패",
-    err.response?.status,
-    err.response?.data,
-    err
-  );
-  alert("찜 설정 중 오류가 발생했어요.");
-} finally {
-  setFavoriteSaving(false);
-}
-
+    } catch (err) {
+      console.error(
+        "찜 토글 실패",
+        err.response?.status,
+        err.response?.data,
+        err
+      );
+      alert("찜 설정 중 오류가 발생했어요.");
+    } finally {
+      setFavoriteSaving(false);
+    }
   };
 
   // ==========================
@@ -987,6 +1000,9 @@ export default function KakaoMap() {
     }
   };
 
+  // ==========================
+  // 길찾기 초기화
+  // ==========================
   const clearRoute = () => {
     setRouteForm({ from: "", to: "" });
     setRouteError("");
@@ -1006,6 +1022,71 @@ export default function KakaoMap() {
     }
   };
 
+  // ==========================
+  // 주소/장소 → 위도·경도 변환 헬퍼
+  // (1순위: addressSearch, 실패하면 keywordSearch)
+  // ==========================
+  const searchLatLngByText = (raw) =>
+    new Promise((resolve, reject) => {
+      const keyword = (raw || "").trim();
+      if (!keyword) {
+        reject(new Error("검색어가 비어 있습니다."));
+        return;
+      }
+
+      if (!window.kakao || !window.kakao.maps || !window.kakao.maps.services) {
+        reject(new Error("카카오 지도 서비스가 준비되지 않았습니다."));
+        return;
+      }
+
+      const geocoder = geocoderRef.current;
+      const places = placesRef.current;
+      const Status = window.kakao.maps.services.Status;
+
+      // 1) 먼저 주소 검색
+      if (geocoder) {
+        geocoder.addressSearch(keyword, (result, status) => {
+          if (status === Status.OK && result && result.length > 0) {
+            const r = result[0];
+            resolve({
+              lat: parseFloat(r.y),
+              lng: parseFloat(r.x),
+            });
+          } else if (places) {
+            // 2) 주소 검색 실패 → 키워드 검색으로 재시도
+            places.keywordSearch(keyword, (data, status2) => {
+              if (status2 === Status.OK && data && data.length > 0) {
+                const d = data[0];
+                resolve({
+                  lat: parseFloat(d.y),
+                  lng: parseFloat(d.x),
+                });
+              } else {
+                reject(new Error(`주소/장소 검색 실패: ${keyword}`));
+              }
+            });
+          } else {
+            reject(new Error("주소/장소 검색 객체가 없습니다."));
+          }
+        });
+      } else if (places) {
+        // geocoder 없고 places만 있을 때는 키워드 검색만
+        places.keywordSearch(keyword, (data, status2) => {
+          if (status2 === Status.OK && data && data.length > 0) {
+            const d = data[0];
+            resolve({
+              lat: parseFloat(d.y),
+              lng: parseFloat(d.x),
+            });
+          } else {
+            reject(new Error(`주소/장소 검색 실패: ${keyword}`));
+          }
+        });
+      } else {
+        reject(new Error("주소/장소 검색 객체가 없습니다."));
+      }
+    });
+
   const handleRouteSearch = async (e) => {
     if (e) e.preventDefault();
     if (!mapInstanceRef.current || !window.kakao) return;
@@ -1020,51 +1101,28 @@ export default function KakaoMap() {
       return;
     }
 
-    const places = placesRef.current;
-    if (!places) {
-      setRouteError("카카오 장소 검색을 초기화하지 못했습니다.");
-      return;
-    }
-
-    const searchKeyword = (keyword) =>
-      new Promise((resolve, reject) => {
-        places.keywordSearch(keyword, (data, status) => {
-          if (
-            status === window.kakao.maps.services.Status.OK &&
-            data &&
-            data.length > 0
-          ) {
-            resolve(data[0]);
-          } else {
-            reject(new Error(`주소 변환 실패: ${keyword}`));
-          }
-        });
-      });
-
     try {
       setRouteLoading(true);
       setRouteError("");
 
+      // === 출발 좌표 ===
       let fromPoint;
       if (useMyLocationAsFrom && myLocation) {
+        // "내 위치" 버튼으로 잡은 좌표 그대로 사용
         fromPoint = myLocation;
       } else {
-        const fromPlace = await searchKeyword(from);
-        fromPoint = {
-          lat: parseFloat(fromPlace.y),
-          lng: parseFloat(fromPlace.x),
-        };
+        // 입력한 문자열(주소/장소명)을 → 위도·경도 변환
+        fromPoint = await searchLatLngByText(from);
       }
 
-      const toPlace = await searchKeyword(to);
-      const toPoint = {
-        lat: parseFloat(toPlace.y),
-        lng: parseFloat(toPlace.x),
-      };
+      // === 도착 좌표 ===
+      const toPoint = await searchLatLngByText(to);
 
+      // 기존 마커/추천 마커 정리
       clearBaseMarkers();
       clearRecommendedMarkers();
 
+      // 백엔드에 좌표 + 모드 전송
       const res = await fetch(`${API_BASE}/api/routes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1088,13 +1146,14 @@ export default function KakaoMap() {
       const points = Array.isArray(data?.path)
         ? data.path
         : Array.isArray(data?.points)
-          ? data.points
-          : [];
+        ? data.points
+        : [];
 
       if (!points.length) {
         throw new Error("경로 데이터가 비어 있습니다.");
       }
 
+      // 이전 경로 라인 제거
       if (routeLineRef.current) {
         routeLineRef.current.setMap(null);
         routeLineRef.current = null;
@@ -1116,10 +1175,12 @@ export default function KakaoMap() {
       polyline.setMap(mapInstanceRef.current);
       routeLineRef.current = polyline;
 
+      // 화면을 경로 전체가 보이도록 맞추기
       const bounds = new window.kakao.maps.LatLngBounds();
       path.forEach((latlng) => bounds.extend(latlng));
       mapInstanceRef.current.setBounds(bounds);
 
+      // 경로 주변 노점 추천
       await callRecommendRoute(fromPoint, toPoint, points);
     } catch (err) {
       console.error("길찾기 에러:", err);

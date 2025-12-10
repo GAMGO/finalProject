@@ -26,6 +26,9 @@ COPY /ai/requirements.txt .
 # requirements.txt에 명시된 종속성 설치
 RUN pip install --no-cache-dir -r requirements.txt
 
+# 필요한 모든 AI 관련 파일 복사 (예: 파이썬 스크립트 등)
+COPY /ai/ .
+
 # AI 코드 파일 자체를 복사
 COPY /ai /app/ai
 

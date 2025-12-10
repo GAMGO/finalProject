@@ -2,6 +2,7 @@
 package org.iclass.review.controller;
 
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.iclass.common.ApiResponse;
 import org.iclass.customer.repository.CustomersRepository;
 import org.iclass.review.dto.*;
@@ -13,21 +14,22 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-// 🔥 네가 만든 모더레이션 서비스 / DTO (패키지명은 실제에 맞게 수정)
+// 🔥 모더레이션 서비스 / DTO
 import org.iclass.gemini.ReviewModerationService;
 import org.iclass.gemini.dto.ModerationResult;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/stores/{storeIdx}/reviews")
 public class StoreReviewController {
 
     private final StoreReviewService service;
     private final CustomersRepository customersRepository;
-    private final ReviewModerationService reviewModerationService;   // 🔥 추가
+    private final ReviewModerationService reviewModerationService;
 
     public StoreReviewController(StoreReviewService service,
                                  CustomersRepository customersRepository,
-                                 ReviewModerationService reviewModerationService) { // 🔥 추가
+                                 ReviewModerationService reviewModerationService) {
         this.service = service;
         this.customersRepository = customersRepository;
         this.reviewModerationService = reviewModerationService;
@@ -68,26 +70,26 @@ public class StoreReviewController {
     public ResponseEntity<?> create(@PathVariable Long storeIdx,
                                     @Valid @RequestBody StoreReviewRequest req) {
 
-        // ⚠️ StoreReviewRequest 안에 필드 이름이 reviewText라고 가정
-        // 만약 text / content 이런 이름이면 여기만 맞게 바꿔줘
         String text = req.getReviewText();
 
         // 1️⃣ 모더레이션 호출
         ModerationResult moderation = reviewModerationService.moderate(text);
+        log.info("🔥 review moderation result (storeIdx={}, rating={}): {}",
+                storeIdx, req.getRating(), moderation);
 
         if (moderation != null && moderation.isBlocked()) {
-            // BLOCK이면 바로 400 리턴 (프론트에서는 status 코드만 보고 alert 띄우고 있음)
+            // BLOCK이면 바로 400 리턴
             return ResponseEntity
                     .badRequest()
                     .body("욕설·비하·스팸 등으로 판단되어 등록할 수 없는 리뷰입니다.");
         }
 
-        // (원하면 REVIEW 상태도 따로 처리 가능)
+        // (원하면 REVIEW도 따로 처리 가능)
         // if (moderation != null && moderation.needManualReview()) { ... }
 
         // 2️⃣ 통과한 경우 정상 저장
         Long id = service.create(storeIdx, currentUserId(), req);
-        return ResponseEntity.ok(id);   // 기존처럼 ID 그대로 리턴 (프론트 로직 안 깨짐)
+        return ResponseEntity.ok(id);
     }
 
     // 🔥 리뷰 수정에도 같은 필터 적용
@@ -98,6 +100,8 @@ public class StoreReviewController {
 
         String text = req.getReviewText();
         ModerationResult moderation = reviewModerationService.moderate(text);
+        log.info("🔥 review moderation (update) result (storeIdx={}, reviewId={}): {}",
+                storeIdx, reviewId, moderation);
 
         if (moderation != null && moderation.isBlocked()) {
             return ResponseEntity
@@ -106,7 +110,7 @@ public class StoreReviewController {
         }
 
         service.update(reviewId, currentUserId(), req, isAdmin());
-        return ResponseEntity.noContent().build();   // 기존 로직 유지
+        return ResponseEntity.noContent().build();
     }
 
     // 기존: Page 자체 내려주는 목록
