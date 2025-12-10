@@ -69,7 +69,11 @@ public class SecurityConfig {
                                 "/api/auth/refresh",       // 토큰 재발급
                                 "/api/recover/send-code",
                                 "/api/recover/reset",
-                                "/api/recover/find-id"
+                                "/api/recover/find-id",
+                                // ✅ 가게 등록/수정/삭제 요청은 일단 인증 없이 허용 (403 막기용)
+                                "/api/stores",
+                                "/api/stores/*/update-request",
+                                "/api/stores/*/delete-request"
                         ).permitAll()
 
                         // ===== 로그인 필수 영역 =====
@@ -79,6 +83,9 @@ public class SecurityConfig {
                         // 리뷰 작성/수정/삭제는 로그인 필요
                         // (GET 은 위에서 이미 permitAll 처리)
                         .requestMatchers("/api/stores/*/reviews/**").authenticated()
+
+                        // 관리자용 API (가게 변경 승인/반려 등)
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
                         // 프로필, 로그아웃, 탈퇴 등
                         .requestMatchers(
