@@ -6,6 +6,17 @@
   --color-card-bg: #ffffff;
   --color-text-main: #111827;
   --color-text-muted: #6b7280;
+
+  /* CTA 관련 기본 변수 (그라데이션 제거 후 기본 구조만 유지) */
+  --cta-text-color: #ffffff;
+
+  /* 아웃라인형 버튼용 */
+  --cta-outline-bg: #eff6ff;
+  --cta-outline-border: #2563eb;
+  --cta-outline-text: #1d4ed8;
+
+  /* 길찾기 모드 라디오 틱 색 (라이트) */
+  --route-radio-color: #2563eb;
 }
 
 /* ===== 기본 리셋 ===== */
@@ -121,58 +132,20 @@ body {
 
 /* ==============================
  * 공통 CTA 버튼 / 라디오 색상
- *  - 라이트 : 파랑 그라데이션
- *  - 다크   : 오렌지 그라데이션
+ *  - 라이트 / 다크 통합 구조 유지
+ *  - ✅ 그라데이션 코드 삭제
  * ============================== */
 
-:root {
-  /* 라이트 모드 파랑 그라데이션 */
-  --cta-light-start: #2563eb;
-  --cta-light-end:   #38bdf8;
-
-  /* 다크 모드 오렌지 그라데이션 */
-  --cta-dark-start:  #f97316;
-  --cta-dark-end:    #facc15;
-
-  --cta-text-color: #ffffff;
-
-  /* 아웃라인형 버튼용 */
-  --cta-outline-bg: #eff6ff;
-  --cta-outline-border: #2563eb;
-  --cta-outline-text: #1d4ed8;
-
-  /* 길찾기 모드 라디오 틱 색 (라이트) */
-  --route-radio-color: #2563eb;
-}
-
-/* 기본(라이트) CTA 그라데이션 */
-:root {
-  --cta-bg: linear-gradient(
-    90deg,
-    var(--cta-light-start),
-    var(--cta-light-end)
-  );
-  --cta-bg-hover: linear-gradient(90deg, #1d4ed8, #0ea5e9);
-}
-
-/* 다크 모드 CTA 그라데이션 (오렌지) */
+/* 다크 모드 CTA 변수 */
 :root[data-theme="dark"] {
-  --cta-bg: linear-gradient(
-    90deg,
-    var(--cta-dark-start),
-    var(--cta-dark-end)
-  );
-  --cta-bg-hover: linear-gradient(90deg, #ea580c, #eab308);
   --cta-text-color: #ffffff;
-
   --cta-outline-bg: rgba(249, 115, 22, 0.12);
   --cta-outline-border: #fed7aa;
   --cta-outline-text: #fed7aa;
-
   --route-radio-color: #f97316;
 }
 
-/* 공통 CTA 버튼 (회원정보 / 즐겨찾기 / 지도 길찾기 등) */
+/* 공통 CTA 버튼 */
 .btn-cta {
   display: inline-flex;
   justify-content: center;
@@ -182,7 +155,7 @@ body {
   padding: 6px 16px;
   font-size: 13px;
   font-weight: 600;
-  background-image: var(--cta-bg);
+  background: #2563eb; /* ✅ 기본값만 남김 (원래 그라데이션 삭제) */
   color: var(--cta-text-color);
   cursor: pointer;
   white-space: nowrap;
@@ -194,7 +167,7 @@ body {
 }
 
 .btn-cta:hover:not(:disabled) {
-  background-image: var(--cta-bg-hover);
+  background: #1d4ed8; /* ✅ 단색 호버 */
   transform: translateY(-1px);
 }
 
