@@ -704,7 +704,7 @@ export default function KakaoMap() {
     }
   };
 
-  // ==========================
+   // ==========================
   // 리뷰 작성
   // ==========================
   const handleReviewFormChange = (e) => {
@@ -714,6 +714,7 @@ export default function KakaoMap() {
 
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
+
     if (!selectedStore) {
       alert("선택된 노점이 없습니다.");
       return;
@@ -726,10 +727,11 @@ export default function KakaoMap() {
       return;
     }
 
+    // ✅ 로그인 여부 체크: localStorage 기준
     const token =
-      sessionStorage.getItem("jwtToken") ||
-      sessionStorage.getItem("accessToken") ||
-      sessionStorage.getItem("token");
+      localStorage.getItem("jwtToken") ||
+      localStorage.getItem("accessToken") ||
+      localStorage.getItem("token");
 
     if (!token) {
       alert("로그인 후 리뷰를 작성할 수 있어요.");
@@ -749,33 +751,41 @@ export default function KakaoMap() {
 
     setReviewSubmitting(true);
     try {
-      const res = await fetch(`${API_BASE}/api/stores/${storeIdx}/reviews`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+      // ✅ apiClient 사용: JWT 자동 첨부 + 401 시 자동 refresh
+      const res = await apiClient.post(
+        `/api/stores/${storeIdx}/reviews`,
+        payload
+      );
 
-      const text = await res.text();
-      console.log("POST /api/stores/{id}/reviews:", res.status, text);
-
-      if (!res.ok) {
-        console.error("리뷰 작성 실패:", res.status, text);
-        alert(
-          `리뷰 등록에 실패했어 ㅠㅠ\n(status: ${res.status})\n콘솔 로그도 한 번 봐줘.`
-        );
-        return;
-      }
+      console.log("POST /api/stores/{id}/reviews:", res.status, res.data);
 
       setReviewForm({ rating: 5, text: "" });
       setHoverRating(0);
+
+      // 새로 등록한 리뷰 반영
       await loadReviews(storeIdx);
       await loadReviewSummary(storeIdx);
     } catch (err) {
-      console.error("리뷰 작성 에러:", err);
-      alert("리뷰 등록 중 에러가 발생했어 ㅠㅠ");
+      console.error(
+        "리뷰 작성 에러:",
+        err.response?.status,
+        err.response?.data,
+        err
+      );
+
+      const status = err.response?.status;
+      if (status === 401 || status === 403) {
+        alert("로그인 정보가 만료되었어요. 다시 로그인해 주세요.");
+      } else if (status === 400) {
+        // 욕설/비하 등으로 Gemini가 BLOCK한 경우 (컨트롤러에서 400 리턴함)
+        const msg =
+          typeof err.response?.data === "string"
+            ? err.response.data
+            : "리뷰 내용이 정책을 위반하여 등록할 수 없습니다.";
+        alert(msg);
+      } else {
+        alert("리뷰 등록 중 에러가 발생했어 ㅠㅠ");
+      }
     } finally {
       setReviewSubmitting(false);
     }
