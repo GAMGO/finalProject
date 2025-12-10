@@ -1,9 +1,14 @@
 package org.iclass.review.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 import org.iclass.store.entity.Store;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "store_reviews", indexes = {
         @Index(name = "ix_sr_store_created", columnList = "store_idx, created_at DESC"),
@@ -44,83 +49,6 @@ public class StoreReview {
 
     @Column(name = "sentiment_label", length = 20)
     private String sentimentLabel; // 감정 라벨 (NULL 허용)
-
-    /* === getters/setters === */
-    public Long getId() {
-        return id;
-    }
-
-    public Store getStore() {
-        return store;
-    }
-
-    public void setStore(Store store) {
-        this.store = store;
-    }
-
-    public Long getCustomerIdx() {
-        return customerIdx;
-    }
-
-    public void setCustomerIdx(Long customerIdx) {
-        this.customerIdx = customerIdx;
-    }
-
-    public Integer getRating() {
-        return rating;
-    }
-
-    public void setRating(Integer rating) {
-        this.rating = rating;
-    }
-
-    public String getReviewText() {
-        return reviewText;
-    }
-
-    public void setReviewText(String reviewText) {
-        this.reviewText = reviewText;
-    }
-
-    public Boolean getBlocked() {
-        return blocked;
-    }
-
-    public void setBlocked(Boolean blocked) {
-        this.blocked = blocked;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public String getAiTopics() {
-        return aiTopics;
-    }
-
-    public void setAiTopics(String aiTopics) {
-        this.aiTopics = aiTopics;
-    }
-
-    public Float getSentimentScore() {
-        return sentimentScore;
-    }
-
-    public void setSentimentScore(Float sentimentScore) {
-        this.sentimentScore = sentimentScore;
-    }
-
-    public String getSentimentLabel() {
-        return sentimentLabel;
-    }
-
-    public void setSentimentLabel(String sentimentLabel) {
-        this.sentimentLabel = sentimentLabel;
-    }
 
     @PrePersist
     protected void onCreate() {
