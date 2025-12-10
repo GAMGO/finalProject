@@ -59,7 +59,8 @@ const Logout = ({ onLogoutSuccess }) => {
 };
 
 export default function App() {
-  const [page, setPage] = useState("map"); // map / community / profile / favorite / logout / withdraw
+  // map / community / profile / favorite / logout / withdraw
+  const [page, setPage] = useState("map");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // ✅ 테마 상태 (light / dark)
@@ -156,14 +157,7 @@ export default function App() {
           즐겨찾기
         </button>
 
-        <button
-          className={getButtonClass("logout")}
-          onClick={() => setPage("logout")}
-        >
-          로그아웃
-        </button>
-
-        {/* ✅ 왼쪽 하단 설정 아이콘 + 드롭업 메뉴 */}
+        {/* ✅ 왼쪽 하단 설정 아이콘 + 작은 로그아웃 버튼 + 드롭업 메뉴 */}
         <div className="side-settings-wrap">
           <button
             type="button"
@@ -178,13 +172,21 @@ export default function App() {
             />
           </button>
 
+          {/* 🔓 오른쪽에 작은 로그아웃 버튼 */}
+          <button
+            type="button"
+            className="side-logout-mini"
+            onClick={() => setPage("logout")}
+          >
+            로그아웃
+          </button>
+
           {isThemeMenuOpen && (
             <div className="side-settings-menu">
               <button
                 type="button"
                 className={
-                  "side-settings-item" +
-                  (theme === "light" ? " active" : "")
+                  "side-settings-item" + (theme === "light" ? " active" : "")
                 }
                 onClick={() => handleSelectTheme("light")}
               >
@@ -193,8 +195,7 @@ export default function App() {
               <button
                 type="button"
                 className={
-                  "side-settings-item" +
-                  (theme === "dark" ? " active" : "")
+                  "side-settings-item" + (theme === "dark" ? " active" : "")
                 }
                 onClick={() => handleSelectTheme("dark")}
               >
