@@ -199,7 +199,6 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
     ...textShadowStyle,
   };
 
-  // ✅ 다크 모드: 입력칸 연한 갈색, 글자는 진한 갈색
   const inputStyle = {
     width: "100%",
     padding: "12px 10px",
