@@ -52,7 +52,7 @@ body,
 [data-theme="dark"] .theme-toggle-btn {
   background-color: #fde68a;
   color: #2b0b0b;
-  /* ✅ 참고: 아래에 .auth-theme-toggle 규칙을 추가해서 라이트/다크 색을 명시함 */
+  /* 참고: 아래에 .auth-theme-toggle 규칙을 추가해서 라이트/다크 색을 명시함 */
 }
 
 /* ===== 상단 바 공통 (헤더) ===== */
@@ -236,7 +236,7 @@ body,
 [data-theme="dark"]
   div[style*="position: fixed"][style*="top: 16px"][style*="right: 24px"][style*="width: 280px"]
   div {
-  color: #fef3e8;
+  color: #fffbf7 !important;
 }
 
 /* 출발/도착 인풋 */
@@ -247,8 +247,8 @@ body,
   div[style*="position: fixed"][style*="top: 16px"][style*="right: 24px"][style*="width: 280px"]
   input[name="to"] {
   background-color: #120707 !important;
-  border-color: #f3b498 !important;
-  color: #fef3e8 !important;
+  border-color: #fffbf7 !important;
+  color: #fffbf7 !important;
 }
 
 [data-theme="dark"]
@@ -257,7 +257,7 @@ body,
 [data-theme="dark"]
   div[style*="position: fixed"][style*="top: 16px"][style*="right: 24px"][style*="width: 280px"]
   input[name="to"]::placeholder {
-  color: #b78c7a !important;
+  color: #fffbf7 !important;
 }
 
 /* 에러 문구 살짝 부드러운 톤으로 */
@@ -272,9 +272,9 @@ body,
   div[style*="position: fixed"][style*="top: 16px"][style*="right: 24px"][style*="width: 280px"]
   button[type="button"] {
   border-radius: 999px !important;
-  border: 1px solid #facc15 !important;
-  background-color: #fef9c3 !important;
-  color: #2b0b0b !important;
+  border: 1px solid #fffbf7 !important;
+  background-color: #2b0b0b !important;
+  color: #fffbf7 !important;
 }
 
 /* 하단 '길찾기' 버튼 */
@@ -283,8 +283,8 @@ body,
   button[type="submit"] {
   border-radius: 999px !important;
   border: none !important;
-  background-color: #5e3a31 !important; /* 초콜릿 */
-  color: #ffd19d !important;
+  background-color: #fef9c3 !important; /* 초콜릿 */
+  color: #2b0b0b !important;
 }
 
 /* =========================
