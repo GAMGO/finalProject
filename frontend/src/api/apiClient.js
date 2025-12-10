@@ -9,8 +9,6 @@ const apiClient = axios.create({
 });
 
 // 공통 언랩 헬퍼
-// - { status, message, data } 형태면 data 리턴
-// - 아니면 res.data 그대로 리턴
 const unwrap = (res) =>
   res.data && typeof res.data === "object" && "data" in res.data
     ? res.data.data
@@ -22,28 +20,24 @@ const unwrap = (res) =>
 export const favoriteApi = {
   // 전체 조회
   async getAll() {
-    // 백엔드 매핑: GET /api/favorites  (FavoriteController 기준)
     const res = await apiClient.get("/api/favorites");
-    return unwrap(res); // -> List<FavoriteResponse> 또는 ApiResponse<List<...>>
+    return unwrap(res);
   },
 
   // 생성
   async create(favorite) {
-    // POST /api/favorites
     const res = await apiClient.post("/api/favorites", favorite);
-    return unwrap(res); // -> FavoriteResponse 또는 ApiResponse<FavoriteResponse>
+    return unwrap(res);
   },
 
   // 수정
   async update(id, favorite) {
-    // PUT /api/favorites/{id}
     const res = await apiClient.put(`/api/favorites/${id}`, favorite);
     return unwrap(res);
   },
 
   // 삭제
   async remove(id) {
-    // DELETE /api/favorites/{id}
     await apiClient.delete(`/api/favorites/${id}`);
   },
 };
@@ -52,11 +46,11 @@ export const favoriteApi = {
 // JWT 인증 및 토큰 관리 로직
 // =================================================================
 
-// 🔑 전역 JWT 토큰 변수 (메모리 저장소 역할)
+// 🔑 전역 JWT 토큰 변수
 let globalAccessToken = null;
 let globalRefreshToken = localStorage.getItem("refreshToken");
 
-// 🔎 토큰 조회 함수 (메모리 → localStorage 순서로 확인)
+// 토큰 조회
 const getTokenFromStorage = () => {
   if (globalAccessToken) return globalAccessToken;
 
@@ -76,9 +70,10 @@ const getRefreshTokenFromStorage = () => {
 
 // 토큰 세팅
 export const setAuthToken = (token, refreshToken) => {
-  const MIN_TOKEN_LENGTH = 50;
+  // 너무 타이트하게 자르지 말고 최소 20자로 완화
+  const MIN_TOKEN_LENGTH = 20;
 
-  // 1. Access Token 처리
+  // 1. Access Token
   if (typeof token === "string" && token.length > MIN_TOKEN_LENGTH) {
     globalAccessToken = token;
     localStorage.setItem("jwtToken", token);
@@ -88,35 +83,30 @@ export const setAuthToken = (token, refreshToken) => {
     localStorage.removeItem("jwtToken");
     if (token) {
       console.error(
-        "❌ Access Token이 유효하지 않거나 너무 짧아 저장을 건너뛰고 기존 토큰을 제거했습니다."
+        "❌ Access Token이 유효하지 않거나 너무 짧아 저장을 건너뛰고 기존 토큰을 제거했습니다.",
+        token
       );
     }
   }
 
-  // 2. Refresh Token 처리
-  //    refreshToken 인자가 undefined/null 이면 기존 값 유지
+  // 2. Refresh Token (인자 없으면 기존 유지)
   if (refreshToken === null || typeof refreshToken === "undefined") {
-    console.log(
-      "⚠️ Refresh Token 인자가 누락되어, 기존 저장소 값을 유지합니다."
-    );
+    console.log("⚠️ Refresh Token 인자가 없어 기존 값을 유지합니다.");
     return;
   }
 
-  if (
-    typeof refreshToken === "string" &&
-    refreshToken.length > MIN_TOKEN_LENGTH
-  ) {
+  if (typeof refreshToken === "string" && refreshToken.length > MIN_TOKEN_LENGTH) {
     globalRefreshToken = refreshToken;
     localStorage.setItem("refreshToken", refreshToken);
     console.log("✅ Refresh Token 설정 완료. 길이:", refreshToken.length);
   } else {
-    console.error(`❌ Refresh Token 제거됨! (인자 값: ${refreshToken})`);
+    console.error("❌ Refresh Token 제거됨! (인자 값:", refreshToken, ")");
     globalRefreshToken = null;
     localStorage.removeItem("refreshToken");
   }
 };
 
-// 토큰 삭제 (로그아웃 / 만료 시)
+// 토큰 삭제 (로그아웃 / 만료)
 export const clearAuthToken = () => {
   globalAccessToken = null;
   globalRefreshToken = null;
@@ -136,12 +126,9 @@ const refreshAccessToken = async () => {
   }
 
   try {
-    // 기본 axios 사용 (apiClient 아님 → 인터셉터 루프 방지)
     const response = await axios.post(
       `${apiClient.defaults.baseURL}/api/auth/refresh`,
-      {
-        refreshToken: refreshToken,
-      }
+      { refreshToken }
     );
 
     const newAccessToken = response.data.token;

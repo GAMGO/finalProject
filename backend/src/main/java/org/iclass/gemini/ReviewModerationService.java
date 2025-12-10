@@ -31,6 +31,8 @@ public class ReviewModerationService {
      *  - REVIEW: 사람이 한 번 더 보면 좋겠음 (지금은 ALLOW처럼 처리)
      */
     public ModerationResult moderate(String reviewText) {
+        log.info("[MOD] input review = {}", reviewText);
+
         // 공백이면 그냥 허용
         if (reviewText == null || reviewText.trim().isEmpty()) {
             ModerationResult r = new ModerationResult();
@@ -47,7 +49,7 @@ public class ReviewModerationService {
                     geminiRestTemplate.postForObject(geminiApiUrl, request, GeminiResponse.class);
 
             String rawText = extractFirstText(response);
-            log.debug("[Gemini moderation rawText] {}", rawText);
+            log.info("[MOD] rawText from Gemini: {}", rawText);
 
             if (rawText == null || rawText.isBlank()) {
                 ModerationResult r = new ModerationResult();
@@ -56,23 +58,32 @@ public class ReviewModerationService {
                 return r;
             }
 
+            // ✂ Gemini가 앞뒤에 잡소리를 붙여도, 중간의 JSON만 잘라서 파싱
+            String json = extractJson(rawText);
+
             // JSON 파싱
             ModerationResult result =
-                    objectMapper.readValue(rawText, ModerationResult.class);
+                    objectMapper.readValue(json, ModerationResult.class);
 
             if (result.getDecision() == null) {
                 result.setDecision("ALLOW");
             }
+
+            log.info("[MOD] parsed moderation result: {}", result);
             return result;
         } catch (Exception e) {
-            log.warn("Gemini moderation error", e);
+            // ❗ 테스트 동안엔 에러 나면 무조건 막아버리기
+            log.error("Gemini moderation error, BLOCK for safety", e);
             ModerationResult r = new ModerationResult();
-            r.setDecision("ALLOW");
-            r.setReason("gemini_error_allow");
+            r.setDecision("BLOCK");
+            r.setReason("gemini_error_block");
             return r;
         }
     }
 
+    /**
+     * Gemini 응답에서 맨 첫 번째 text만 추출
+     */
     private String extractFirstText(GeminiResponse response) {
         if (response == null) return null;
         return Optional.ofNullable(response.getCandidates())
@@ -84,6 +95,26 @@ public class ReviewModerationService {
                 .orElse(null);
     }
 
+    /**
+     * Gemini가 ```json ... ``` 이나 앞뒤 설명이 섞여 있어도
+     * 중간의 { ... } JSON 객체만 뽑아낸다.
+     */
+    private String extractJson(String rawText) {
+        if (rawText == null) {
+            throw new IllegalArgumentException("rawText is null");
+        }
+
+        int start = rawText.indexOf('{');
+        int end = rawText.lastIndexOf('}');
+        if (start >= 0 && end > start) {
+            return rawText.substring(start, end + 1);
+        }
+        throw new IllegalArgumentException("No JSON object found in: " + rawText);
+    }
+
+    /**
+     * 모더레이션 프롬프트
+     */
     private String buildPrompt(String reviewText) {
         return """
                 너는 길거리 음식 리뷰 앱의 콘텐츠 모더레이션 시스템이야.
@@ -104,9 +135,18 @@ public class ReviewModerationService {
                 - 애매해서 자동으로 BLOCK하기 애매한 경우
                 - 농담인지 모욕인지 판단이 애매한 표현
 
+                [예시]
+                입력: "야 이 장애인 같은 새끼야 가게 접어라"
+                출력: {"decision":"BLOCK","reason":"장애인 비하와 심한 욕설"}
+
+                입력: "맛없고 다시는 안 올 거 같아요"
+                출력: {"decision":"ALLOW","reason":"욕설 없는 부정적 리뷰"}
+
                 출력 형식:
-                JSON 한 줄만 반환해.
-                다른 말 절대 쓰지 말고, 줄바꿈 없이 이 형식만 써.
+                JSON 객체 하나만 반환해.
+                마크다운 백틱(```) 쓰지 말고,
+                다른 설명도 쓰지 말고,
+                오직 아래 형식의 JSON만 응답해.
 
                 {
                   "decision": "ALLOW" 또는 "BLOCK" 또는 "REVIEW",
