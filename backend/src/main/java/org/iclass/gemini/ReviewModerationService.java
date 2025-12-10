@@ -72,11 +72,11 @@ public class ReviewModerationService {
             log.info("[MOD] parsed moderation result: {}", result);
             return result;
         } catch (Exception e) {
-            // ❗ 테스트 동안엔 에러 나면 무조건 막아버리기
-            log.error("Gemini moderation error, BLOCK for safety", e);
+            // 🔁 이제는 에러 나도 "막는" 게 아니라 "그냥 통과" 시킴
+            log.error("Gemini moderation error, ALLOW for safety", e);
             ModerationResult r = new ModerationResult();
-            r.setDecision("BLOCK");
-            r.setReason("gemini_error_block");
+            r.setDecision("ALLOW");
+            r.setReason("gemini_error_allow");
             return r;
         }
     }
@@ -127,8 +127,12 @@ public class ReviewModerationService {
                 - 협박, 폭력 선동, 스토킹성 발언
 
                 [ALLOW 기준]
-                - 음식이 맛없다고 솔직하게 불평하는 리뷰 (예: "진짜 맛없음", "두 번은 안 시킬 듯")
-                - 서비스가 불친절했다는 비판 (예: "사장님이 좀 불친절했어요")
+                - 음식이 맛없다고 솔직하게 불평하는 리뷰
+                  (예: "진짜 맛없음", "두 번은 안 시킬 듯")
+                - 간이 세다/짜다/매웁다/양이 적다/비싸다/대기시간이 길다 같은
+                  맛·양·가격·대기시간 관련 부정적 표현
+                - 위생/청결/분위기/서비스가 별로였다는 평가
+                  (예: "위생이 아쉬웠어요", "사장님이 좀 불친절했어요")
                 - 욕설 없이 강한 표현, 감정 표현
 
                 [REVIEW 기준]
@@ -138,6 +142,9 @@ public class ReviewModerationService {
                 [예시]
                 입력: "야 이 장애인 같은 새끼야 가게 접어라"
                 출력: {"decision":"BLOCK","reason":"장애인 비하와 심한 욕설"}
+
+                입력: "그 간이 좀 센 편이라 짠 맛이 강해요"
+                출력: {"decision":"ALLOW","reason":"맛에 대한 부정적 평가"}
 
                 입력: "맛없고 다시는 안 올 거 같아요"
                 출력: {"decision":"ALLOW","reason":"욕설 없는 부정적 리뷰"}
