@@ -2,8 +2,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import apiClient from "../api/apiClient";
 import plusIcon from "../assets/plus.svg";
+import plusBrown from "../assets/plus-brown.svg";
 import "./KakaoMap.css";
 import { favoriteApi } from "../api/apiClient";
+import { useTheme } from "../theme/ThemeContext";
 
 const APP_KEY = "bdd84bdbed2db3bc5d8b90cd6736a995";
 
@@ -117,12 +119,17 @@ const buildFavoritePayloadFromStore = (store) => {
 };
 
 export default function KakaoMap() {
+  const { theme } = useTheme();
+
+  console.log("현재 테마:", theme);
+  
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const geocoderRef = useRef(null);
   const tempMarkerRef = useRef(null);
   const [reviewText, setReviewText] = useState("");
   const [reviewLoading, setReviewLoading] = useState(false);
+  
 
   // ✅ 기본 노점 마커들
   const markersRef = useRef([]);
@@ -1414,15 +1421,17 @@ export default function KakaoMap() {
         }}
         onClick={openModal}
       >
-        <img
-          src={plusIcon}
-          alt="노점 추가"
-          style={{
-            width: "100%",
-            height: "100%",
-            display: "block",
-          }}
-        />
+      {/*다크모드일 때 plusBrown.svg 사용*/ } 
+      <img
+        src={theme === "dark" ? plusBrown : plusIcon}
+        alt="노점 추가"
+        style={{
+          width: "100%",
+          height: "100%",
+          display: "block",
+          filter: "none"
+        }}
+      />
       </button>
 
       {/* 노점 등록 모달 */}
