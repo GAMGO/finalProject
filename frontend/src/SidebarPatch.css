@@ -90,11 +90,17 @@
    설정 아이콘 + 드롭업 메뉴
    ========================= */
 
-/* 설정 영역 전체 래퍼 (버튼 + 드롭업) */
+/* 설정 영역 전체 래퍼 (버튼 + 로그아웃 + 드롭업) */
 .side-settings-wrap {
   position: absolute;
   left: 16px;
   bottom: 16px;
+
+  /* ⚙ + 로그아웃을 가로로 옆에 붙이기 */
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
 }
 
 /* 설정 아이콘 버튼 */
@@ -133,6 +139,41 @@
   background: rgba(255, 255, 255, 0.06);
   opacity: 1;
   transform: scale(1.05);
+}
+/* 🔓 설정 아이콘 오른쪽에 붙는 작은 로그아웃 버튼 */
+.side-logout-mini {
+  background: transparent;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 999px;                 /* 둥근 테두리 */
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.9;
+  border: 1px solid rgba(255, 255, 255, 0.9);  /* 흰색 테두리 */
+  color: #ffffff;                               /* 흰색 글씨 */
+}
+
+/* 다크 모드일 때 (보라 배경 위) */
+[data-theme="dark"] .side-logout-mini {
+  border-color: rgba(255, 255, 255, 0.9);
+  color: #ffffff;
+}
+
+/* 라이트 모드에서도 안 보이지 않게 하고 싶으면 이렇게 (선택) */
+/*
+[data-theme="light"] .side-logout-mini {
+  border-color: rgba(55, 65, 81, 0.6);
+  color: #111827;
+}
+*/
+
+/* hover 시 살짝 강조 */
+.side-logout-mini:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.12);
 }
 
 /* 드롭업 메뉴 (아이콘 위로 뜨는 박스) */

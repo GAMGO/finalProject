@@ -19,7 +19,7 @@ import java.util.Optional;
 public class ReviewModerationService {
 
     private final RestTemplate geminiRestTemplate;   // GeminiConfig에서 만든 Bean
-    private final ObjectMapper objectMapper;         // Spring Boot가 기본 제공
+    private final ObjectMapper objectMapper;         // Spring Boot 기본 제공
 
     @Value("${gemini.api.url}")
     private String geminiApiUrl;
@@ -33,7 +33,7 @@ public class ReviewModerationService {
     public ModerationResult moderate(String reviewText) {
         log.info("[MOD] input review = {}", reviewText);
 
-        // 공백이면 그냥 허용
+        // 0️⃣ 공백이면 그냥 허용
         if (reviewText == null || reviewText.trim().isEmpty()) {
             ModerationResult r = new ModerationResult();
             r.setDecision("ALLOW");
@@ -41,6 +41,16 @@ public class ReviewModerationService {
             return r;
         }
 
+        // 1️⃣ 우리 쪽 로컬 필터 먼저 적용 (욕설/인신공격 확실한 것들)
+        if (containsLocalAbuse(reviewText)) {
+            ModerationResult r = new ModerationResult();
+            r.setDecision("BLOCK");
+            r.setReason("local_abuse_match");
+            log.info("[MOD] BLOCK by local rules: {}", reviewText);
+            return r;
+        }
+
+        // 2️⃣ 나머지는 Gemini에게 판단 맡김
         String prompt = buildPrompt(reviewText);
         GeminiRequest request = new GeminiRequest(prompt);
 
@@ -72,7 +82,7 @@ public class ReviewModerationService {
             log.info("[MOD] parsed moderation result: {}", result);
             return result;
         } catch (Exception e) {
-            // 🔁 이제는 에러 나도 "막는" 게 아니라 "그냥 통과" 시킴
+            // 🔁 에러 나면 "막는" 게 아니라 일단 통과 (UX 우선)
             log.error("Gemini moderation error, ALLOW for safety", e);
             ModerationResult r = new ModerationResult();
             r.setDecision("ALLOW");
@@ -80,6 +90,71 @@ public class ReviewModerationService {
             return r;
         }
     }
+
+    /* ======================  로컬 룰 ====================== */
+
+    /**
+     * 욕설/인신공격을 우리 쪽에서 직접 감지
+     */
+    private boolean containsLocalAbuse(String text) {
+        String t = text;
+        if (t == null) return false;
+
+        // 공백 제거한 버전 (예: "못 생겼어요" -> "못생겼어요")
+        String noSpace = t.replaceAll("\\s+", "");
+
+        // 1) 대표적인 욕설 / 비속어
+        String[] badWords = {
+                "씨발", "시발", "ㅅㅂ", "씨팔", "ㅆㅂ",
+                "개새끼", "개 새끼", "개새키", "개같은",
+                "병신", "븅신", "ㅂㅅ",
+                "좆", "존나", "꺼져",
+                "장애인새끼", "장애인같은새끼"
+        };
+
+        for (String bw : badWords) {
+            if (t.contains(bw) || noSpace.contains(bw.replaceAll("\\s+", ""))) {
+                return true;
+            }
+        }
+
+        // 2) 사장/주인 등 + 외모 비하 ("못생겼", "못 생겼")
+        boolean hasTarget =
+                t.contains("사장") ||
+                t.contains("주인") ||
+                t.contains("아저씨") ||
+                t.contains("아줌마") ||
+                t.contains("직원");
+
+        boolean hasLookInsult =
+                t.contains("못생겼") ||
+                t.contains("못 생겼") ||
+                noSpace.contains("못생긴") ||
+                noSpace.contains("얼굴이별로") ||
+                t.contains("얼굴이 별로") ||
+                t.contains("추해") ||
+                t.contains("징그러");
+
+        if (hasTarget && hasLookInsult) {
+            return true;
+        }
+
+        // 3) 그냥 외모 비하 문장 (대상을 명시적으로 안 써도)
+        String[] lookInsults = {
+                "못생겼다", "못 생겼다", "못생겼어요", "못 생겼어요",
+                "얼굴이 더럽다", "얼굴이 별로다", "얼굴이 더러움",
+                "추하게 생겼", "징그럽게 생겼"
+        };
+        for (String li : lookInsults) {
+            if (t.contains(li) || noSpace.contains(li.replaceAll("\\s+", ""))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /* ======================  Gemini 응답 처리 ====================== */
 
     /**
      * Gemini 응답에서 맨 첫 번째 text만 추출
@@ -112,6 +187,8 @@ public class ReviewModerationService {
         throw new IllegalArgumentException("No JSON object found in: " + rawText);
     }
 
+    /* ======================  프롬프트 ====================== */
+
     /**
      * 모더레이션 프롬프트
      */
@@ -123,6 +200,7 @@ public class ReviewModerationService {
                 [BLOCK 기준]
                 - 욕설, 심한 비속어, 성적 모욕, 인종/지역/성별/장애 등 혐오 발언
                 - 가게 주인/직원/특정 손님을 향한 인신 공격, 모욕, 비하
+                  (특히 외모를 비하하는 표현: "사장님 못생겼어요" 등)
                 - 고의적인 도배, 광고, 스팸(전화번호, 링크 등 홍보 목적)
                 - 협박, 폭력 선동, 스토킹성 발언
 
@@ -142,6 +220,9 @@ public class ReviewModerationService {
                 [예시]
                 입력: "야 이 장애인 같은 새끼야 가게 접어라"
                 출력: {"decision":"BLOCK","reason":"장애인 비하와 심한 욕설"}
+
+                입력: "사장님 못생겼어요"
+                출력: {"decision":"BLOCK","reason":"사장님의 외모를 비하하는 인신 공격"}
 
                 입력: "그 간이 좀 센 편이라 짠 맛이 강해요"
                 출력: {"decision":"ALLOW","reason":"맛에 대한 부정적 평가"}
