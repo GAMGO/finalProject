@@ -1,22 +1,21 @@
-// src/App.jsx
 import React, { useState, useEffect } from "react";
-import axios from "axios";
-import Main from "./components/Main";
+import KakaoMap from "./components/KakaoMap";
 import CommunityPage from "./pages/CommunityPage";
 import UserProfilePage from "./pages/UserProfilePage";
 import WithdrawalPage from "./pages/WithdrawalPage";
 import AuthPage from "./pages/AuthPage";
 import FavoritePage from "./pages/FavoritePage";
 import apiClient, { setAuthToken, clearAuthToken } from "./api/apiClient";
+
 import "./App.css";
 import "./SidebarPatch.css";
-import "./theme/theme.css"; // ✅ 테마 CSS
-import { useTheme } from "./theme/ThemeContext"; // ✅ ThemeContext 사용
+import "./theme/theme.css";
+import { useTheme } from "./theme/ThemeContext";
 
-// ✅ 로고 이미지
 import DISH_LOGO from "./assets/DISH_LOGO.png";
-// ✅ 설정 아이콘
 import SETTING_ICON from "./assets/setting.png";
+
+import { CATEGORIES } from "./constants/categories";
 
 const Logout = ({ onLogoutSuccess }) => {
   const [message, setMessage] = useState("로그아웃을 시도 중...");
@@ -29,9 +28,9 @@ const Logout = ({ onLogoutSuccess }) => {
         setMessage("로그아웃에 성공했습니다. 잠시 후 로그인 화면으로 돌아갑니다.");
         setTimeout(() => onLogoutSuccess(), 1500);
       } catch (error) {
-        console.error("Logout API Error:", error);
+        // 로그 안 찍고 메시지만
         setMessage("로그아웃 처리 중 오류가 발생했지만, 인증 상태를 해제합니다.");
-        setTimeout(() => onLogoutSuccess(), 3000);
+        setTimeout(() => onLogoutSuccess(), 1500);
       }
     };
     handleLogout();
@@ -56,15 +55,14 @@ const Logout = ({ onLogoutSuccess }) => {
 };
 
 export default function App() {
-  // map / community / profile / favorite / logout / withdraw
   const [page, setPage] = useState("map");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // ✅ ThemeContext에서 전역 테마 사용
-  const { theme, setTheme } = useTheme(); // ← toggleTheme 대신 setTheme 사용
-
-  // ✅ 드롭업 열림 여부
+  const { theme, setTheme } = useTheme();
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
+
+  // ✅ 사이드바 카테고리 필터(문자열)
+  const [categoryFilterId, setCategoryFilterId] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("jwtToken");
@@ -75,7 +73,6 @@ export default function App() {
     }
   }, []);
 
-  // ✅ 라이트/다크 직접 선택 (명시적 적용)
   const setLight = () => {
     if (theme !== "light") setTheme("light");
     setIsThemeMenuOpen(false);
@@ -85,13 +82,11 @@ export default function App() {
     setIsThemeMenuOpen(false);
   };
 
-  // 로그인 성공 콜백
   const handleLoginSuccess = () => {
     setIsLoggedIn(true);
     setPage("map");
   };
 
-  // 로그아웃 성공 콜백
   const handleLogoutSuccess = () => {
     clearAuthToken();
     setIsLoggedIn(false);
@@ -101,7 +96,6 @@ export default function App() {
   const getButtonClass = (targetPage) =>
     `side-nav-btn ${page === targetPage ? "active" : ""}`;
 
-  // 로그인 안 했을 때는 AuthPage
   if (!isLoggedIn) {
     return (
       <div className="h-screen w-full">
@@ -113,37 +107,43 @@ export default function App() {
   return (
     <div className="app">
       <aside className="side-bar">
-        {/* ✅ 왼쪽 상단 로고 */}
+        {/* ✅ 로고 */}
         <div className="side-logo" onClick={() => setPage("map")}>
-          <img
-            src={DISH_LOGO}
-            alt="DISHINSIDE 로고"
-            className="side-logo-img"
-          />
+          <img src={DISH_LOGO} alt="DISHINSIDE 로고" className="side-logo-img" />
         </div>
 
-        <button
-          className={getButtonClass("community")}
-          onClick={() => setPage("community")}
-        >
+        {/* ✅ 카테고리 드롭다운 (MAP 페이지일 때만) */}
+        {page === "map" && (
+          <div className="side-category-card">
+            <div className="side-category-title">카테고리</div>
+            <select
+              className="side-category-select"
+              value={categoryFilterId}
+              onChange={(e) => setCategoryFilterId(e.target.value)}
+            >
+              <option value="">전체</option>
+              {CATEGORIES.map((c) => (
+                <option key={c.id} value={String(c.id)}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        <button className={getButtonClass("community")} onClick={() => setPage("community")}>
           커뮤니티
         </button>
 
-        <button
-          className={getButtonClass("profile")}
-          onClick={() => setPage("profile")}
-        >
+        <button className={getButtonClass("profile")} onClick={() => setPage("profile")}>
           회원정보
         </button>
 
-        <button
-          className={getButtonClass("favorite")}
-          onClick={() => setPage("favorite")}
-        >
+        <button className={getButtonClass("favorite")} onClick={() => setPage("favorite")}>
           즐겨찾기
         </button>
 
-        {/* ✅ 왼쪽 하단 설정 아이콘 + 작은 로그아웃 버튼 + 드롭업 메뉴 */}
+        {/* ✅ 좌하단 설정 + 로그아웃 */}
         <div className="side-settings-wrap">
           <button
             type="button"
@@ -151,19 +151,10 @@ export default function App() {
             onClick={() => setIsThemeMenuOpen((prev) => !prev)}
             title="테마 설정"
           >
-            <img
-              src={SETTING_ICON}
-              alt="테마 설정"
-              className="side-settings-icon"
-            />
+            <img src={SETTING_ICON} alt="테마 설정" className="side-settings-icon" />
           </button>
 
-          {/* 🔓 오른쪽에 작은 로그아웃 버튼 */}
-          <button
-            type="button"
-            className="side-logout-mini"
-            onClick={() => setPage("logout")}
-          >
+          <button type="button" className="side-logout-mini" onClick={() => setPage("logout")}>
             로그아웃
           </button>
 
@@ -171,18 +162,14 @@ export default function App() {
             <div className="side-settings-menu">
               <button
                 type="button"
-                className={
-                  "side-settings-item" + (theme === "light" ? " active" : "")
-                }
+                className={"side-settings-item" + (theme === "light" ? " active" : "")}
                 onClick={setLight}
               >
                 라이트 모드
               </button>
               <button
                 type="button"
-                className={
-                  "side-settings-item" + (theme === "dark" ? " active" : "")
-                }
+                className={"side-settings-item" + (theme === "dark" ? " active" : "")}
                 onClick={setDark}
               >
                 다크 모드
@@ -194,7 +181,7 @@ export default function App() {
 
       <main className="main-content">
         {page === "map" ? (
-          <Main />
+          <KakaoMap categoryFilterId={categoryFilterId} />
         ) : page === "community" ? (
           <CommunityPage />
         ) : page === "profile" ? (
