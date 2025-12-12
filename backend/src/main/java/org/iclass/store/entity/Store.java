@@ -44,7 +44,6 @@ public class Store {
     @Column(name = "STORE_NAME", length = 255, nullable = false)
     private String storeName;
 
-    // VARCHAR(5) 매핑
     @Column(name = "OPENTIME", length = 5)
     private String openTime;
 
@@ -60,7 +59,7 @@ public class Store {
     @Column(name = "LNG", nullable = false)
     private Double lng;
 
-    // ✅ 추가 (DB 컬럼명과 맞추기)
+    // ✅ 핵심: 카테고리 id 컬럼
     @Column(name = "FOOD_TYPE_ID")
     private Long foodTypeId;
 }

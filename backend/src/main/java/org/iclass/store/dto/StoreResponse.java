@@ -25,7 +25,7 @@ public class StoreResponse {
         dto.latitude = store.getLat();
         dto.longitude = store.getLng();
 
-        // ✅ 이제 가능
+        // ✅ 핵심
         dto.foodTypeId = store.getFoodTypeId();
         dto.foodTypeLabel = FoodCategory.labelOf(dto.foodTypeId);
 
@@ -47,6 +47,7 @@ public class StoreResponse {
     public Double getLongitude() { return longitude; }
     public void setLongitude(Double longitude) { this.longitude = longitude; }
 
+    // ✅ 추가 getter/setter
     public Long getFoodTypeId() { return foodTypeId; }
     public void setFoodTypeId(Long foodTypeId) { this.foodTypeId = foodTypeId; }
 
