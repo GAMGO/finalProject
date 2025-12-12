@@ -6,7 +6,8 @@ import WithdrawalPage from "./WithdrawalPage";
 import RecoveringPage from "./RecoveringPage";
 
 const AuthPage = ({ onLoginSuccess }) => {
-  const [authMode, setAuthMode] = useState('login');
+  const initialMode = window.location.pathname.startsWith('/recovery') ? 'recover' : 'login';
+  const [authMode, setAuthMode] = useState(initialMode);
   const [registeredEmail, setRegisteredEmail] = useState('');
   const [userIdForWithdrawal, setUserIdForWithdrawal] = useState("");
 

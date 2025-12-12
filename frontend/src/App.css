@@ -6,16 +6,27 @@
   --color-card-bg: #ffffff;
   --color-text-main: #111827;
   --color-text-muted: #6b7280;
+
+  /* CTA 관련 기본 변수 (그라데이션 제거 후 기본 구조만 유지) */
+  --cta-text-color: #ffffff;
+
+  /* 아웃라인형 버튼용 */
+  --cta-outline-bg: #eff6ff;
+  --cta-outline-border: #2563eb;
+  --cta-outline-text: #1d4ed8;
+
+  /* 길찾기 모드 라디오 틱 색 (라이트) */
+  --route-radio-color: #2563eb;
+
+  /* 🆕 NEW: 라이트 모드 CTA 색 변수(기본) */
+  --cta-bg: #78266a;          /* 보라색 (라이트 기본) */
+  --cta-bg-hover: #6c225f;    /* hover 시 진한 보라 */
 }
 
 /* ===== 기본 리셋 ===== */
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
-html,
-body,
-#root {
+html, body, #root {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -23,13 +34,11 @@ body,
 
 body {
   background: var(--color-page-bg);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: var(--color-text-main);
 }
 
 /* ===== 전체 앱 레이아웃 (사이드바 + 메인) ===== */
-
 .app {
   min-height: 100vh;
   width: 100%;
@@ -38,7 +47,6 @@ body {
 }
 
 /* ----- 왼쪽 보라색 사이드바 ----- */
-
 .side-bar {
   width: 200px;
   background: var(--color-side-bg);
@@ -59,8 +67,7 @@ body {
   font-weight: 600;
 }
 
-/* ✅ 사이드바 버튼 – 예전 스타일로 복구
-   (테두리만 있는 흰색 버튼, 배경 투명) */
+/* ✅ 사이드바 버튼 – 예전 스타일로 복구 (테두리만 있는 흰색 버튼) */
 .side-nav-btn {
   margin-top: 24px;
   width: calc(100% - 32px);
@@ -75,14 +82,12 @@ body {
   box-shadow: none;
   transition: background 0.15s ease, color 0.15s ease;
 }
-
 .side-nav-btn:hover {
   background: #ffffff;
   color: var(--color-side-bg);
 }
 
 /* ----- 오른쪽 메인 영역 ----- */
-
 .main-content {
   flex: 1;
   min-height: 100vh;
@@ -94,7 +99,6 @@ body {
    플로팅 FAB 아이콘 – 라이트/다크 토글
    KakaoMap/Community 공통 사용
    =========================== */
-
 .fab-icon {
   width: 56px;
   height: 56px;
@@ -102,77 +106,36 @@ body {
 }
 
 /* 기본: 라이트 모드에서는 보라색 아이콘만 보이게 */
-.fab-icon-light {
-  display: block;
-}
+.fab-icon-light { display: block; }
+.fab-icon-dark  { display: none; }
 
-.fab-icon-dark {
-  display: none;
-}
-
-/* 다크 모드: 브라운 아이콘만 보이게 */
-:root[data-theme="dark"] .fab-icon-light {
-  display: none;
-}
-
-:root[data-theme="dark"] .fab-icon-dark {
-  display: block;
-}
+/* 🔧 UPDATED: 다크 모드 토글 선택자 보강
+   - data-theme가 html, body, .app 어디에 붙어도 적용되도록 범위 확장 */
+:root[data-theme="dark"] .fab-icon-light,
+[data-theme="dark"] .fab-icon-light { display: none; }        /* 🆕 NEW */
+:root[data-theme="dark"] .fab-icon-dark,
+[data-theme="dark"] .fab-icon-dark  { display: block; }       /* 🆕 NEW */
 
 /* ==============================
  * 공통 CTA 버튼 / 라디오 색상
- *  - 라이트 : 파랑 그라데이션
- *  - 다크   : 오렌지 그라데이션
+ *  - 라이트 / 다크 통합 구조 유지
+ *  - ✅ 그라데이션 제거 + 변수화
  * ============================== */
 
-:root {
-  /* 라이트 모드 파랑 그라데이션 */
-  --cta-light-start: #2563eb;
-  --cta-light-end:   #38bdf8;
-
-  /* 다크 모드 오렌지 그라데이션 */
-  --cta-dark-start:  #f97316;
-  --cta-dark-end:    #facc15;
-
-  --cta-text-color: #ffffff;
-
-  /* 아웃라인형 버튼용 */
-  --cta-outline-bg: #eff6ff;
-  --cta-outline-border: #2563eb;
-  --cta-outline-text: #1d4ed8;
-
-  /* 길찾기 모드 라디오 틱 색 (라이트) */
-  --route-radio-color: #2563eb;
-}
-
-/* 기본(라이트) CTA 그라데이션 */
-:root {
-  --cta-bg: linear-gradient(
-    90deg,
-    var(--cta-light-start),
-    var(--cta-light-end)
-  );
-  --cta-bg-hover: linear-gradient(90deg, #1d4ed8, #0ea5e9);
-}
-
-/* 다크 모드 CTA 그라데이션 (오렌지) */
+/* 🔧 UPDATED: 다크 모드 CTA 변수 (초콜릿 브라운 톤) */
 :root[data-theme="dark"] {
-  --cta-bg: linear-gradient(
-    90deg,
-    var(--cta-dark-start),
-    var(--cta-dark-end)
-  );
-  --cta-bg-hover: linear-gradient(90deg, #ea580c, #eab308);
-  --cta-text-color: #ffffff;
+  --cta-bg: #5e3a31;          /* 다크모드 기본 CTA 배경 */
+  --cta-bg-hover: #4e2f28;    /* hover */
+  --cta-text-color: #fef3e8;  /* 크림 텍스트 */
 
-  --cta-outline-bg: rgba(249, 115, 22, 0.12);
-  --cta-outline-border: #fed7aa;
-  --cta-outline-text: #fed7aa;
+  --cta-outline-bg: rgba(251, 191, 36, 0.16);
+  --cta-outline-border: #fbbf24;
+  --cta-outline-text: #fef3c7;
 
   --route-radio-color: #f97316;
 }
 
-/* 공통 CTA 버튼 (회원정보 / 즐겨찾기 / 지도 길찾기 등) */
+/* 공통 CTA 버튼 */
 .btn-cta {
   display: inline-flex;
   justify-content: center;
@@ -182,19 +145,24 @@ body {
   padding: 6px 16px;
   font-size: 13px;
   font-weight: 600;
-  background-image: var(--cta-bg);
+
+  /* 🔧 UPDATED: 하드코딩 → 변수 사용 */
+  background: var(--cta-bg);
   color: var(--cta-text-color);
+
   cursor: pointer;
   white-space: nowrap;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.18);
   transition:
     transform 0.1s ease-out,
     box-shadow 0.15s ease-out,
-    filter 0.15s ease-out;
+    filter 0.15s ease-out,
+    background-color 0.25s ease;
 }
 
 .btn-cta:hover:not(:disabled) {
-  background-image: var(--cta-bg-hover);
+  /* 🔧 UPDATED: 하드코딩 → 변수 사용 */
+  background: var(--cta-bg-hover);
   transform: translateY(-1px);
 }
 
@@ -211,7 +179,7 @@ body {
   transform: none;
 }
 
-/* 아웃라인형 CTA (예: 이 노점으로 길찾기 / 내 위치 / 초기화 등) */
+/* 아웃라인형 CTA (보조 버튼들: 길찾기, 초기화 등) */
 .btn-cta-outline {
   display: inline-flex;
   justify-content: center;
@@ -228,6 +196,4 @@ body {
 }
 
 /* 길찾기 모드 라디오버튼 틱 색 */
-.route-mode-radio {
-  accent-color: var(--route-radio-color);
-}
+.route-mode-radio { accent-color: var(--route-radio-color); }

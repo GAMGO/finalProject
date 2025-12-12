@@ -2,19 +2,40 @@ import React, { useState, useEffect } from "react";
 import apiClient from "../api/apiClient";
 import "../theme/theme.css";
 
-const WithdrawalPage = ({ userId, onLogout }) => {
+const WithdrawalPage = ({ onLogout }) => {
   const [checks, setChecks] = useState({ info: false, email: false, law: false });
   const [confirmText, setConfirmText] = useState("");
   const [message, setMessage] = useState({ text: "", type: "" });
-
   const isAllChecked = checks.info && checks.email && checks.law;
-  const targetText = `${userId} 회원 탈퇴를 진행하는 것에 동의합니다.`;
+  const [error, setError] = useState("");
+  const [form, setForm] = useState({
+    customer_id: "",
+  });
+  useEffect(() => {
+    const fetchId = async () => {
+      setError("");
+      try {
+        const res = await apiClient.get("/api/profile/account");
+        const data = res.data; // AccountInfoDto
 
+        setForm({
+          customer_id: data.id || "", // 아이디만 가져와
+        });
+      } catch (err) {
+        console.error("아이디 조회 실패:", err);
+        setError(
+          err.response?.data?.message ||
+          "회원 정보를 불러오는 중 오류가 발생했습니다."
+        );
+      }
+    };
+    fetchId();
+  }, []);
   const handleCheck = (e) => {
     const { name, checked } = e.target;
     setChecks((prev) => ({ ...prev, [name]: checked }));
   };
-
+  const targetText = `${form.customer_id} 회원 탈퇴를 진행하는 것에 동의합니다.`;
   const handleWithdraw = async () => {
     if (confirmText !== targetText) {
       setMessage({ text: "입력된 문장이 일치하지 않습니다.", type: "error" });
@@ -32,7 +53,6 @@ const WithdrawalPage = ({ userId, onLogout }) => {
     }
   };
 
-  // 스타일 정의 (LoginPage 스타일 계승)
   const darkPurple = "#78266A";
   const lightPeach = "#F5D7B7";
   const white = "#FFFFFF";
@@ -45,7 +65,6 @@ const WithdrawalPage = ({ userId, onLogout }) => {
     height: "100vh", // 전체 뷰포트 높이
   };
 
-  // 🚨 [수정 2] 실제 콘텐츠 박스 스타일 (로그인/회원가입 박스와 유사하게 설정)
   const boxStyle = {
     padding: "30px 40px",
     width: "400px",

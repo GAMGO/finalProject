@@ -311,6 +311,22 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
             회원가입
           </button>
         </div>
+        {/* 2. 하단에 아주 작게 추가 */}
+        <div style={{ marginTop: "30px", textAlign: "right", paddingRight: "20px" }}>
+          <span 
+            style={{ 
+              fontSize: "12px", 
+              color: darkPurple, 
+              cursor: "pointer", 
+              textDecoration: "underline",
+              opacity: 0.7,
+              margin:"5px"
+            }}
+            onClick={""}
+          >
+          계정찾기
+          </span>
+        </div>
       </div>
     </div>
   );

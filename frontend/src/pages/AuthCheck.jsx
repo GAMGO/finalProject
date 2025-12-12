@@ -66,8 +66,11 @@ const AuthCheck = ({ children }) => {
             setIsAuthenticated(isValid);
             setIsLoading(false);
 
-            // 🚨 핵심 수정: 인증되지 않았는데 현재 경로가 /login이 아니라면 리다이렉트
-            if (!isValid && window.location.pathname !== '/login') {
+            const isRecoveryPath = window.location.pathname.startsWith('/recovery');
+            const isRootPath = window.location.pathname === '/';
+
+            // 로그인되어 있지 않고, 현재 경로가 /login도 아니고, /recovery도 아니고, 루트 경로('/')도 아닌 경우에만 리다이렉트합니다.
+            if (!isValid && window.location.pathname !== '/login' && !isRecoveryPath && !isRootPath) {
                 navigate('/login', { replace: true });
             }
         };
@@ -77,7 +80,7 @@ const AuthCheck = ({ children }) => {
 
         // 2. EmailAuth.jsx에서 dispatchEvent('storage')를 호출하면 즉시 감지하도록 리스너 추가
         window.addEventListener('storage', checkAuthStatus);
-        
+
         return () => {
             window.removeEventListener('storage', checkAuthStatus);
         };
