@@ -2,14 +2,14 @@ import React, { useState, useEffect } from "react";
 import apiClient from "../api/apiClient";
 import "../theme/theme.css";
 
-const WithdrawalPage = ({ userId, onLogout }) => {
+const WithdrawalPage = ({ customer_id, onLogout }) => {
   const [checks, setChecks] = useState({ info: false, email: false, law: false });
   const [confirmText, setConfirmText] = useState("");
   const [message, setMessage] = useState({ text: "", type: "" });
 
   const isAllChecked = checks.info && checks.email && checks.law;
-  const targetText = `${userId} 회원 탈퇴를 진행하는 것에 동의합니다.`;
-
+  const targetText = `${customer_id} 회원 탈퇴를 진행하는 것에 동의합니다.`;
+  
   const handleCheck = (e) => {
     const { name, checked } = e.target;
     setChecks((prev) => ({ ...prev, [name]: checked }));
