@@ -36,7 +36,7 @@ public class SecurityConfig {
             "/api/food/**",
             "/api/email/**",
             "/api/recovery/**",
-            "/api/route/**"
+            "/api/routes/**"
     };
 
     @Bean
