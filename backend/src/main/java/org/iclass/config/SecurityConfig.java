@@ -53,16 +53,10 @@ public class SecurityConfig {
                         .requestMatchers(SWAGGER_WHITELIST).permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(PUBLIC_WHITELIST).permitAll()
-
                         // ====== 누구나 볼 수 있는 GET API ======
                         // 가게 목록/상세, 리뷰 조회는 비로그인도 가능
-                        .requestMatchers(HttpMethod.GET, "/api/stores/**").permitAll()
-                        // /api/stores/{storeIdx}/reviews, /with-stats 등 GET 전부 허용
-                        .requestMatchers(HttpMethod.GET, "/api/stores/*/reviews/**").permitAll()
-                        // 게시글, 경로 조회도 GET은 허용
-                        .requestMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
-                        .requestMatchers("/api/routes/**").permitAll()
-
+                        .requestMatchers(HttpMethod.GET, "/api/stores/**","/api/stores/*/reviews/**","/api/posts/**").permitAll()
+                        .requestMatchers("/api/routes/**","/api/auth/restore").permitAll()
                         // ====== 인증 없이 접근해야 하는 POST ======
                         .requestMatchers(HttpMethod.POST,
                                 "/api/auth/login",
@@ -75,25 +69,20 @@ public class SecurityConfig {
                                 "/api/stores/*/update-request",
                                 "/api/stores/*/delete-request"
                         ).permitAll()
-
                         // ===== 로그인 필수 영역 =====
                         // 찜(즐겨찾기): 목록/추가/수정/삭제 모두 로그인 필요
                         .requestMatchers("/api/favorites/**").authenticated()
-
                         // 리뷰 작성/수정/삭제는 로그인 필요
                         // (GET 은 위에서 이미 permitAll 처리)
                         .requestMatchers("/api/stores/*/reviews/**").authenticated()
-
                         // 관리자용 API (가게 변경 승인/반려 등)
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-
                         // 프로필, 로그아웃, 탈퇴 등
                         .requestMatchers(
                                 "/api/auth/logout",
                                 "/api/profile",
                                 "/api/auth/withdrawal"
                         ).authenticated()
-
                         // 그 외 전부 로그인 필요
                         .anyRequest().authenticated()
                 )

@@ -20,6 +20,9 @@ public class EmailRecoveryService {
 
     @Value("${app.frontend.url}")
     private String frontendUrl; // 예: http://localhost:5173
+
+    @Value("${VITE_LOCAL_BASE_URL}") 
+    private String backendApiUrl;
     /**
      * 회원 탈퇴 완료 안내 및 복구 코드 발송
      * @param email 수신자 이메일
@@ -34,7 +37,7 @@ public class EmailRecoveryService {
             helper.setTo(email);
             helper.setSubject("[디쉬인사이드] 회원 탈퇴 처리가 완료되었습니다.");
 
-            String recoveryLink = frontendUrl + "/recovery?token=" + recoveryCode;
+            String recoveryLink = backendApiUrl + "/api/auth/recovery";
             String htmlContent = createWithdrawalHtml(recoveryCode, recoveryLink);
             
             helper.setText(htmlContent, true);
@@ -68,6 +71,6 @@ public class EmailRecoveryService {
                     <p style="font-size: 12px; color: #ccc;">본인이 탈퇴를 진행하지 않았다면 즉시 고객센터로 문의해 주세요.</p>
                 </body>
                 </html>
-                """.formatted(recoveryCode);
+                """.formatted(recoveryCode, recoveryLink);
     }
 }
