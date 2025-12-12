@@ -11,6 +11,7 @@ import apiClient, { setAuthToken, clearAuthToken } from "./api/apiClient";
 import "./App.css";
 import "./SidebarPatch.css";
 import "./theme/theme.css"; // ✅ 테마 CSS
+import { useTheme } from "./theme/ThemeContext"; // ✅ ThemeContext 사용
 
 // ✅ 로고 이미지
 import DISH_LOGO from "./assets/DISH_LOGO.png";
@@ -26,15 +27,11 @@ const Logout = ({ onLogoutSuccess }) => {
         // apiClient 사용: /api/auth/logout 엔드포인트에 요청합니다. apiClient의 인터셉터가 Authorization 헤더를 자동으로 추가합니다.
         await apiClient.post(`/api/auth/logout`, {});
         setMessage("로그아웃에 성공했습니다. 잠시 후 로그인 화면으로 돌아갑니다.");
-        setTimeout(() => {
-          onLogoutSuccess();
-        }, 1500);
+        setTimeout(() => onLogoutSuccess(), 1500);
       } catch (error) {
         console.error("Logout API Error:", error);
         setMessage("로그아웃 처리 중 오류가 발생했지만, 인증 상태를 해제합니다.");
-        setTimeout(() => {
-          onLogoutSuccess();
-        }, 3000);
+        setTimeout(() => onLogoutSuccess(), 3000);
       }
     };
     handleLogout();
@@ -63,13 +60,10 @@ export default function App() {
   const [page, setPage] = useState("map");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // ✅ 테마 상태 (light / dark)
-  const [theme, setTheme] = useState(() => {
-    if (typeof window === "undefined") return "light";
-    return localStorage.getItem("theme") || "light";
-  });
+  // ✅ ThemeContext에서 전역 테마 사용
+  const { theme, toggleTheme } = useTheme();
 
-  // ✅ 설정 드롭업 열림 여부
+  // ✅ 드롭업 열림 여부
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -81,26 +75,18 @@ export default function App() {
     }
   }, []);
 
-  // theme 값이 바뀔 때마다 <html data-theme="..."> + localStorage 동기화
-  useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("theme", theme);
-  }, [theme]);
-
-  // ✅ 드롭업에서 테마 선택
-  const handleSelectTheme = (mode) => {
-    setTheme(mode);
+  // ✅ 라이트/다크 직접 선택 (필요할 때만 토글)
+  const setLight = () => {
+    if (theme !== "light") toggleTheme();
+    setIsThemeMenuOpen(false);
+  };
+  const setDark = () => {
+    if (theme !== "dark") toggleTheme();
     setIsThemeMenuOpen(false);
   };
 
   // 로그인 성공 콜백
   const handleLoginSuccess = () => {
-    if (typeof window !== "undefined") {
-      const savedTheme = localStorage.getItem("theme");
-      if (savedTheme) {
-        setTheme(savedTheme);
-      }
-    }
     setIsLoggedIn(true);
     setPage("map");
   };
@@ -185,19 +171,15 @@ export default function App() {
             <div className="side-settings-menu">
               <button
                 type="button"
-                className={
-                  "side-settings-item" + (theme === "light" ? " active" : "")
-                }
-                onClick={() => handleSelectTheme("light")}
+                className={"side-settings-item" + (theme === "light" ? " active" : "")}
+                onClick={setLight}
               >
                 라이트 모드
               </button>
               <button
                 type="button"
-                className={
-                  "side-settings-item" + (theme === "dark" ? " active" : "")
-                }
-                onClick={() => handleSelectTheme("dark")}
+                className={"side-settings-item" + (theme === "dark" ? " active" : "")}
+                onClick={setDark}
               >
                 다크 모드
               </button>
