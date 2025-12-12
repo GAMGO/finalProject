@@ -61,7 +61,7 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // ✅ ThemeContext에서 전역 테마 사용
-  const { theme, toggleTheme } = useTheme();
+  const { theme, setTheme } = useTheme(); // ← toggleTheme 대신 setTheme 사용
 
   // ✅ 드롭업 열림 여부
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
@@ -75,13 +75,13 @@ export default function App() {
     }
   }, []);
 
-  // ✅ 라이트/다크 직접 선택 (필요할 때만 토글)
+  // ✅ 라이트/다크 직접 선택 (명시적 적용)
   const setLight = () => {
-    if (theme !== "light") toggleTheme();
+    if (theme !== "light") setTheme("light");
     setIsThemeMenuOpen(false);
   };
   const setDark = () => {
-    if (theme !== "dark") toggleTheme();
+    if (theme !== "dark") setTheme("dark");
     setIsThemeMenuOpen(false);
   };
 
@@ -171,14 +171,18 @@ export default function App() {
             <div className="side-settings-menu">
               <button
                 type="button"
-                className={"side-settings-item" + (theme === "light" ? " active" : "")}
+                className={
+                  "side-settings-item" + (theme === "light" ? " active" : "")
+                }
                 onClick={setLight}
               >
                 라이트 모드
               </button>
               <button
                 type="button"
-                className={"side-settings-item" + (theme === "dark" ? " active" : "")}
+                className={
+                  "side-settings-item" + (theme === "dark" ? " active" : "")
+                }
                 onClick={setDark}
               >
                 다크 모드

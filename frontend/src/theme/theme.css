@@ -357,3 +357,102 @@ body,
   border: none !important;
   box-shadow: none !important;
 }
+
+/* =========================================================
+   🌙 노점 추가 모달 (Map Modal) 라이트/다크 대응
+   ========================================================= */
+
+/* ===== 라이트 모드 ===== */
+:root[data-theme="light"] .map-modal {
+  background-color: #ffffff;
+  color: #1e1e1e;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+:root[data-theme="light"] .map-modal input,
+:root[data-theme="light"] .map-modal select,
+:root[data-theme="light"] .map-modal textarea {
+  background-color: #fff;
+  color: #1e1e1e;
+  border: 1px solid #d1d5db;
+}
+
+:root[data-theme="light"] .map-modal input::placeholder,
+:root[data-theme="light"] .map-modal textarea::placeholder {
+  color: #9ca3af;
+}
+
+:root[data-theme="light"] .map-modal .map-btn-submit {
+  background-color: #78266a;
+  color: #ffffff;
+}
+
+:root[data-theme="light"] .map-modal .map-btn-cancel {
+  background-color: #f3f4f6;
+  color: #1e1e1e;
+}
+
+/* ===== 다크 모드 ===== */
+:root[data-theme="dark"] .map-modal {
+  background-color: #1f1b1b; /* 다크한 카드색 */
+  color: #fef3e8;
+  border: 1px solid #7b4a3c;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.7);
+}
+
+:root[data-theme="dark"] .map-modal input,
+:root[data-theme="dark"] .map-modal select,
+:root[data-theme="dark"] .map-modal textarea {
+  background-color: #120707;
+  color: #fef3e8;
+  border: 1px solid #7b4a3c;
+}
+
+:root[data-theme="dark"] .map-modal input::placeholder,
+:root[data-theme="dark"] .map-modal textarea::placeholder {
+  color: #d8bfb5;
+}
+
+/* “지도에서 위치 선택하기” 버튼 */
+:root[data-theme="dark"] .map-modal .map-pick-button {
+  background-color: transparent;
+  color: #ffd19d;
+  border: 1px solid #ffd19d;
+}
+
+:root[data-theme="dark"] .map-modal .map-pick-button:hover {
+  background-color: rgba(255, 209, 157, 0.1);
+}
+
+/* “등록하기” 버튼 */
+:root[data-theme="dark"] .map-modal .map-btn-submit {
+  background-color: #ffd19d; /* 밝은 살구 */
+  color: #2b0b0b; /* 어두운 텍스트 */
+  font-weight: bold;
+  border: none;
+}
+
+:root[data-theme="dark"] .map-modal .map-btn-submit:hover {
+  background-color: #ffdda7;
+}
+
+/* “취소” 버튼 */
+:root[data-theme="dark"] .map-modal .map-btn-cancel {
+  background-color: transparent;
+  color: #fef3e8;
+  border: 1px solid #7b4a3c;
+}
+
+:root[data-theme="dark"] .map-modal .map-btn-cancel:hover {
+  background-color: #2b0b0b;
+}
+
+/* 입력창, 버튼 공통 전환 효과 */
+.map-modal,
+.map-modal input,
+.map-modal select,
+.map-modal textarea,
+.map-modal button {
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
