@@ -37,7 +37,7 @@ public class EmailRecoveryService {
             helper.setTo(email);
             helper.setSubject("[디쉬인사이드] 회원 탈퇴 처리가 완료되었습니다.");
 
-            String recoveryLink = backendApiUrl + "/api/auth/recovery";
+            String recoveryLink = backendApiUrl + "/api/recovery/redirect?token=" + recoveryCode;
             String htmlContent = createWithdrawalHtml(recoveryCode, recoveryLink);
             
             helper.setText(htmlContent, true);

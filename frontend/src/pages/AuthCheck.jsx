@@ -67,7 +67,9 @@ const AuthCheck = ({ children }) => {
             setIsLoading(false);
 
             // 🚨 핵심 수정: 인증되지 않았는데 현재 경로가 /login이 아니라면 리다이렉트
-            if (!isValid && window.location.pathname !== '/login') {
+            const isRecoveryPath = window.location.pathname.startsWith('/recovery');
+            
+            if (!isValid && window.location.pathname !== '/login' && !isRecoveryPath) {
                 navigate('/login', { replace: true });
             }
         };
