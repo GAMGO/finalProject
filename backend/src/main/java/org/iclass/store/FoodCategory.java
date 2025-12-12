@@ -22,18 +22,19 @@ public enum FoodCategory {
         this.label = label;
     }
 
-    public Long getIdx() {
-        return idx;
-    }
-
-    public String getLabel() {
-        return label;
-    }
+    public Long getIdx() { return idx; }
+    public String getLabel() { return label; }
 
     public static String labelOf(Long idx) {
+        FoodCategory c = of(idx);
+        return c == null ? null : c.label;
+    }
+
+    // ✅ 추가
+    public static FoodCategory of(Long idx) {
         if (idx == null) return null;
         for (FoodCategory c : values()) {
-            if (c.idx.equals(idx)) return c.label;
+            if (c.idx.equals(idx)) return c;
         }
         return null;
     }

@@ -31,6 +31,10 @@ public class Store {
     public Double getLng() { return lng; }
     public void setLng(Double lng) { this.lng = lng; }
 
+    // ✅ 추가
+    public Long getFoodTypeId() { return foodTypeId; }
+    public void setFoodTypeId(Long foodTypeId) { this.foodTypeId = foodTypeId; }
+
     /* ========================= Fields ========================= */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -55,4 +59,8 @@ public class Store {
 
     @Column(name = "LNG", nullable = false)
     private Double lng;
+
+    // ✅ 추가 (DB 컬럼명과 맞추기)
+    @Column(name = "FOOD_TYPE_ID")
+    private Long foodTypeId;
 }
