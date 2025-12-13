@@ -30,10 +30,7 @@ dependencies {
     // Devtools
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     // MySQL
-    // runtimeOnly 'com.mysql:mysql-connector-j'
-    // PostgreSQL
-    implementation 'org.postgresql:postgresql'
-    runtimeOnly 'org.postgresql:postgresql'
+    runtimeOnly 'com.mysql:mysql-connector-j'
     // Lombok
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
