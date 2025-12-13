@@ -4,7 +4,8 @@
   --brand-purple: #78266a;
   --accent-peach: #ffd19d;
   --accent-brown: #764c41;
-  --bg-main: #fff7f1;
+
+  --bg-main: #ffffff; /* ✅ 배경 흰색 */
   --text-main: #3a2630;
   --text-muted: #9b7c8e;
 
@@ -15,64 +16,41 @@
   flex-direction: column;
 }
 
-/* ===== 상단 바 ===== */
-
-.favorite-top {
-  position: sticky;
-  top: 0;
-  z-index: 5;
+/* ✅ 메인화면 카테고리처럼 상단 스트립 */
+.fav-category-strip {
   background: var(--brand-purple);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+  padding: 18px 0 14px;
 }
 
-.favorite-top-inner {
+.fav-category-inner {
   max-width: 980px;
   margin: 0 auto;
-  padding: 10px 24px;
+  padding: 0 24px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.favorite-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: #fff;
-  white-space: nowrap;
-}
-
-.favorite-top-right {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
+  justify-content: center;
 }
 
 /* ===== 카테고리 필터 (2행) ===== */
-
 .fav-filter-bar {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-  min-width: 320px;
+  align-items: center;
+  gap: 10px;
 }
 
 .fav-filter-row {
   display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 14px;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 18px;
 }
 
 /* 칩 */
-
 .fav-chip {
-  padding: 8px 6px 6px;
-  border-radius: 14px;
-  border: 1px solid transparent;
+  width: 92px;
+  padding: 10px 8px 8px;
+  border-radius: 16px;
+  border: 2px solid transparent;
   background: transparent;
   color: rgba(255, 255, 255, 0.95);
   font-size: 14px;
@@ -80,27 +58,26 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 6px;
   cursor: pointer;
-  transition: background 0.12s ease, border-color 0.12s ease,
-    transform 0.12s ease;
+  transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease;
 }
 
 .fav-chip:hover {
-  background: rgba(0, 0, 0, 0.18);
+  background: rgba(0, 0, 0, 0.16);
   transform: translateY(-1px);
 }
 
+/* ✅ 활성: 흰 테두리(메인에서 선택된 느낌) */
 .fav-chip-active {
-  background: rgba(0, 0, 0, 0.24);
-  border-color: rgba(255, 255, 255, 0.65);
+  border-color: rgba(255, 255, 255, 0.95);
+  background: rgba(0, 0, 0, 0.12);
 }
 
-/* 카테고리 아이콘 조금 더 크게 */
-
+/* 아이콘 크게 */
 .fav-chip-icon {
-  width: 90px;
-  height: 90px;
+  width: 86px;
+  height: 86px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -115,45 +92,17 @@
 
 .fav-chip-label {
   line-height: 1.2;
-}
-
-/* + 등록하기 버튼 – 공통 CTA 색상 사용 (라이트: 파랑 / 다크: 오렌지 그라데이션) */
-
-.fav-add-btn {
-  padding: 6px 16px;
-  border-radius: 999px;
-  border: none;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  background: var(--cta-bg);
-  color: var(--cta-text-color);
-  white-space: nowrap;
-  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.18);
-  transition: transform 0.1s ease-out,
-    box-shadow 0.15s ease-out,
-    filter 0.15s ease-out;
-}
-
-.fav-add-btn:hover {
-  filter: brightness(1.03);
-  transform: translateY(-1px);
-}
-
-.fav-add-btn:active {
-  filter: brightness(0.95);
-  transform: translateY(0);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.22);
+  text-align: center;
 }
 
 /* ===== 메인 영역 ===== */
-
 .favorite-inner {
   flex: 1;
   width: 100%;
   max-width: 980px;
   margin: 0 auto;
   padding: 20px 24px 32px;
+  background: transparent; /* 흰 바탕 그대로 */
 }
 
 .fav-empty {
@@ -161,7 +110,7 @@
   padding: 28px 16px;
   text-align: center;
   border-radius: 16px;
-  background: rgba(255, 209, 157, 0.4);
+  background: rgba(255, 209, 157, 0.35);
   color: var(--text-main);
 }
 
@@ -172,7 +121,6 @@
 }
 
 /* ===== 카드 ===== */
-
 .fav-card {
   background: var(--accent-peach);
   border-radius: 18px;
@@ -189,7 +137,7 @@
   padding: 10px 16px 0;
 }
 
-/* 카테고리 뱃지(분식 등) 조금 키우기 */
+/* 카테고리 뱃지 */
 .fav-card-badge {
   display: inline-flex;
   align-items: center;
@@ -210,7 +158,6 @@
 }
 
 /* 수정 버튼 – 공통 CTA 색상 */
-
 .fav-edit {
   border: none;
   background: var(--cta-bg);
@@ -221,9 +168,7 @@
   border-radius: 999px;
   cursor: pointer;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.18);
-  transition: transform 0.1s ease-out,
-    box-shadow 0.15s ease-out,
-    filter 0.15s ease-out;
+  transition: transform 0.1s ease-out, box-shadow 0.15s ease-out, filter 0.15s ease-out;
 }
 
 .fav-edit:hover {
@@ -248,14 +193,13 @@
 }
 
 /* 이미지 / 비디오 영역 */
-
 .fav-card-image-wrap {
   position: relative;
   margin: 8px 16px 0;
   border-radius: 14px;
   overflow: hidden;
   background: #000;
-  height: 620px; /* 기준 높이 */
+  height: 620px;
 }
 
 .fav-card-image {
@@ -268,7 +212,7 @@
   transition: transform 0.06s linear, object-position 0.06s linear;
 }
 
-/* 사진 없는 카드용 (기타 등) */
+/* 사진 없는 카드용 */
 .fav-card-noimage {
   width: 100%;
   height: 100%;
@@ -280,7 +224,7 @@
   font-size: 14px;
 }
 
-/* MediaEmbed에서 쓰는 공용 클래스 */
+/* MediaEmbed 공용 */
 .fav-card-media {
   width: 100%;
   height: 100%;
@@ -316,8 +260,7 @@
   background: rgba(0, 0, 0, 0.8);
 }
 
-/* 초점 조절 버튼 – 공통 CTA 색상 */
-
+/* 초점 조절 버튼 */
 .fav-image-edit-btn {
   position: absolute;
   right: 10px;
@@ -344,12 +287,10 @@
 }
 
 /* ===== 카드 본문 ===== */
-
 .fav-card-body {
   padding: 12px 18px 16px;
 }
 
-/* 카드 본문 2열 그리드 레이아웃 */
 .fav-card-body-main {
   display: grid;
   grid-template-columns: minmax(0, 2.4fr) minmax(0, 1fr);
@@ -364,7 +305,6 @@
   grid-row: 1 / 2;
 }
 
-/* 제목 크게 */
 .fav-card-title {
   margin: 0 0 4px;
   font-size: 20px;
@@ -373,13 +313,11 @@
   cursor: pointer;
 }
 
-/* 주소도 키움 */
 .fav-card-addr {
   font-size: 14px;
   color: var(--text-muted);
 }
 
-/* 특징은 전체 폭으로, 글자도 키움 */
 .fav-card-note {
   grid-column: 1 / 3;
   font-size: 16px;
@@ -387,7 +325,6 @@
   margin: 6px 0 0;
 }
 
-/* 오른쪽에 세로로 정리된 평점 박스 */
 .fav-card-rating {
   font-size: 12px;
   display: flex;
@@ -406,8 +343,6 @@
   gap: 2px;
 }
 
-/* 별 아이콘 */
-
 .fav-static-stars {
   display: inline-flex;
 }
@@ -419,18 +354,12 @@
   position: relative;
 }
 
-.fav-card-rating-right .fav-star-static {
-  font-size: 30px;
-}
-
 .fav-star-static.full {
   color: #f97316;
 }
-
 .fav-star-static.empty {
   color: #e5e7eb;
 }
-
 .fav-star-static.half {
   color: #e5e7eb;
 }
@@ -445,20 +374,17 @@
   color: #f97316;
 }
 
-/* 기본 점수 글꼴 */
 .fav-card-rating-score {
   font-size: 14px;
   color: var(--accent-brown);
 }
 
-/* 카드 오른쪽 큰 점수 */
 .fav-card-rating-right .fav-card-rating-score {
   font-size: 22px;
   margin-top: 2px;
 }
 
 /* ===== 이미지 크롭 모달 ===== */
-
 .fav-crop-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -498,7 +424,6 @@
   color: #9ca3af;
 }
 
-/* 이 프레임 크기 = 카드 이미지와 100% 동일 (데스크탑 기준 620px) */
 .fav-crop-frame {
   position: relative;
   width: 100%;
@@ -519,8 +444,6 @@
   object-fit: cover;
   transition: transform 0.05s linear, object-position 0.05s linear;
 }
-
-/* 그리드 라인 */
 
 .fav-crop-grid {
   pointer-events: none;
@@ -556,8 +479,6 @@
     );
 }
 
-/* 컨트롤 */
-
 .fav-crop-controls {
   margin-top: 4px;
 }
@@ -586,7 +507,6 @@
 }
 
 /* ===== 공통 버튼 ===== */
-
 .fav-btn {
   padding: 4px 10px;
   border-radius: 999px;
@@ -606,14 +526,11 @@
   color: var(--text-main);
 }
 
-/* 🔵 라이트 모드 기본 primary = 공통 CTA (파랑) */
 .fav-btn.primary {
   background: var(--cta-bg);
   color: var(--cta-text-color);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.18);
-  transition: transform 0.1s ease-out,
-    box-shadow 0.15s ease-out,
-    filter 0.15s ease-out;
+  transition: transform 0.1s ease-out, box-shadow 0.15s ease-out, filter 0.15s ease-out;
 }
 
 .fav-btn.primary:hover {
@@ -628,7 +545,6 @@
 }
 
 /* ===== 등록/수정 폼 모달 ===== */
-
 .fav-form-backdrop {
   position: fixed;
   inset: 0;
@@ -667,8 +583,6 @@
   color: #8b5b7a;
 }
 
-/* 섹션 구분 */
-
 .fav-form-section {
   padding: 10px 0;
   border-top: 1px dashed #f0d0d0;
@@ -702,8 +616,6 @@
   color: var(--text-main);
 }
 
-/* placeholder 항상 보이게 */
-
 .fav-form-field input::placeholder,
 .fav-form-field textarea::placeholder {
   color: #c4a1b3;
@@ -736,8 +648,6 @@
   color: #888;
 }
 
-/* 사진/영상 미리보기 */
-
 .fav-form-image-input {
   display: flex;
   align-items: center;
@@ -760,7 +670,6 @@
   border: 1px solid #ddd;
 }
 
-/* 파일 선택 버튼 - 라이트: 파랑 CTA */
 .fav-file-label {
   display: inline-flex;
   align-items: center;
@@ -768,15 +677,13 @@
   padding: 6px 12px;
   border-radius: 999px;
   border: none;
-  background: var(--cta-bg);          /* 🔵 라이트 모드에서 파랑 */
+  background: var(--cta-bg);
   color: var(--cta-text-color);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.18);
-  transition: transform 0.1s ease-out,
-    box-shadow 0.15s ease-out,
-    filter 0.15s ease-out;
+  transition: transform 0.1s ease-out, box-shadow 0.15s ease-out, filter 0.15s ease-out;
 }
 
 .fav-file-label:hover {
@@ -790,9 +697,7 @@
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.22);
 }
 
-
 /* 폼 내 별점 */
-
 .fav-form-rating {
   display: flex;
   align-items: center;
@@ -845,12 +750,7 @@
 }
 
 /* ===== 반응형 ===== */
-
 @media (max-width: 900px) {
-  .fav-filter-bar {
-    min-width: 0;
-  }
-
   .fav-filter-row {
     flex-wrap: wrap;
   }
@@ -860,28 +760,17 @@
   }
 
   .fav-crop-frame {
-    height: 500px; /* 카드랑 동일 */
+    height: 500px;
   }
 }
 
 @media (max-width: 640px) {
-  .favorite-top-inner {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .favorite-top-right {
-    width: 100%;
-    justify-content: space-between;
+  .fav-category-inner {
+    padding: 0 12px;
   }
 
   .favorite-inner {
     padding-inline: 12px;
-  }
-
-  .fav-crop-modal {
-    width: 100%;
-    padding: 12px 12px 10px;
   }
 
   .fav-card-image-wrap {
@@ -889,7 +778,7 @@
   }
 
   .fav-crop-frame {
-    height: 360px; /* 카드랑 동일 */
+    height: 360px;
   }
 
   .fav-card-body-main {
@@ -905,17 +794,14 @@
 }
 
 /* ================================
-   다크 모드 - 즐겨찾기 등록/수정 모달 (fav-form)
+   다크 모드 - 즐겨찾기 등록/수정 모달
    ================================ */
-
 :root[data-theme="dark"] .fav-form {
-  /* 통닭 카드와 같은 짙은 초콜릿색 */
   background: #5e3a31;
   color: #fff7ef;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.7);
 }
 
-/* 제목 / 서브텍스트 */
 :root[data-theme="dark"] .fav-form-title {
   color: #fff7ef;
   text-shadow: 2px 2px 2px #2b1812;
@@ -929,12 +815,10 @@
   border-top-color: rgba(0, 0, 0, 0.35);
 }
 
-/* 라벨 */
 :root[data-theme="dark"] .fav-form-field > label {
   color: #fff7ef;
 }
 
-/* 입력칸 / 셀렉트 / 텍스트에어리어 – 라이트 브라운 + 갈색 글자 */
 :root[data-theme="dark"] .fav-form-field input[type="text"],
 :root[data-theme="dark"] .fav-form-field textarea,
 :root[data-theme="dark"] .fav-form-field select {
@@ -947,13 +831,11 @@
   outline: none;
 }
 
-/* placeholder */
 :root[data-theme="dark"] .fav-form-field input::placeholder,
 :root[data-theme="dark"] .fav-form-field textarea::placeholder {
   color: #b87346;
 }
 
-/* select option */
 :root[data-theme="dark"] .fav-form-field select {
   background-color: #f5d7b7;
 }
@@ -963,12 +845,10 @@
   color: #5e3a31;
 }
 
-/* 안내 문구 */
 :root[data-theme="dark"] .fav-form-field small {
   color: #fbe0c6;
 }
 
-/* 파일 선택 버튼 – 그라디언트 포인트 컬러 */
 :root[data-theme="dark"] .fav-file-label {
   background: linear-gradient(135deg, #ff9fb3, #f97316);
   color: #ffffff;
@@ -977,16 +857,14 @@
   box-shadow: 4px 4px 0 #3a221c;
 }
 
-/* 하단 버튼 – 취소(라이트 브라운), 저장(그라디언트) */
 :root[data-theme="dark"] .fav-form-actions .fav-btn {
-  background-color: #f5d7b7;   /* cancel 등 기본 버튼 */
+  background-color: #f5d7b7;
   color: #5e3a31;
   border-radius: 999px;
   border: 2px solid #3a221c;
   box-shadow: 4px 4px 0 #3a221c;
 }
 
-/* 저장 버튼 */
 :root[data-theme="dark"] .fav-form-actions .fav-btn.primary {
   background: linear-gradient(135deg, #ff9fb3, #f97316);
   color: #ffffff;
@@ -994,20 +872,17 @@
   box-shadow: 4px 4px 0 #3a221c;
 }
 
-/* hover */
 :root[data-theme="dark"] .fav-file-label:hover,
 :root[data-theme="dark"] .fav-form-actions .fav-btn:hover {
   filter: brightness(0.95);
 }
 
 /* ================================
-   다크 모드 – 사진 위치 조정(크롭) 모달 버튼
+   다크 모드 – 크롭 모달 버튼
    ================================ */
-
-/* 크롭 모달 하단 버튼 공통 */
 :root[data-theme="dark"] .fav-crop-modal-actions .fav-btn {
-  background-color: #f5d7b7;   /* 라이트 브라운 */
-  color: #5e3a31;              /* 짙은 갈색 글씨 */
+  background-color: #f5d7b7;
+  color: #5e3a31;
   border-radius: 999px;
   border: 2px solid #3a221c;
   padding: 6px 14px;
@@ -1015,7 +890,6 @@
   font-weight: 600;
 }
 
-/* 완료 버튼(primary)은 그대로 강조 색 유지 */
 :root[data-theme="dark"] .fav-crop-modal-actions .fav-btn.primary {
   background: linear-gradient(135deg, #ff6bb3, #f97316);
   color: #ffffff;
@@ -1023,7 +897,321 @@
   box-shadow: 0 0 0 0;
 }
 
-/* hover 시 살짝만 어둡게 */
 :root[data-theme="dark"] .fav-crop-modal-actions .fav-btn:hover {
   filter: brightness(0.95);
 }
+/* src/pages/FavoritePage.css */
+
+.favorite-root {
+  --brand-purple: #78266a;
+  --accent-peach: #ffd19d;
+  --accent-brown: #764c41;
+
+  --bg-main: #ffffff;
+  --text-main: #3a2630;
+  --text-muted: #9b7c8e;
+
+  width: 100%;
+  min-height: 100vh;
+  background: var(--bg-main);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ✅ 이제 헤더 없으니까 본문이 바로 시작 */
+.favorite-inner {
+  flex: 1;
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 24px 24px 32px;
+  background: transparent;
+}
+
+.fav-empty {
+  margin-top: 24px;
+  padding: 28px 16px;
+  text-align: center;
+  border-radius: 16px;
+  background: rgba(255, 209, 157, 0.35);
+  color: var(--text-main);
+}
+
+.fav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ===== 카드 ===== */
+.fav-card {
+  background: var(--accent-peach);
+  border-radius: 18px;
+  border: 1px solid rgba(118, 76, 65, 0.25);
+  color: var(--text-main);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.fav-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px 0;
+}
+
+.fav-card-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(52, 211, 153, 0.18);
+  border: 1px solid rgba(16, 185, 129, 0.85);
+  color: #047857;
+  font-weight: 600;
+}
+
+.fav-card-header-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fav-edit {
+  border: none;
+  background: var(--cta-bg);
+  color: var(--cta-text-color);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.18);
+  transition: transform 0.1s ease-out, box-shadow 0.15s ease-out, filter 0.15s ease-out;
+}
+
+.fav-edit:hover {
+  filter: brightness(1.03);
+  transform: translateY(-1px);
+}
+
+.fav-edit:active {
+  filter: brightness(0.95);
+  transform: translateY(0);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.22);
+}
+
+.fav-unlike {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent-brown);
+}
+
+.fav-card-image-wrap {
+  position: relative;
+  margin: 8px 16px 0;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #000;
+  height: 620px;
+}
+
+.fav-card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: var(--crop-x, 50%) var(--crop-y, 50%);
+  transform: scale(var(--crop-zoom, 1));
+  transform-origin: center center;
+  transition: transform 0.06s linear, object-position 0.06s linear;
+}
+
+.fav-card-noimage {
+  width: 100%;
+  height: 100%;
+  background: #4b5563;
+  color: #f9fafb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.fav-card-media {
+  width: 100%;
+  height: 100%;
+}
+
+.media-embed-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: #000;
+}
+
+.media-embed-iframe,
+.media-embed-video {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.media-embed-open-link {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  text-decoration: none;
+}
+
+.media-embed-open-link:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.fav-image-edit-btn {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: none;
+  background: var(--cta-bg);
+  color: var(--cta-text-color);
+  font-size: 11px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  transition: filter 0.15s ease-out, transform 0.1s ease-out;
+}
+
+.fav-image-edit-btn:hover {
+  filter: brightness(1.03);
+  transform: translateY(-1px);
+}
+
+.fav-image-edit-btn:active {
+  filter: brightness(0.95);
+  transform: translateY(0);
+}
+
+.fav-card-body {
+  padding: 12px 18px 16px;
+}
+
+.fav-card-body-main {
+  display: grid;
+  grid-template-columns: minmax(0, 2.4fr) minmax(0, 1fr);
+  grid-auto-rows: auto;
+  column-gap: 12px;
+  row-gap: 4px;
+  align-items: flex-start;
+}
+
+.fav-card-title {
+  margin: 0 0 4px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent-brown);
+  cursor: pointer;
+}
+
+.fav-card-addr {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.fav-card-note {
+  grid-column: 1 / 3;
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 6px 0 0;
+}
+
+.fav-card-rating-right {
+  grid-column: 2 / 3;
+  grid-row: 1 / 3;
+  align-self: center;
+  justify-self: flex-end;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.fav-static-stars {
+  display: inline-flex;
+}
+
+.fav-star-static {
+  font-size: 30px;
+  line-height: 1;
+  margin-right: 1px;
+  position: relative;
+}
+
+.fav-star-static.full {
+  color: #f97316;
+}
+.fav-star-static.empty {
+  color: #e5e7eb;
+}
+.fav-star-static.half {
+  color: #e5e7eb;
+}
+
+.fav-star-static.half::before {
+  content: "★";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 50%;
+  overflow: hidden;
+  color: #f97316;
+}
+
+.fav-card-rating-score {
+  font-size: 14px;
+  color: var(--accent-brown);
+}
+
+.fav-card-rating-right .fav-card-rating-score {
+  font-size: 22px;
+  margin-top: 2px;
+}
+
+/* ===== 크롭 모달/폼 모달 이하(너 기존 그대로) ===== */
+/* (너가 올린 CSS 아래 부분 그대로 유지하면 됨) */
+
+/* ===== 이미지 크롭 모달 ===== */
+.fav-crop-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+}
+
+.fav-crop-modal {
+  width: 980px;
+  max-width: min(980px, calc(100% - 40px));
+  background: #111;
+  border-radius: 18px;
+  padding: 16px 18px 14px;
+  color: #f9fafb;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ... (이하 너가 쓰던 모달/폼 CSS 그대로 붙이면 됨) */
