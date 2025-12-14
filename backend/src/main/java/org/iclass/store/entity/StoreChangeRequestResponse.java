@@ -55,6 +55,10 @@ public class StoreChangeRequestResponse {
     public Double getNewLng() { return newLng; }
     public void setNewLng(Double newLng) { this.newLng = newLng; }
 
+    // ✅ 추가
+    public Long getNewFoodTypeId() { return newFoodTypeId; }
+    public void setNewFoodTypeId(Long newFoodTypeId) { this.newFoodTypeId = newFoodTypeId; }
+
     /* ========================= Fields ========================= */
     private Long id;
     private Long storeIdx;
@@ -69,12 +73,15 @@ public class StoreChangeRequestResponse {
     private String rejectReason;
 
     private String newStoreName;
-    private String newOpenTime;     
-    private String newCloseTime;    
+    private String newOpenTime;
+    private String newCloseTime;
     private String newStoreAddress;
 
     private Double newLat;
     private Double newLng;
+
+    // ✅ 핵심
+    private Long newFoodTypeId;
 
     public static StoreChangeRequestResponse from(StoreChangeRequest r) {
         return StoreChangeRequestResponse.builder()
@@ -93,6 +100,7 @@ public class StoreChangeRequestResponse {
                 .newStoreAddress(r.getNewStoreAddress())
                 .newLat(r.getNewLat())
                 .newLng(r.getNewLng())
+                .newFoodTypeId(r.getNewFoodTypeId()) // ✅ 추가
                 .build();
     }
 }

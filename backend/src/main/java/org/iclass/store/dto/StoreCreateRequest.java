@@ -1,15 +1,31 @@
 package org.iclass.store.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
 import java.time.LocalDateTime;
 
 public class StoreCreateRequest {
 
+    @NotBlank(message = "노점 이름(storeName)은 필수입니다.")
+    @Size(max = 255, message = "노점 이름은 최대 255자까지 가능합니다.")
     private String storeName;
+
+    @NotNull(message = "카테고리(foodTypeId)를 선택해주세요.")
     private Long foodTypeId;
+
+    @NotBlank(message = "주소(storeAddress)는 필수입니다.")
+    @Size(max = 255, message = "주소는 최대 255자까지 가능합니다.")
     private String storeAddress;
+
+    @NotNull(message = "위도(lat)는 필수값입니다.")
     private Double lat;
+
+    @NotNull(message = "경도(lng)는 필수값입니다.")
     private Double lng;
 
+    // 선택값
     private LocalDateTime openTime;
     private LocalDateTime closeTime;
 

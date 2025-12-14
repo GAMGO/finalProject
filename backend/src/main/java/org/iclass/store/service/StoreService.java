@@ -27,35 +27,37 @@ public class StoreService {
     private final StoreRepository storeRepository;
     private final StoreChangeRequestRepository changeRepository;
 
-    // ✅ 점포 목록 조회 (READ 전용)
     public List<StoreResponse> listStores() {
         return storeRepository.findAll()
                 .stream()
-                .map(StoreResponse::from)   // Store -> StoreResponse
+                .map(StoreResponse::from)
                 .toList();
     }
 
-    // "HH:mm" 변환 유틸 (DTO가 LocalDateTime 을 주는 경우 대응)
     private static final DateTimeFormatter HHMM = DateTimeFormatter.ofPattern("HH:mm");
+
     private String toTime5(LocalDateTime dt) {
         if (dt == null) return null;
         LocalTime t = dt.toLocalTime();
-        return t.format(HHMM); // e.g. "09:30"
+        return t.format(HHMM);
     }
 
-    /**
-     * 점포 최초 등록: 바로 반영
-     */
     @Transactional
     public Long createStore(StoreCreateRequest req, Long ownerId) {
         Store store = new Store();
 
-        store.setStoreName(req.getStoreName());
-        store.setOpenTime(toTime5(req.getOpenTime()));     // "HH:mm" 문자열로 저장
+        // ✅ trim 방어 (검증은 @NotBlank/@NotNull이 먼저)
+        store.setStoreName(req.getStoreName() == null ? null : req.getStoreName().trim());
+        store.setStoreAddress(req.getStoreAddress() == null ? null : req.getStoreAddress().trim());
+
+        store.setOpenTime(toTime5(req.getOpenTime()));
         store.setCloseTime(toTime5(req.getCloseTime()));
-        store.setStoreAddress(req.getStoreAddress());
+
         store.setLat(req.getLat());
         store.setLng(req.getLng());
+
+        // ✅ 핵심(필수)
+        store.setFoodTypeId(req.getFoodTypeId());
 
         return storeRepository.save(store).getIdx();
     }
@@ -77,14 +79,12 @@ public class StoreService {
                 .newStoreAddress(req.getStoreAddress())
                 .newLat(req.getLat())
                 .newLng(req.getLng())
+                // .newFoodTypeId(req.getFoodTypeId()) // 필요하면 StoreChangeRequest에 필드 추가
                 .build();
 
         return changeRepository.save(change).getId();
     }
 
-    /**
-     * 점포 삭제 요청: 바로 삭제하지 않고 승인 대기만 생성
-     */
     @Transactional
     public Long requestDeleteStore(Long storeIdx, Long requesterId) {
         Store store = storeRepository.findById(storeIdx)

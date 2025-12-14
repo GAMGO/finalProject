@@ -31,11 +31,9 @@ public class Store {
     public Double getLng() { return lng; }
     public void setLng(Double lng) { this.lng = lng; }
 
-    // ✅ 추가
     public Long getFoodTypeId() { return foodTypeId; }
     public void setFoodTypeId(Long foodTypeId) { this.foodTypeId = foodTypeId; }
 
-    /* ========================= Fields ========================= */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "IDX")
@@ -59,7 +57,7 @@ public class Store {
     @Column(name = "LNG", nullable = false)
     private Double lng;
 
-    // ✅ 핵심: 카테고리 id 컬럼
-    @Column(name = "FOOD_TYPE_ID")
+    // ✅ 필수로 고정
+    @Column(name = "FOOD_TYPE_ID", nullable = false)
     private Long foodTypeId;
 }

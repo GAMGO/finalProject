@@ -165,11 +165,15 @@ export default function KakaoMap({ categoryFilterId = "" }) {
   // 노점 등록 모달
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPos, setSelectedPos] = useState(null);
+
+  // ✅ storeName 필수 입력 추가
   const [form, setForm] = useState({
+    storeName: "",
     categoryId: "",
     address: "",
-    description: "",
+    description: "", // 현재 DB에는 컬럼 없음(UI용)
   });
+
   const [isPickingLocation, setIsPickingLocation] = useState(false);
   const isPickingLocationRef = useRef(false);
 
@@ -557,7 +561,9 @@ export default function KakaoMap({ categoryFilterId = "" }) {
     setIsModalOpen(false);
     setIsPickingLocation(false);
     isPickingLocationRef.current = false;
-    setForm({ categoryId: "", address: "", description: "" });
+
+    setForm({ storeName: "", categoryId: "", address: "", description: "" });
+
     setSelectedPos(null);
     if (tempMarkerRef.current) {
       tempMarkerRef.current.setMap(null);
@@ -579,14 +585,25 @@ export default function KakaoMap({ categoryFilterId = "" }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // ✅ 프론트 선검증(필수값)
+    if (!form.categoryId) {
+      alert("카테고리를 선택해 주세요.");
+      return;
+    }
+    if (!(form.storeName || "").trim()) {
+      alert("노점 이름을 입력해 주세요.");
+      return;
+    }
+    if (!(form.address || "").trim()) {
+      alert("주소를 입력하거나 지도에서 위치를 선택해 주세요.");
+      return;
+    }
+
     let finalPos = selectedPos;
 
+    // ✅ 좌표가 없으면 주소로 찾기 (주소는 필수)
     if (!finalPos) {
       const addr = (form.address || "").trim();
-      if (!addr) {
-        alert("지도를 클릭해서 위치를 선택하거나, 주소를 입력해 주세요.");
-        return;
-      }
 
       if (!window.kakao) {
         alert("지도가 아직 준비되지 않았어요. 잠시 후 다시 시도해 주세요.");
@@ -653,10 +670,11 @@ export default function KakaoMap({ categoryFilterId = "" }) {
 
     const foodTypeId = form.categoryId ? Number(form.categoryId) : null;
 
+    // ✅ 백엔드 필수값에 맞춰 payload 고정
     const payload = {
-      storeName: form.description || "이름 없는 노점",
+      storeName: form.storeName.trim(),
       foodTypeId,
-      storeAddress: form.address || "",
+      storeAddress: form.address.trim(),
       lat: finalPos.lat,
       lng: finalPos.lng,
     };
@@ -670,8 +688,22 @@ export default function KakaoMap({ categoryFilterId = "" }) {
 
       const text = await res.text();
 
+      // ✅ 검증 에러(400) 메시지 그대로 alert
       if (!res.ok) {
-        alert(`가게 등록 실패 (${res.status})`);
+        let msg = `가게 등록 실패 (${res.status})`;
+
+        try {
+          const j = JSON.parse(text);
+          if (j && typeof j === "object") {
+            msg = Object.values(j).join("\n");
+          } else if (typeof j === "string") {
+            msg = j;
+          }
+        } catch {
+          if (text) msg = text;
+        }
+
+        alert(msg);
         return;
       }
 
@@ -699,7 +731,10 @@ export default function KakaoMap({ categoryFilterId = "" }) {
           CATEGORIES.find((c) => c.id === payload.foodTypeId)?.label || "",
       };
 
-      allStoresRef.current = [newStoreForMarker, ...(allStoresRef.current || [])];
+      allStoresRef.current = [
+        newStoreForMarker,
+        ...(allStoresRef.current || []),
+      ];
 
       if (mapInstanceRef.current) {
         if (!categoryFilterId || Number(categoryFilterId) === Number(foodTypeId)) {
@@ -1163,9 +1198,7 @@ export default function KakaoMap({ categoryFilterId = "" }) {
         <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
       </div>
 
-      {/* ✅ (삭제됨) 상단 좌측 카테고리 드롭다운 UI - 사이드바로 이동 */}
-
-      {/* 오른쪽 위 길찾기 패널 (원본 그대로) */}
+      {/* 오른쪽 위 길찾기 패널 */}
       <div
         style={{
           position: "fixed",
@@ -1181,7 +1214,14 @@ export default function KakaoMap({ categoryFilterId = "" }) {
           border: "2px solid rgba(120, 38, 106, 1)",
         }}
       >
-        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: THEME_COLOR }}>
+        <div
+          style={{
+            fontSize: 13,
+            fontWeight: 600,
+            marginBottom: 8,
+            color: THEME_COLOR,
+          }}
+        >
           길찾기
         </div>
 
@@ -1258,7 +1298,14 @@ export default function KakaoMap({ categoryFilterId = "" }) {
               {locating ? "위치 확인 중..." : "내 위치"}
             </button>
 
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: 6, flexShrink: 0 }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 6,
+                flexShrink: 0,
+              }}
+            >
               <button
                 type="button"
                 onClick={clearRoute}
@@ -1329,6 +1376,17 @@ export default function KakaoMap({ categoryFilterId = "" }) {
             <h3 className="map-modal-title">노점 추가</h3>
 
             <form onSubmit={handleSubmit}>
+              {/* ✅ 노점 이름 필수 */}
+              <label className="map-label">노점 이름</label>
+              <input
+                type="text"
+                name="storeName"
+                value={form.storeName}
+                onChange={handleChange}
+                placeholder="예: 옹이네 김밥"
+                className="map-input"
+              />
+
               <label className="map-label">카테고리</label>
               <select
                 name="categoryId"
@@ -1354,7 +1412,8 @@ export default function KakaoMap({ categoryFilterId = "" }) {
                 className="map-input"
               />
 
-              <label className="map-label">노점 설명</label>
+              {/* UI용 (DB 저장 X) */}
+              <label className="map-label">노점 설명 (선택)</label>
               <textarea
                 name="description"
                 value={form.description}
@@ -1375,7 +1434,11 @@ export default function KakaoMap({ categoryFilterId = "" }) {
               </div>
 
               <div className="map-modal-actions">
-                <button type="button" onClick={closeModal} className="map-btn-cancel">
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="map-btn-cancel"
+                >
                   취소
                 </button>
                 <button type="submit" className="map-btn-submit">
@@ -1390,7 +1453,11 @@ export default function KakaoMap({ categoryFilterId = "" }) {
       {/* 상세 + 리뷰 모달 */}
       {isDetailOpen && selectedStore && (
         <div className="map-modal-backdrop" onClick={closeDetail}>
-          <div className="map-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 520 }}>
+          <div
+            className="map-modal"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: 520 }}
+          >
             {/* 헤더 */}
             <div
               style={{
@@ -1421,7 +1488,8 @@ export default function KakaoMap({ categoryFilterId = "" }) {
                 {(() => {
                   const storeIdx = getStoreIdx(selectedStore);
                   const isFavorited =
-                    !!storeIdx && favorites.some((fav) => fav.favoriteStoreIdx === storeIdx);
+                    !!storeIdx &&
+                    favorites.some((fav) => fav.favoriteStoreIdx === storeIdx);
 
                   return (
                     <button
@@ -1431,7 +1499,10 @@ export default function KakaoMap({ categoryFilterId = "" }) {
                       style={{
                         border: "none",
                         background: "transparent",
-                        cursor: favoriteSaving || favoriteLoading ? "default" : "pointer",
+                        cursor:
+                          favoriteSaving || favoriteLoading
+                            ? "default"
+                            : "pointer",
                         fontSize: 22,
                         lineHeight: 1,
                         color: isFavorited ? THEME_COLOR : "#d1d5db",
@@ -1446,7 +1517,12 @@ export default function KakaoMap({ categoryFilterId = "" }) {
                 <button
                   type="button"
                   onClick={closeDetail}
-                  style={{ border: "none", background: "transparent", fontSize: 18, cursor: "pointer" }}
+                  style={{
+                    border: "none",
+                    background: "transparent",
+                    fontSize: 18,
+                    cursor: "pointer",
+                  }}
                 >
                   ✕
                 </button>
@@ -1473,11 +1549,17 @@ export default function KakaoMap({ categoryFilterId = "" }) {
               }}
             >
               <div>
-                <div style={{ fontSize: 13, color: "#6b7280" }}>평균 별점</div>
+                <div style={{ fontSize: 13, color: "#6b7280" }}>
+                  평균 별점
+                </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   {renderStars(computeAvgRating())}
-                  <span style={{ fontWeight: 600, fontSize: 16 }}>{getAvgRatingText()}</span>
-                  <span style={{ fontSize: 12, color: "#6b7280" }}>({getRatingCount()}개)</span>
+                  <span style={{ fontWeight: 600, fontSize: 16 }}>
+                    {getAvgRatingText()}
+                  </span>
+                  <span style={{ fontSize: 12, color: "#6b7280" }}>
+                    ({getRatingCount()}개)
+                  </span>
                 </div>
               </div>
             </div>
@@ -1492,19 +1574,38 @@ export default function KakaoMap({ categoryFilterId = "" }) {
                 marginBottom: 14,
               }}
             >
-              <div style={{ fontSize: 13, color: THEME_COLOR, marginBottom: 4, fontWeight: 600 }}>
+              <div
+                style={{
+                  fontSize: 13,
+                  color: THEME_COLOR,
+                  marginBottom: 4,
+                  fontWeight: 600,
+                }}
+              >
                 리뷰 한 줄 요약 (AI)
               </div>
               {reviewSummaryLoading ? (
-                <div style={{ fontSize: 13, color: "#6b7280" }}>요약 생성 중...</div>
+                <div style={{ fontSize: 13, color: "#6b7280" }}>
+                  요약 생성 중...
+                </div>
               ) : reviewSummaryError ? (
-                <div style={{ fontSize: 13, color: "#dc2626" }}>{reviewSummaryError}</div>
+                <div style={{ fontSize: 13, color: "#dc2626" }}>
+                  {reviewSummaryError}
+                </div>
               ) : reviewSummary ? (
-                <div style={{ fontSize: 13, color: "#111827", whiteSpace: "pre-wrap" }}>
+                <div
+                  style={{
+                    fontSize: 13,
+                    color: "#111827",
+                    whiteSpace: "pre-wrap",
+                  }}
+                >
                   {reviewSummary}
                 </div>
               ) : (
-                <div style={{ fontSize: 13, color: "#9ca3af" }}>아직 요약이 없습니다.</div>
+                <div style={{ fontSize: 13, color: "#9ca3af" }}>
+                  아직 요약이 없습니다.
+                </div>
               )}
             </div>
 
@@ -1521,7 +1622,9 @@ export default function KakaoMap({ categoryFilterId = "" }) {
                         <button
                           key={star}
                           type="button"
-                          onClick={() => setReviewForm((prev) => ({ ...prev, rating: star }))}
+                          onClick={() =>
+                            setReviewForm((prev) => ({ ...prev, rating: star }))
+                          }
                           onMouseEnter={() => setHoverRating(star)}
                           onMouseLeave={() => setHoverRating(0)}
                           style={{
@@ -1610,9 +1713,13 @@ export default function KakaoMap({ categoryFilterId = "" }) {
               }}
             >
               {reviewsLoading ? (
-                <div style={{ fontSize: 13, color: "#6b7280" }}>리뷰 불러오는 중...</div>
+                <div style={{ fontSize: 13, color: "#6b7280" }}>
+                  리뷰 불러오는 중...
+                </div>
               ) : reviews.length === 0 ? (
-                <div style={{ fontSize: 13, color: "#6b7280" }}>아직 등록된 리뷰가 없어요.</div>
+                <div style={{ fontSize: 13, color: "#6b7280" }}>
+                  아직 등록된 리뷰가 없어요.
+                </div>
               ) : (
                 reviews.map((r) => (
                   <div
@@ -1632,9 +1739,17 @@ export default function KakaoMap({ categoryFilterId = "" }) {
                     >
                       <div style={{ fontSize: 12, color: "#6b7280" }}>
                         {renderStars(r.rating)}
-                        <span style={{ marginLeft: 4, fontWeight: 600 }}>{r.rating}점</span>
+                        <span style={{ marginLeft: 4, fontWeight: 600 }}>
+                          {r.rating}점
+                        </span>
                       </div>
-                      <div style={{ fontSize: 11, color: "#9ca3af", whiteSpace: "nowrap" }}>
+                      <div
+                        style={{
+                          fontSize: 11,
+                          color: "#9ca3af",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
                         {formatDateTime(r.createdAt)}
                       </div>
                     </div>
@@ -1648,7 +1763,14 @@ export default function KakaoMap({ categoryFilterId = "" }) {
             </div>
 
             {/* 카카오맵 길찾기 */}
-            <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "center", marginTop: 4 }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-start",
+                alignItems: "center",
+                marginTop: 4,
+              }}
+            >
               <button
                 type="button"
                 onClick={handleSetRouteToHere}
