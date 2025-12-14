@@ -27,7 +27,6 @@ const Logout = ({ onLogoutSuccess }) => {
         setMessage("로그아웃에 성공했습니다. 잠시 후 로그인 화면으로 돌아갑니다.");
         setTimeout(() => onLogoutSuccess(), 1500);
       } catch (error) {
-        // 로그 안 찍고 메시지만
         setMessage("로그아웃 처리 중 오류가 발생했지만, 인증 상태를 해제합니다.");
         setTimeout(() => onLogoutSuccess(), 1500);
       }
@@ -53,6 +52,23 @@ const Logout = ({ onLogoutSuccess }) => {
   );
 };
 
+// ✅ 즐겨찾기 페이지용(문자열 필터)
+const FAVORITE_CATEGORY_OPTIONS = [
+  { value: "전체", label: "전체" },
+  { value: "통닭", label: "통닭" },
+  { value: "타코야끼", label: "타코야끼" },
+  { value: "순대곱창", label: "순대·곱창" },
+  { value: "붕어빵", label: "붕어빵" },
+  { value: "군밤/고구마", label: "군밤/고구마" },
+  { value: "닭꼬치", label: "닭꼬치" },
+  { value: "분식", label: "분식" },
+  { value: "해산물", label: "해산물" },
+  { value: "뻥튀기", label: "뻥튀기" },
+  { value: "계란빵", label: "계란빵" },
+  { value: "옥수수", label: "옥수수" },
+  { value: "기타", label: "기타" },
+];
+
 export default function App() {
   const [page, setPage] = useState("map");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -60,8 +76,11 @@ export default function App() {
   const { theme, setTheme } = useTheme();
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
 
-  // ✅ 사이드바 카테고리 필터(문자열)
+  // ✅ MAP 페이지: 카테고리 필터(문자열 id)
   const [categoryFilterId, setCategoryFilterId] = useState("");
+
+  // ✅ FAVORITE 페이지: 카테고리 필터(문자열 key)
+  const [favoriteCategoryFilter, setFavoriteCategoryFilter] = useState("전체");
 
   useEffect(() => {
     const token = localStorage.getItem("jwtToken");
@@ -111,7 +130,7 @@ export default function App() {
           <img src={DISH_LOGO} alt="DISHINSIDE 로고" className="side-logo-img" />
         </div>
 
-        {/* ✅ 카테고리 드롭다운 (MAP 페이지일 때만) */}
+        {/* ✅ MAP 페이지 카테고리 드롭다운 */}
         {page === "map" && (
           <div className="side-category-card">
             <div className="side-category-title">카테고리</div>
@@ -130,7 +149,28 @@ export default function App() {
           </div>
         )}
 
-        <button className={getButtonClass("community")} onClick={() => setPage("community")}>
+        {/* ✅ FAVORITE 페이지 카테고리 드롭다운 (헤더에서 내려옴) */}
+        {page === "favorite" && (
+          <div className="side-category-card">
+            <div className="side-category-title">카테고리</div>
+            <select
+              className="side-category-select"
+              value={favoriteCategoryFilter}
+              onChange={(e) => setFavoriteCategoryFilter(e.target.value)}
+            >
+              {FAVORITE_CATEGORY_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        <button
+          className={getButtonClass("community")}
+          onClick={() => setPage("community")}
+        >
           커뮤니티
         </button>
 
@@ -138,7 +178,10 @@ export default function App() {
           회원정보
         </button>
 
-        <button className={getButtonClass("favorite")} onClick={() => setPage("favorite")}>
+        <button
+          className={getButtonClass("favorite")}
+          onClick={() => setPage("favorite")}
+        >
           즐겨찾기
         </button>
 
@@ -186,7 +229,7 @@ export default function App() {
         ) : page === "profile" ? (
           <UserProfilePage onWithdraw={() => setPage("withdraw")} />
         ) : page === "favorite" ? (
-          <FavoritePage />
+          <FavoritePage categoryFilter={favoriteCategoryFilter} />
         ) : page === "logout" ? (
           <Logout onLogoutSuccess={handleLogoutSuccess} />
         ) : page === "withdraw" ? (
