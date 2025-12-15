@@ -1,13 +1,11 @@
 package org.iclass.store.service;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-
-import org.iclass.store.enums.StoreChangeStatus;
-import org.iclass.store.enums.StoreChangeType;
+import org.iclass.store.dto.StoreChangeRequestResponse;
 import org.iclass.store.entity.Store;
 import org.iclass.store.entity.StoreChangeRequest;
-import org.iclass.store.entity.StoreChangeRequestResponse;
+import org.iclass.store.enums.StoreChangeStatus;
+import org.iclass.store.enums.StoreChangeType;
 import org.iclass.store.repository.StoreChangeRequestRepository;
 import org.iclass.store.repository.StoreRepository;
 import org.springframework.stereotype.Service;
@@ -18,83 +16,93 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true) 
 public class StoreChangeAdminService {
 
-    private final StoreRepository storeRepository;
-    private final StoreChangeRequestRepository changeRepository;
+    private final StoreChangeRequestRepository changeRepo;
+    private final StoreRepository storeRepo;
 
-    /**
-     * 승인 대기 목록
-     */
+    // ✅ 스샷의 adminService.listPending() 빨간줄 해결
+    @Transactional(readOnly = true)
     public List<StoreChangeRequestResponse> listPending() {
-        return changeRepository.findByStatus(StoreChangeStatus.PENDING)
+        return changeRepo.findByStatus(StoreChangeStatus.PENDING)
                 .stream()
                 .map(StoreChangeRequestResponse::from)
                 .toList();
     }
 
-    /**
-     * 변경 요청 승인
-     */
     @Transactional
     public void approveChange(Long changeId, Long adminId) {
-        StoreChangeRequest c = changeRepository.findById(changeId)
-                .orElseThrow(() -> new EntityNotFoundException("변경 요청을 찾을 수 없습니다."));
+        StoreChangeRequest req = changeRepo.findById(changeId)
+                .orElseThrow(() -> new IllegalArgumentException("변경 요청이 존재하지 않습니다: " + changeId));
 
-        if (c.getStatus() != StoreChangeStatus.PENDING) {
-            throw new IllegalStateException("이미 처리된 요청입니다.");
+        if (req.getStatus() != StoreChangeStatus.PENDING) return;
+
+        req.setStatus(StoreChangeStatus.APPROVED);
+        req.setReviewedBy(adminId);
+        req.setReviewedAt(LocalDateTime.now());
+        req.setRejectReason(null);
+
+        if (req.getType() == StoreChangeType.CREATE) {
+            Store s = new Store();
+            s.setStoreName(req.getNewStoreName());
+            s.setStoreAddress(req.getNewStoreAddress());
+            s.setLat(req.getNewLat());
+            s.setLng(req.getNewLng());
+            s.setFoodTypeId(req.getNewFoodTypeId());
+
+            s.setIsDeleted(false);
+            s.setDeletedAt(null);
+
+            storeRepo.save(s);
+
+        } else if (req.getType() == StoreChangeType.UPDATE) {
+            if (req.getStore() == null) {
+                throw new IllegalStateException("UPDATE 요청인데 store가 null 입니다.");
+            }
+
+            Store store = storeRepo.findById(req.getStore().getIdx())
+                    .orElseThrow(() -> new IllegalArgumentException("대상 Store가 없습니다: " + req.getStore().getIdx()));
+
+            if (Boolean.TRUE.equals(store.getIsDeleted())) {
+                throw new IllegalStateException("삭제된 노점은 수정할 수 없습니다.");
+            }
+
+            if (req.getNewStoreName() != null) store.setStoreName(req.getNewStoreName());
+            if (req.getNewStoreAddress() != null) store.setStoreAddress(req.getNewStoreAddress());
+            if (req.getNewLat() != null) store.setLat(req.getNewLat());
+            if (req.getNewLng() != null) store.setLng(req.getNewLng());
+            if (req.getNewFoodTypeId() != null) store.setFoodTypeId(req.getNewFoodTypeId());
+
+            storeRepo.save(store);
+
+        } else if (req.getType() == StoreChangeType.DELETE) {
+            if (req.getStore() == null) {
+                throw new IllegalStateException("DELETE 요청인데 store가 null 입니다.");
+            }
+
+            Store store = storeRepo.findById(req.getStore().getIdx())
+                    .orElseThrow(() -> new IllegalArgumentException("대상 Store가 없습니다: " + req.getStore().getIdx()));
+
+            store.setIsDeleted(true);
+            store.setDeletedAt(LocalDateTime.now());
+            storeRepo.save(store);
         }
 
-        Store store = c.getStore();
-
-        if (c.getType() == StoreChangeType.UPDATE) {
-            // StoreChangeRequest의 변경 필드를 실제 Store 엔티티에 반영
-            if (c.getNewStoreName() != null) {
-                store.setStoreName(c.getNewStoreName());
-            }
-            if (c.getNewOpenTime() != null) {
-                store.setOpenTime(c.getNewOpenTime());     // VARCHAR(5) 매핑된 String
-            }
-            if (c.getNewCloseTime() != null) {
-                store.setCloseTime(c.getNewCloseTime());   // VARCHAR(5) 매핑된 String
-            }
-            if (c.getNewStoreAddress() != null) {
-                store.setStoreAddress(c.getNewStoreAddress());
-            }
-      
-            if (c.getNewLat() != null) {
-                store.setLat(c.getNewLat());
-            }
-            if (c.getNewLng() != null) {
-                store.setLng(c.getNewLng());
-            }
-            // JPA dirty checking으로 UPDATE 자동 반영
-
-        } else if (c.getType() == StoreChangeType.DELETE) {
-            storeRepository.delete(store);
-        }
-
-        c.setStatus(StoreChangeStatus.APPROVED);
-        c.setReviewedBy(adminId);
-        c.setReviewedAt(LocalDateTime.now());
+        changeRepo.save(req);
     }
 
-    /**
-     * 변경 요청 거절
-     */
     @Transactional
     public void rejectChange(Long changeId, Long adminId, String reason) {
-        StoreChangeRequest c = changeRepository.findById(changeId)
-                .orElseThrow(() -> new EntityNotFoundException("변경 요청을 찾을 수 없습니다."));
+        StoreChangeRequest req = changeRepo.findById(changeId)
+                .orElseThrow(() -> new IllegalArgumentException("변경 요청이 존재하지 않습니다: " + changeId));
 
-        if (c.getStatus() != StoreChangeStatus.PENDING) {
-            throw new IllegalStateException("이미 처리된 요청입니다.");
-        }
+        if (req.getStatus() != StoreChangeStatus.PENDING) return;
 
-        c.setStatus(StoreChangeStatus.REJECTED);
-        c.setReviewedBy(adminId);
-        c.setReviewedAt(LocalDateTime.now());
-        c.setRejectReason(reason);
+        req.setStatus(StoreChangeStatus.REJECTED);
+        req.setReviewedBy(adminId);
+        req.setReviewedAt(LocalDateTime.now());
+        req.setRejectReason((reason == null || reason.isBlank()) ? "사유 없음" : reason);
+
+        changeRepo.save(req);
     }
 }

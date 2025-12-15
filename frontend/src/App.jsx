@@ -5,6 +5,7 @@ import UserProfilePage from "./pages/UserProfilePage";
 import WithdrawalPage from "./pages/WithdrawalPage";
 import AuthPage from "./pages/AuthPage";
 import FavoritePage from "./pages/FavoritePage";
+import AdminPage from "./pages/AdminPage"; // ✅ 추가
 import apiClient, { setAuthToken, clearAuthToken } from "./api/apiClient";
 
 import "./App.css";
@@ -82,12 +83,21 @@ export default function App() {
   // ✅ FAVORITE 페이지: 카테고리 필터(문자열 key)
   const [favoriteCategoryFilter, setFavoriteCategoryFilter] = useState("전체");
 
+  // ✅ 추가: 유저 role
+  const [userRole, setUserRole] = useState(localStorage.getItem("role") || "");
+
+  // ✅ 관리자 판별 (ADMIN / ROLE_ADMIN 둘 다 대응)
+  const isAdmin = String(userRole).toUpperCase().includes("ADMIN");
+
   useEffect(() => {
     const token = localStorage.getItem("jwtToken");
     const refreshToken = localStorage.getItem("refreshToken");
+    const role = localStorage.getItem("role") || "";
+
     if (token) {
       setAuthToken(token, refreshToken);
       setIsLoggedIn(true);
+      setUserRole(role); // ✅ 추가
     }
   }, []);
 
@@ -102,11 +112,19 @@ export default function App() {
 
   const handleLoginSuccess = () => {
     setIsLoggedIn(true);
+    setUserRole(localStorage.getItem("role") || ""); // ✅ 로그인 직후 바로 반영
     setPage("map");
   };
 
   const handleLogoutSuccess = () => {
     clearAuthToken();
+
+    // ✅ 로그아웃 시 role도 날려야 관리자 버튼 사라짐
+    localStorage.removeItem("jwtToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("role");
+    setUserRole("");
+
     setIsLoggedIn(false);
     setPage("map");
   };
@@ -149,7 +167,7 @@ export default function App() {
           </div>
         )}
 
-        {/* ✅ FAVORITE 페이지 카테고리 드롭다운 (헤더에서 내려옴) */}
+        {/* ✅ FAVORITE 페이지 카테고리 드롭다운 */}
         {page === "favorite" && (
           <div className="side-category-card">
             <div className="side-category-title">카테고리</div>
@@ -174,7 +192,10 @@ export default function App() {
           커뮤니티
         </button>
 
-        <button className={getButtonClass("profile")} onClick={() => setPage("profile")}>
+        <button
+          className={getButtonClass("profile")}
+          onClick={() => setPage("profile")}
+        >
           회원정보
         </button>
 
@@ -184,6 +205,16 @@ export default function App() {
         >
           즐겨찾기
         </button>
+
+        {/* ✅ 여기!! 관리자면 사이드바에 관리자페이지 버튼 노출 */}
+        {isAdmin && (
+          <button
+            className={getButtonClass("admin")}
+            onClick={() => setPage("admin")}
+          >
+            관리자페이지
+          </button>
+        )}
 
         {/* ✅ 좌하단 설정 + 로그아웃 */}
         <div className="side-settings-wrap">
@@ -196,7 +227,11 @@ export default function App() {
             <img src={SETTING_ICON} alt="테마 설정" className="side-settings-icon" />
           </button>
 
-          <button type="button" className="side-logout-mini" onClick={() => setPage("logout")}>
+          <button
+            type="button"
+            className="side-logout-mini"
+            onClick={() => setPage("logout")}
+          >
             로그아웃
           </button>
 
@@ -230,6 +265,8 @@ export default function App() {
           <UserProfilePage onWithdraw={() => setPage("withdraw")} />
         ) : page === "favorite" ? (
           <FavoritePage categoryFilter={favoriteCategoryFilter} />
+        ) : page === "admin" ? (
+          <AdminPage />
         ) : page === "logout" ? (
           <Logout onLogoutSuccess={handleLogoutSuccess} />
         ) : page === "withdraw" ? (
