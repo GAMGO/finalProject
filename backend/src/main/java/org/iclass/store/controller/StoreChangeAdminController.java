@@ -1,9 +1,8 @@
 package org.iclass.store.controller;
 
 import lombok.RequiredArgsConstructor;
-
 import org.iclass.store.dto.StoreChangeRejectRequest;
-import org.iclass.store.entity.StoreChangeRequestResponse;
+import org.iclass.store.dto.StoreChangeRequestResponse;
 import org.iclass.store.service.StoreChangeAdminService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -37,4 +36,3 @@ public class StoreChangeAdminController {
         return ResponseEntity.noContent().build();
     }
 }
-

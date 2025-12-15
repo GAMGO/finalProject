@@ -1,107 +1,65 @@
 package org.iclass.store.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
+import org.iclass.store.enums.StoreChangeStatus;
+import org.iclass.store.enums.StoreChangeType;
 
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
 @Entity
-@Table(name = "store_change_request")
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
-@Builder
+@Table(name = "store_change_requests")
 public class StoreChangeRequest {
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public Store getStore() { return store; }
-    public void setStore(Store store) { this.store = store; }
-
-    public org.iclass.store.enums.StoreChangeType getType() { return type; }
-    public void setType(org.iclass.store.enums.StoreChangeType type) { this.type = type; }
-
-    public org.iclass.store.enums.StoreChangeStatus getStatus() { return status; }
-    public void setStatus(org.iclass.store.enums.StoreChangeStatus status) { this.status = status; }
-
-    public Long getRequestedBy() { return requestedBy; }
-    public void setRequestedBy(Long requestedBy) { this.requestedBy = requestedBy; }
-
-    public java.time.LocalDateTime getRequestedAt() { return requestedAt; }
-    public void setRequestedAt(java.time.LocalDateTime requestedAt) { this.requestedAt = requestedAt; }
-
-    public Long getReviewedBy() { return reviewedBy; }
-    public void setReviewedBy(Long reviewedBy) { this.reviewedBy = reviewedBy; }
-
-    public java.time.LocalDateTime getReviewedAt() { return reviewedAt; }
-    public void setReviewedAt(java.time.LocalDateTime reviewedAt) { this.reviewedAt = reviewedAt; }
-
-    public String getRejectReason() { return rejectReason; }
-    public void setRejectReason(String rejectReason) { this.rejectReason = rejectReason; }
-
-    public String getNewStoreName() { return newStoreName; }
-    public void setNewStoreName(String newStoreName) { this.newStoreName = newStoreName; }
-
-    public String getNewOpenTime() { return newOpenTime; }
-    public void setNewOpenTime(String newOpenTime) { this.newOpenTime = newOpenTime; }
-
-    public String getNewCloseTime() { return newCloseTime; }
-    public void setNewCloseTime(String newCloseTime) { this.newCloseTime = newCloseTime; }
-
-    public String getNewStoreAddress() { return newStoreAddress; }
-    public void setNewStoreAddress(String newStoreAddress) { this.newStoreAddress = newStoreAddress; }
-
-    public Double getNewLat() { return newLat; }
-    public void setNewLat(Double newLat) { this.newLat = newLat; }
-
-    public Double getNewLng() { return newLng; }
-    public void setNewLng(Double newLng) { this.newLng = newLng; }
-
-    // ✅ 추가: 변경할 카테고리(FOOD_TYPE_ID)
-    public Long getNewFoodTypeId() { return newFoodTypeId; }
-    public void setNewFoodTypeId(Long newFoodTypeId) { this.newFoodTypeId = newFoodTypeId; }
-
-    /* ========================= Fields ========================= */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "idx")
+    private Long id; // ✅ getId() 로 맞춤 (네 코드가 getId() 쓰는 스타일)
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "store_idx")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", nullable = false)
+    private StoreChangeType type;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private StoreChangeStatus status;
+
+    // CREATE는 null 가능, UPDATE/DELETE는 존재
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_idx", foreignKey = @ForeignKey(name = "fk_scr_store"))
     private Store store;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private org.iclass.store.enums.StoreChangeType type;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private org.iclass.store.enums.StoreChangeStatus status;
-
+    @Column(name = "requested_by", nullable = false)
     private Long requestedBy;
 
-    @Column(nullable = false)
-    private java.time.LocalDateTime requestedAt;
+    @Column(name = "requested_at", nullable = false)
+    private LocalDateTime requestedAt;
 
+    @Column(name = "reviewed_by")
     private Long reviewedBy;
-    private java.time.LocalDateTime reviewedAt;
 
-    @Column(length = 1000)
+    @Column(name = "reviewed_at")
+    private LocalDateTime reviewedAt;
+
+    @Column(name = "reject_reason")
     private String rejectReason;
 
-    // 변경 예정 값들
+    // ===== 요청된 새 값들 =====
+    @Column(name = "new_store_name")
     private String newStoreName;
 
-    @Column(length = 5)
-    private String newOpenTime;
-
-    @Column(length = 5)
-    private String newCloseTime;
-
+    @Column(name = "new_store_address")
     private String newStoreAddress;
 
+    @Column(name = "new_lat")
     private Double newLat;
+
+    @Column(name = "new_lng")
     private Double newLng;
 
-    // ✅ 핵심: 카테고리 변경값 저장 컬럼
     @Column(name = "new_food_type_id")
     private Long newFoodTypeId;
 }

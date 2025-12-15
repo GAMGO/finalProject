@@ -1,11 +1,11 @@
-package org.iclass.store.dto;
+package org.iclass.store.entity;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class StoreUpdateRequest {
+public class StoreCreateRequest {
     private String storeName;
     private Long foodTypeId;
     private String storeAddress;
