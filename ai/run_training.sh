@@ -24,7 +24,6 @@ python train_stall_recommender.py
 # 4. 학습 후: database.py의 cursorclass 주석 해제
 echo "🛠️ API 서버 실행을 위해 database.py 설정 복원 (주석 해제)..."
 python modify_db_config.py uncomment
-
 # 5. 최종 API 서버 실행
 echo "🚀 Uvicorn API 서버 실행 중..."
 # --reload 옵션은 배포 환경에서는 권장되지 않으므로 제거합니다.
