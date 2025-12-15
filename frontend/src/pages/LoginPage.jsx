@@ -225,7 +225,7 @@ const handleLogin = async () => {
     }`,
   };
   const logo_img = {
-  display: block,
+  display: "block",
   maxWidth: "100%",
   height: "auto",
   border: "none !important",
