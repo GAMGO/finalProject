@@ -9,7 +9,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class FastAPIProxyController {
 
     // application.properties의 VITE_BASE_URL (Railway 주소)를 주입받습니다.
-    @Value("${VITE_BASE_URL}") 
+    @Value("${RAILWAY_FASTAPI_URL}") 
     private String fastApiBaseUrl; 
 
     private final WebClient webClient;
