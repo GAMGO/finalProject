@@ -41,7 +41,7 @@ dependencies {
     runtimeOnly "io.jsonwebtoken:jjwt-impl:${jwtVersion}"
     runtimeOnly "io.jsonwebtoken:jjwt-jackson:${jwtVersion}" // jackson serializer
     // 게이트웨이
-    //implementation 'org.springframework.cloud:spring-cloud-starter-gateway'
+    implementation 'org.springframework.cloud:spring-cloud-starter-gateway'
     // testImplementation 'org.springframework.boot:spring-boot-starter-test'
     // testImplementation 'org.springframework.security:spring-security-test'
 }
