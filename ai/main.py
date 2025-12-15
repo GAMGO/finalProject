@@ -12,6 +12,7 @@ origins = [
     "http://127.0.0.1:5173",
     "http://localhost:4173",
     "http://127.0.0.1:4173",
+    "https://dishinside.shop/"
     # 필요하면 더 추가
     # "http://localhost:3000",
 ]

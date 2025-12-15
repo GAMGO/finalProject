@@ -14,6 +14,7 @@
   flex-direction: column;
 }
 
+/* ===== 헤더 ===== */
 .profile-top {
   position: sticky;
   top: 0;
@@ -21,9 +22,8 @@
   background: var(--brand-purple);
   box-shadow: 0 2px 6px rgba(0,0,0,0.18);
 }
-
 .profile-top-inner {
-  max-width: 720px;
+  max-width: 920px; /* 폼 넓힘과 기준선 맞추기 */
   margin: 0 auto;
   padding: 12px 24px 10px;
   display: flex;
@@ -31,78 +31,103 @@
   justify-content: space-between;
   gap: 16px;
 }
-
 .profile-title {
   font-size: 20px;
   font-weight: 700;
   color: #fff;
 }
 
-/* ✅ 상단 "수정하기" – 예전 오렌지 그라데이션 */
+/* 상단 "수정하기" */
 .profile-edit-btn {
   height: 34px;
   padding: 0 14px;
   border-radius: 999px;
   border: none;
   cursor: pointer;
-  background: linear-gradient(135deg, #ff6bb3, #f97316);
+  background: #4A1010;
   color: #fff;
   font-size: 12px;
   font-weight: 700;
 }
 
+/* ===== 내부 레이아웃 ===== */
 .profile-inner {
   flex: 1;
   width: 100%;
-  max-width: 720px;
+  max-width: 920px;           /* 720 → 920: 가로 조금 더 넓게 */
   margin: 0 auto;
-  padding: 18px 24px 32px;
+  padding: 18px 24px 48px;    /* 하단 여백 여유 */
 }
 
+/* 카드: “너무 떠 보이는” 느낌 줄이기 — 그림자/테두리 부드럽게 */
 .profile-card {
   background: #fff;
-  border-radius: 18px;
-  padding: 14px 16px;
-  border: 1px solid rgba(118, 76, 65, 0.25);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.06);
+  border-radius: 12px;                         /* 10→12: 라운드 톤 일관 */
+  padding: 18px 20px;                          /* 20→18: 내부 과한 여백 살짝 축소 */
+  border: 1px solid rgba(0,0,0,0.06);          /* 테두리 톤 소폭 약화 */
+  box-shadow: 0 8px 18px rgba(0,0,0,0.12);     /* 0 8 16 0.06 → 더 부드럽게 */
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 16px;                                   /* 15→16: 리듬감 */
 }
 
+/* 카드와 카드 사이 간격: 그룹 분리 감 강화 */
+.profile-inner .profile-card + .profile-card {
+  margin-top: clamp(28px, 5vw, 40px);          /* 화면 크기에 따라 자연스런 간격 */
+}
+
+/* 폼 행: 숨 쉴 공간 확보 */
 .profile-row {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 12px;                                    /* 10→12 */
   font-size: 13px;
+  line-height: 1.45;
 }
-
 .profile-row label {
   font-size: 12px;
   color: var(--text-muted);
+  margin-bottom: 2px;                           /* 라벨과 입력창 간 최소 간격 */
 }
 
+/* 입력창: 테두리/그림자 과함 ↓, 포커스 상태 선명 ↑ */
 .profile-row input,
-.profile-row select {
+.profile-row select,
+.profile-row textarea {
   border-radius: 10px;
-  border: 1px solid rgba(243, 189, 152, 0.9);
+  border: 1px solid rgba(0,0,0,0.12);           /* rgba(243,189,152,0.9) → 뉴트럴 */
   background: #fff7ef;
-  padding: 8px 10px;
+  padding: 10px 12px;                           /* 8→10: 터치 여유 */
   font-size: 13px;
   color: var(--text-main);
   outline: none;
+  box-shadow: none;                              /* 과한 입체감 제거 */
+  transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+.profile-row input::placeholder,
+.profile-row textarea::placeholder {
+  opacity: .8;
 }
 
+/* 포커스: 깔끔하게만 강조 (네 톤은 유지) */
+.profile-row input:focus,
+.profile-row select:focus,
+.profile-row textarea:focus {
+  border-color: #bfa497;                         /* 살짝만 강조 */
+  box-shadow: 0 0 0 3px rgba(191,164,151,0.18);  /* 외곽 포커스 링 */
+}
+
+/* 액션 영역 */
 .profile-actions {
   display: flex;
   justify-content: flex-end;
   margin-top: 6px;
 }
 
-/* ✅ 비밀번호 카드 안 "열기" 같은 버튼 – 예전 오렌지 그라데이션 */
+/* 비밀번호 카드 안 버튼 */
 .profile-save {
   border-radius: 999px;
-  padding: 7px 14px;
+  padding: 9px 16px;                            /* 클릭 여유 */
   font-size: 13px;
   cursor: pointer;
   border: none;
@@ -112,100 +137,110 @@
 }
 
 /* ================================
-   다크 모드 – 로그인/회원가입과 톤 맞추기
+   다크 모드 – (색감은 유지, 시각 조화만 보정)
    ================================ */
 
-/* 전체 메인 배경 */
 :root[data-theme="dark"] .profile-root {
   background-color: #120707;
   color: #fef3e8;
 }
-
-/* 상단 고정 헤더 바 */
 :root[data-theme="dark"] .profile-top {
   background-color: #4A1010;
   box-shadow: 0 2px 6px rgba(0,0,0,0.7);
 }
-
 :root[data-theme="dark"] .profile-title {
   color: #fef3e8;
 }
 
-/* 카드(회원정보 / 비밀번호 변경 박스) – 초콜릿색 */
+/* 다크 카드 기본값(초콜릿) — 아래 오버라이드가 화이트 카드로 통일함 */
 :root[data-theme="dark"] .profile-card {
   background-color: #5e3a31;
-  border-color: rgba(0,0,0,0.45);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+  border-color: rgba(0,0,0,0.28);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.28);
 }
 
-/* 라벨 글자 – 연한 베이지 + 살짝 그림자 */
+/* 라벨 가독성 */
 :root[data-theme="dark"] .profile-row label {
   color: #F5D7B7;
-  text-shadow: 1px 1px 1px #3a221c;
+  text-shadow: 1px 1px 1px rgba(58,34,28,.35);
 }
 
-/* 입력칸 – light brown 배경 + 갈색 텍스트 */
+/* 다크 입력창 기본 (아래 오버라이드가 들어오면 그 값을 사용) */
 :root[data-theme="dark"] .profile-row input,
-:root[data-theme="dark"] .profile-row select {
+:root[data-theme="dark"] .profile-row select,
+:root[data-theme="dark"] .profile-row textarea {
   background-color: #F5D7B7;
   color: #5e3a31;
   border: none;
   border-radius: 20px;
   padding: 10px 12px;
   font-size: 13px;
-  box-shadow: 4px 4px 0 #3a221c;
+  box-shadow: none;                              /* 그림자 과함 제거 */
 }
-
-/* placeholder 색 */
 :root[data-theme="dark"] .profile-row input::placeholder,
 :root[data-theme="dark"] .profile-row select::placeholder {
   color: #8b5a3c;
 }
 
-/* ✅ 다크 모드에서도 수정하기/열기만 고정 오렌지 그라데이션 */
-:root[data-theme="dark"] .profile-edit-btn {
-  background: linear-gradient(135deg, #ff58b9, #ff760b);
-  color: #fff;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.6);
-}
-
+/* 다크에서도 상단/하단 CTA는 그대로 */
+:root[data-theme="dark"] .profile-edit-btn,
 :root[data-theme="dark"] .profile-save {
-  background: linear-gradient(135deg, #ff58b9, #ff760b);
+  background: #5e3a31;
   color: #fff;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.6);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.35);
 }
-
-/* ================================
-   다크 모드 – 회원정보 페이지 버튼 스타일
-   (이메일 인증 등 나머지 버튼들은 여전히 CTA 색 사용)
-   ================================ */
-
-/* 🔸 수정하기/열기 제외한 버튼들만 CTA 그라데이션 적용 */
 :root[data-theme="dark"] .profile-root button:not(.profile-edit-btn):not(.profile-save) {
-  background: var(--cta-bg);   /* 🧡 공통 CTA */
+  background: var(--cta-bg);
   color: #ffffff;
   border: none;
   border-radius: 999px;
   padding: 8px 22px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.28);
 }
-
-/* hover 시 살짝만 밝게 (수정/열기 포함해서 같이) */
-:root[data-theme="dark"] .profile-root button:not(.profile-edit-btn):not(.profile-save):hover {
-  filter: brightness(0.97);
-}
-
+:root[data-theme="dark"] .profile-root button:not(.profile-edit-btn):not(.profile-save):hover,
 :root[data-theme="dark"] .profile-edit-btn:hover,
 :root[data-theme="dark"] .profile-save:hover {
   filter: brightness(0.97);
 }
-.withdrawalStyle {
-  font-family:"SchoolSafetyRoundedSmile";
-  font-size:"12px";
-  font-weight:"bold";
-  color: darkPurple;
-  cursor: "pointer";
-  text-decoration: "underline";
+
+/* ===== 오버라이드(톤 유지 + 시각 정리) — 파일 하단 유지 ===== */
+
+/* 상단 타이틀 바 배경 제거 (두 테마 공통) */
+:root[data-theme="dark"]  .profile-top,
+:root[data-theme="light"] .profile-top {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+/* 카드는 라이트/다크 모두 화이트로  */
+:root[data-theme="dark"]  .profile-root .profile-card,
+:root[data-theme="light"] .profile-root .profile-card {
+  background: #ffffff !important;
+  color: #1e1e1e !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.12) !important;
+}
+
+/* 입력창도 라이트/다크 공통 톤(화이트/뉴트럴)으로 정리  */
+:root[data-theme="dark"]  .profile-root .profile-card input,
+:root[data-theme="dark"]  .profile-root .profile-card select,
+:root[data-theme="dark"]  .profile-root .profile-card textarea,
+:root[data-theme="light"] .profile-root .profile-card input,
+:root[data-theme="light"] .profile-root .profile-card select,
+:root[data-theme="light"] .profile-root .profile-card textarea {
+  background-color: #fff !important;
+  color: #1e1e1e !important;
+  border: 1px solid rgba(0,0,0,0.12) !important;
+  box-shadow: none !important;
+}
+
+/* placeholder 톤 정리 */
+:root[data-theme="dark"]  .profile-root .profile-card input::placeholder,
+:root[data-theme="dark"]  .profile-root .profile-card textarea::placeholder,
+:root[data-theme="light"] .profile-root .profile-card input::placeholder,
+:root[data-theme="light"] .profile-root .profile-card textarea::placeholder {
+  color: #9ca3af !important;
 }
