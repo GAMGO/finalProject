@@ -55,6 +55,10 @@ public class StoreChangeRequest {
     public Double getNewLng() { return newLng; }
     public void setNewLng(Double newLng) { this.newLng = newLng; }
 
+    // ✅ 추가: 변경할 카테고리(FOOD_TYPE_ID)
+    public Long getNewFoodTypeId() { return newFoodTypeId; }
+    public void setNewFoodTypeId(Long newFoodTypeId) { this.newFoodTypeId = newFoodTypeId; }
+
     /* ========================= Fields ========================= */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -96,4 +100,8 @@ public class StoreChangeRequest {
 
     private Double newLat;
     private Double newLng;
+
+    // ✅ 핵심: 카테고리 변경값 저장 컬럼
+    @Column(name = "new_food_type_id")
+    private Long newFoodTypeId;
 }

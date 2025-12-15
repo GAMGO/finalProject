@@ -65,8 +65,10 @@ public class FavoriteService {
         FavoriteEntity entity = favoriteRepository.findById(idx)
                 .orElseThrow(() -> new NoSuchElementException("즐겨찾기를 찾을 수 없음: " + idx));
 
-        // 🔥 필요하면 수정도 가능
-        entity.setFavoriteStoreIdx(req.getFavoriteStoreIdx());
+        // ✅ 핵심: null이면 기존값 유지 (FavoritePage에서 수정 저장해도 찜 연결 안 끊김)
+        if (req.getFavoriteStoreIdx() != null) {
+            entity.setFavoriteStoreIdx(req.getFavoriteStoreIdx());
+        }
 
         entity.setCategory(req.getCategory());
         entity.setTitle(req.getTitle());
@@ -94,7 +96,7 @@ public class FavoriteService {
     private FavoriteResponse toResponse(FavoriteEntity entity) {
         FavoriteResponse dto = new FavoriteResponse();
         dto.setIdx(entity.getIdx());
-        dto.setFavoriteStoreIdx(entity.getFavoriteStoreIdx());  // 🔥 추가
+        dto.setFavoriteStoreIdx(entity.getFavoriteStoreIdx());
 
         dto.setCategory(entity.getCategory());
         dto.setTitle(entity.getTitle());

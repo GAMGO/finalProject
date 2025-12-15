@@ -21,16 +21,14 @@ public class SecurityConfig {
 
     private final CorsConfig corsConfig;
 
-    // swagger 문서 접근 허용 목록
     private static final String[] SWAGGER_WHITELIST = {
             "/v3/api-docs/**",
             "/swagger-ui/**",
             "/swagger-ui.html"
     };
 
-    // 완전 공개 허용 (개발용 / 인증 불필요)
     private static final String[] PUBLIC_WHITELIST = {
-            "/api/auth/**",       // 로그인/회원가입 (아래에서 일부 POST만 따로 허용 재정의)
+            "/api/auth/**",
             "/error",
             "/api/recover/**",
             "/api/food/**",
@@ -55,11 +53,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(PUBLIC_WHITELIST).permitAll()
                         // ====== 누구나 볼 수 있는 GET API ======
-                        .requestMatchers(HttpMethod.GET, "/api/stores/**","/api/stores/*/reviews/**","/api/posts/**").permitAll()
-                        .requestMatchers("/api/routes/**","/api/auth/restore").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/favorites/**","/api/stores/**","/api/stores/*/reviews/**","/api/posts/**","/api/routes/**","/api/stores/*/summary/**").permitAll()
+                        .requestMatchers(HttpMethod.POST,"/api/auth/login","/api/auth/refresh", "/api/routes/**").permitAll()// 토큰 재발급
+                        // ====== 인증 없이 접근해야 하는 POST ======
                         .requestMatchers(HttpMethod.POST,
                                 "/api/auth/login",
-                                "/api/auth/refresh",// 토큰 재발급
+                                "/api/auth/refresh",
                                 "/api/recover/send-code",
                                 "/api/recover/reset",
                                 "/api/recover/find-id",
@@ -68,7 +67,8 @@ public class SecurityConfig {
                                 "/api/stores/*/delete-request"
                         ).permitAll()
                         // ===== 로그인 필수 영역 =====
-                        // 찜(즐겨찾기): 목록/추가/수정/삭제 모두 로그인 필요
+                        // ✅ (주의) 위에서 GET /api/favorites/** permitAll을 해놨으면
+                        // 여기 authenticated는 "POST/PUT/DELETE"만 막는 효과가 됨 (순서상 OK)
                         .requestMatchers("/api/favorites/**").authenticated()
                         // 리뷰 작성/수정/삭제는 로그인 필요
                         // (GET 은 위에서 이미 permitAll 처리)
@@ -84,14 +84,11 @@ public class SecurityConfig {
                         // 그 외 전부 로그인 필요
                         .anyRequest().authenticated()
                 )
-                // 폼/베이직 로그인 비활성
                 .httpBasic(b -> b.disable())
                 .formLogin(f -> f.disable())
                 .logout(l -> l
-                        // 기본 로그아웃 URL 비활성 (컨트롤러에서 직접 처리한다고 가정)
                         .logoutUrl("/non-existent-logout")
-                        .logoutSuccessHandler((request, response, authentication) -> {
-                        })
+                        .logoutSuccessHandler((request, response, authentication) -> {})
                         .invalidateHttpSession(false)
                         .clearAuthentication(false)
                         .permitAll()
