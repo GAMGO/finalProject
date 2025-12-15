@@ -4,60 +4,38 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @Entity
-@Table(name = "STORE")
+@Table(name = "stores")
 public class Store {
-
-    public Long getIdx() { return idx; }
-    public void setIdx(Long idx) { this.idx = idx; }
-
-    public String getStoreName() { return storeName; }
-    public void setStoreName(String storeName) { this.storeName = storeName; }
-
-    public String getOpenTime() { return openTime; }
-    public void setOpenTime(String openTime) { this.openTime = openTime; }
-
-    public String getCloseTime() { return closeTime; }
-    public void setCloseTime(String closeTime) { this.closeTime = closeTime; }
-
-    public String getStoreAddress() { return storeAddress; }
-    public void setStoreAddress(String storeAddress) { this.storeAddress = storeAddress; }
-
-    public Double getLat() { return lat; }
-    public void setLat(Double lat) { this.lat = lat; }
-
-    public Double getLng() { return lng; }
-    public void setLng(Double lng) { this.lng = lng; }
-
-    public Long getFoodTypeId() { return foodTypeId; }
-    public void setFoodTypeId(Long foodTypeId) { this.foodTypeId = foodTypeId; }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "IDX")
-    private Long idx;
+    @Column(name = "idx")
+    private Long idx; // ✅ getIdx()
 
-    @Column(name = "STORE_NAME", length = 255, nullable = false)
+    @Column(name = "store_name", nullable = false)
     private String storeName;
 
-    @Column(name = "OPENTIME", length = 5)
-    private String openTime;
-
-    @Column(name = "CLOSETIME", length = 5)
-    private String closeTime;
-
-    @Column(name = "STORE_ADDRESS", length = 255, nullable = false)
+    @Column(name = "store_address", nullable = false)
     private String storeAddress;
 
-    @Column(name = "LAT", nullable = false)
+    @Column(name = "lat", nullable = false)
     private Double lat;
 
-    @Column(name = "LNG", nullable = false)
+    @Column(name = "lng", nullable = false)
     private Double lng;
 
-    // ✅ 필수로 고정
-    @Column(name = "FOOD_TYPE_ID", nullable = false)
+    @Column(name = "food_type_id", nullable = false)
     private Long foodTypeId;
+
+    // ✅ 소프트 삭제 (setIsDeleted / setDeletedAt 빨간줄 해결)
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 }

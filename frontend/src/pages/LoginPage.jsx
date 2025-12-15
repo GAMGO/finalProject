@@ -52,72 +52,69 @@ const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
     setMessage({ text: "", type: "" });
   }, []);
 
-  // ------------------------------------
-  // 3. 로그인 처리
-  // ------------------------------------
-  const handleLogin = async () => {
-    if (!customer_id || !password) {
+  // ✅ 로그인 처리
+const handleLogin = async () => {
+  if (!customer_id || !password) {
+    setMessage({ text: "아이디와 비밀번호를 모두 입력해주세요.", type: "error" });
+    return;
+  }
+
+  const loginData = { id: customer_id, password };
+
+  try {
+    const response = await axios.post(
+      `${baseURL}/api/auth/login`,
+      loginData,
+      { withCredentials: true }
+    );
+
+    // ✅ data가 래핑되어 올 수도 있으니까 방어
+    const data = response.data?.data ?? response.data;
+
+    const token = data.token;
+    const refreshToken = data.refreshToken;
+    const role = data.role || ""; // ✅ 서버가 LoginResponse에 role 넣어준다고 했으니 여기서 받음
+
+    if (token) {
+      // ✅ 여기 중요: App.jsx가 localStorage에서 읽음
+      localStorage.setItem("jwtToken", token);
+      if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
+      localStorage.setItem("role", role);
+
+      // axios 헤더 세팅
+      setAuthToken(token, refreshToken);
+
+      // ✅ 같은 탭에서 storage 이벤트 안 떠서 강제 트리거 (AuthCheck도 같이 쓰는 중이라면 도움됨)
+      window.dispatchEvent(new Event("storage"));
+
+      setMessage({ text: "로그인 성공!", type: "success" });
+
+      setTimeout(() => {
+        onLoginSuccess();
+      }, 1500);
+    } else {
       setMessage({
-        text: "아이디와 비밀번호를 모두 입력해주세요.",
+        text: "로그인 응답에 Access Token이 포함되어 있지 않습니다.",
         type: "error",
       });
-      return;
+    }
+  } catch (error) {
+    let errorMessage =
+      "서버 연결에 실패했습니다. 네트워크 상태를 확인해주세요.";
+
+    if (error.response) {
+      errorMessage =
+        error.response.data.message || "아이디 또는 비밀번호를 확인해주세요.";
+    } else if (error.request) {
+      errorMessage =
+        "서버 응답이 없습니다. (CORS 문제 가능성 높음) 백엔드 서버의 CORS 설정을 확인해주세요.";
+    } else {
+      errorMessage = `요청 오류: ${error.message}`;
     }
 
-    const loginData = {
-      id: customer_id,
-      password: password,
-    };
-
-    try {
-      const response = await axios.post(
-        `${baseURL}/api/auth/login`,
-        loginData,
-        { withCredentials: true }
-      );
-
-      const token = response.data.token;
-      const refreshToken = response.data.refreshToken;
-
-      if (token) {
-        if (typeof onLoginSuccess === "function") {
-          setAuthToken(token, refreshToken);
-          setMessage({ text: "로그인 성공!", type: "success" });
-          setTimeout(() => {
-            onLoginSuccess();
-          }, 1500);
-        } else {
-          console.error(
-            "onLoginSuccess props가 유효한 함수가 아닙니다. 라우팅 설정 확인 필요."
-          );
-        }
-      } else {
-        setMessage({
-          text: "로그인 응답에 Access Token이 포함되어 있지 않습니다.",
-          type: "error",
-        });
-        console.error("로그인 응답에 Access Token이 포함되어 있지 않습니다.");
-      }
-    } catch (error) {
-      let errorMessage =
-        "서버 연결에 실패했습니다. 네트워크 상태를 확인해주세요.";
-
-      if (error.response) {
-        errorMessage =
-          error.response.data.message || "아이디 또는 비밀번호를 확인해주세요.";
-        console.error("로그인 에러 응답:", error.response);
-      } else if (error.request) {
-        errorMessage =
-          "서버 응답이 없습니다. (CORS 문제 가능성 높음) 백엔드 서버의 CORS 설정을 확인해주세요.";
-        console.error("로그인 에러 요청 (CORS/네트워크):", error.request);
-      } else {
-        errorMessage = `요청 오류: ${error.message}`;
-        console.error("로그인 에러:", error.message);
-      }
-
-      setMessage({ text: `로그인 실패: ${errorMessage}`, type: "error" });
-    }
-  };
+    setMessage({ text: `로그인 실패: ${errorMessage}`, type: "error" });
+  }
+};
 
   // ------------------------------------
   // 4. 스타일 정의
