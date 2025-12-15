@@ -5,6 +5,7 @@ import SignupPage from "./SignupPage";
 import EmailAuth from "./EmailAuth";
 import WithdrawalPage from "./WithdrawalPage";
 import RecoveringPage from "./RecoveringPage";
+import FindAccountPage from "./FindAccountPage";
 
 const AuthPage = ({ onLoginSuccess }) => {
   const initialMode = window.location.pathname.startsWith('/recovery') ? 'recover' : 'login';
@@ -21,7 +22,7 @@ const AuthPage = ({ onLoginSuccess }) => {
     setRegisteredEmail(email);
     setSignupPayload(payload);
     setAuthMode('EmailAuth');
-};
+  };
 
   const handleAuthSuccess = () => {
     onLoginSuccess();
@@ -38,6 +39,8 @@ const AuthPage = ({ onLoginSuccess }) => {
               setUserIdForWithdrawal(id);
               setAuthMode('withdrawal');
             }}
+            onFindPassword={() => setAuthMode('findPasswordAccount')}
+            onFindId={() => setAuthMode('findIdAccount')}
           />
         );
       case 'withdrawal':
@@ -68,6 +71,20 @@ const AuthPage = ({ onLoginSuccess }) => {
             signupPayload={signupPayload}
             onAuthSuccess={handleAuthSuccess}
             onRestartSignup={() => setAuthMode('signup')}
+          />
+        );
+      case 'findIdAccount':
+        return (
+          <FindAccountPage
+            onGoToLogin={() => setAuthMode('login')}
+            initialMode={'findId'} // 아이디 찾기 모드로 시작
+          />
+        );
+      case 'findPasswordAccount':
+        return (
+          <FindAccountPage
+            onGoToLogin={() => setAuthMode('login')}
+            initialMode={'findPassword'} // 비밀번호 찾기 모드로 시작
           />
         );
       default:
