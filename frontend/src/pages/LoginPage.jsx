@@ -4,9 +4,8 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { setAuthToken } from "../api/apiClient";
 import "../theme/theme.css"; // ✅ 테마 CSS
-
+import DISH_LOGO from "./assets/DISH_LOGO.png";
 const baseURL = import.meta.env.VITE_BASE_URL;
-const dishLogoUrl = "../assets/DISH_LOGO.png";
 
 const LoginPage = ({ onToggleMode, onLoginSuccess }) => {
   // ------------------------------------
@@ -262,7 +261,7 @@ const handleLogin = async () => {
 
       <div style={loginBoxStyle}>
         <div>
-          <img src={dishLogoUrl} alt="DISH 로고" style={logoContainerStyle} />
+          <img src={DISH_LOGO} alt="DISH 로고" style={logoContainerStyle} />
         </div>
 
         {/* 메시지 영역 */}
