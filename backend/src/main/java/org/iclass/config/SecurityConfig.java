@@ -34,7 +34,8 @@ public class SecurityConfig {
             "/api/food/**",
             "/api/email/**",
             "/api/recovery/**",
-            "/api/routes/**"
+            "/api/routes/**",
+            
     };
 
     @Bean
@@ -93,7 +94,7 @@ public class SecurityConfig {
                         // 프로필, 로그아웃, 탈퇴
                         .requestMatchers(
                                 "/api/auth/logout",
-                                "/api/profile",
+                                "/api/profile/**",
                                 "/api/auth/withdrawal"
                         ).authenticated()
 
