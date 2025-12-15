@@ -230,7 +230,13 @@ const handleLogin = async () => {
       isDark ? chocolateShadow : darkPurple
     }`,
   };
-
+  const logo_img = {
+  display: block,
+  width: "120px",
+  height: "auto",
+  border: "none !important",
+  outline: "none !important"
+};
   const messageStyle = {
     marginTop: "15px",
     marginBottom: "15px",
@@ -261,7 +267,7 @@ const handleLogin = async () => {
 
       <div style={loginBoxStyle}>
         <div>
-          <img src={DISH_LOGO} alt="DISH 로고" style={logoContainerStyle} />
+          <img src={DISH_LOGO} alt="DISH 로고" style={logo_img} />
         </div>
 
         {/* 메시지 영역 */}
