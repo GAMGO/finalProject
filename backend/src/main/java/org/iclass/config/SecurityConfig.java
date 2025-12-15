@@ -62,7 +62,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/routes/**").permitAll()
 
                         // ✅ (추가) 스프링에서 요약 API를 제공한다면 열기 (없으면 삭제해도 됨)
-                        .requestMatchers(HttpMethod.GET, "/api/stores/**/summary/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/stores/*/summary/**").permitAll()
 
                         // ✅ (선택) 로그인 안 했을 때 즐겨찾기 GET 호출로 403 나는 거 싫으면
                         // ⚠️ 단, 즐겨찾기가 "유저 개인 데이터"면 공개로 열면 안 됨!
