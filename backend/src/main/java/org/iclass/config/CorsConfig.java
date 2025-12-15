@@ -20,6 +20,7 @@ public class CorsConfig {
         c.addAllowedOriginPattern("http://localhost:5173");  // Vite dev 서버
         c.addAllowedOriginPattern("http://localhost:8080");
         c.addAllowedOriginPattern("http://127.0.0.1:8000");
+        c.addAllowedOriginPattern("https://finalproject-railway.app");
         c.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         c.addAllowedHeader("*");
         c.setAllowedHeaders(List.of("Content-Type", "Authorization"));
