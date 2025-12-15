@@ -1381,7 +1381,7 @@ export default function KakaoMap({ categoryFilterId = "" }) {
           borderRadius: 12,
           boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
           padding: "10px 12px",
-          width: 280,
+          width: 320,
           fontSize: 12,
           border: "2px solid rgba(120, 38, 106, 1)",
         }}
@@ -1507,9 +1507,9 @@ export default function KakaoMap({ categoryFilterId = "" }) {
                   borderRadius: 999,
                   border: "1px solid #e5e7eb",
                   background: "#fff",
-                  padding: "4px 10px",
+                  padding: "10px 10px",
                   cursor: "pointer",
-                  fontSize: 11,
+                  fontSize: 10,
                 }}
               >
                 초기화
@@ -1522,7 +1522,7 @@ export default function KakaoMap({ categoryFilterId = "" }) {
                   border: "none",
                   background: routeLoading ? "#d1b5cc" : THEME_COLOR,
                   color: "#fff",
-                  padding: "4px 10px",
+                  padding: "10px 10px",
                   fontWeight: 600,
                   cursor: routeLoading ? "default" : "pointer",
                 }}
