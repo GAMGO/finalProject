@@ -86,7 +86,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/favorites/**").authenticated()
 
                         // 리뷰 작성/수정/삭제는 로그인 필요 (GET은 위에서 permitAll)
-                        .requestMatchers("/api/stores/**/reviews/**").authenticated()
+                        .requestMatchers("/api/stores/*/reviews/**").authenticated()
 
                         // 관리자용 API
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
@@ -94,7 +94,7 @@ public class SecurityConfig {
                         // 프로필, 로그아웃, 탈퇴
                         .requestMatchers(
                                 "/api/auth/logout",
-                                "/api/profile/**",
+                                "/api/profile",
                                 "/api/auth/withdrawal"
                         ).authenticated()
 
