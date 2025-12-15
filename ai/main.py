@@ -27,9 +27,10 @@ app.add_middleware(
 )
 
 # ✅ 라우터 등록
-app.include_router(summary_router, prefix="/api")
-app.include_router(route_recommend_router, prefix="/recommend")
-
+# app.include_router(summary_router, prefix="/api")
+# app.include_router(route_recommend_router, prefix="/recommend")
+app.include_router(summary_router)
+app.include_router(route_recommend_router)
 
 @app.get("/")
 def root():
