@@ -12,7 +12,7 @@ import MediaEmbed from "../components/MediaEmbed";
 const APP_KEY = "bdd84bdbed2db3bc5d8b90cd6736a995";
 
 const API_BASE = import.meta.env.VITE_BASE_URL;
-const DATA_API_BASE = import.meta.env.VITE_BASE_URL;
+const DATA_API_BASE = import.meta.env.RAILWAY_FASTAPI_URL;
 
 // 🔮 테마 컬러 (자주색)
 const THEME_COLOR = "#78266a";
