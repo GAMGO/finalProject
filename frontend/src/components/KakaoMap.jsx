@@ -12,7 +12,9 @@ import MediaEmbed from "../components/MediaEmbed";
 const APP_KEY = "bdd84bdbed2db3bc5d8b90cd6736a995";
 
 const API_BASE = import.meta.env.VITE_BASE_URL;
-const DATA_API_BASE = import.meta.env.VITE_BASE_URL;
+// AI 서버(8000) 쪽
+const DATA_API_BASE =
+  import.meta.env.VITE_RAILWAY_FASTAPI_URL || "http://127.0.0.1:8000";
 
 // 🔮 테마 컬러 (자주색)
 const THEME_COLOR = "#78266a";
@@ -655,173 +657,156 @@ export default function KakaoMap({ categoryFilterId = "" }) {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    // ✅ 프론트 선검증(필수값)
-    if (!form.categoryId) {
-      alert("카테고리를 선택해 주세요.");
+  // ✅ 프론트 선검증(필수값)
+  if (!form.categoryId) {
+    alert("카테고리를 선택해 주세요.");
+    return;
+  }
+  if (!(form.storeName || "").trim()) {
+    alert("노점 이름을 입력해 주세요.");
+    return;
+  }
+  if (!(form.address || "").trim()) {
+    alert("주소를 입력하거나 지도에서 위치를 선택해 주세요.");
+    return;
+  }
+
+  let finalPos = selectedPos;
+
+  // ✅ 좌표가 없으면 주소로 찾기 (주소는 필수)
+  if (!finalPos) {
+    const addr = (form.address || "").trim();
+
+    if (!window.kakao) {
+      alert("지도가 아직 준비되지 않았어요. 잠시 후 다시 시도해 주세요.");
       return;
     }
-    if (!(form.storeName || "").trim()) {
-      alert("노점 이름을 입력해 주세요.");
-      return;
-    }
-    if (!(form.address || "").trim()) {
-      alert("주소를 입력하거나 지도에서 위치를 선택해 주세요.");
-      return;
-    }
 
-    let finalPos = selectedPos;
+    const geocoder = geocoderRef.current;
+    const places = placesRef.current;
 
-    // ✅ 좌표가 없으면 주소로 찾기 (주소는 필수)
-    if (!finalPos) {
-      const addr = (form.address || "").trim();
-
-      if (!window.kakao) {
-        alert("지도가 아직 준비되지 않았어요. 잠시 후 다시 시도해 주세요.");
-        return;
-      }
-
-      const geocoder = geocoderRef.current;
-      const places = placesRef.current;
-
-      const searchByAddress = () =>
-        new Promise((resolve, reject) => {
-          if (!geocoder) return reject(new Error("지오코더가 없습니다."));
-          geocoder.addressSearch(addr, (result, status) => {
-            if (
-              status === window.kakao.maps.services.Status.OK &&
-              result &&
-              result.length > 0
-            ) {
-              const r = result[0];
-              resolve({ lat: parseFloat(r.y), lng: parseFloat(r.x) });
-            } else {
-              reject(new Error("주소 검색 실패"));
-            }
-          });
+    const searchByAddress = () =>
+      new Promise((resolve, reject) => {
+        if (!geocoder) return reject(new Error("지오코더가 없습니다."));
+        geocoder.addressSearch(addr, (result, status) => {
+          if (
+            status === window.kakao.maps.services.Status.OK &&
+            result &&
+            result.length > 0
+          ) {
+            const r = result[0];
+            resolve({ lat: parseFloat(r.y), lng: parseFloat(r.x) });
+          } else {
+            reject(new Error("주소 검색 실패"));
+          }
         });
-
-      const searchByKeyword = () =>
-        new Promise((resolve, reject) => {
-          if (!places) return reject(new Error("장소 검색 객체가 없습니다."));
-          places.keywordSearch(addr, (data, status) => {
-            if (
-              status === window.kakao.maps.services.Status.OK &&
-              data &&
-              data.length > 0
-            ) {
-              const d = data[0];
-              resolve({ lat: parseFloat(d.y), lng: parseFloat(d.x) });
-            } else {
-              reject(new Error("키워드 검색 실패"));
-            }
-          });
-        });
-
-      try {
-        try {
-          finalPos = await searchByAddress();
-        } catch {
-          finalPos = await searchByKeyword();
-        }
-        setSelectedPos(finalPos);
-      } catch (e2) {
-        errlog("입력한 주소로 좌표 찾기 실패:", e2);
-        alert(
-          "입력한 주소로 위치를 찾을 수 없어요.\n지도를 클릭해서 위치를 선택해 주세요."
-        );
-        return;
-      }
-    }
-
-    if (!finalPos) {
-      alert("위치를 찾지 못했어요. 다시 시도해 주세요.");
-      return;
-    }
-
-    const foodTypeId = form.categoryId ? Number(form.categoryId) : null;
-
-    // ✅ 백엔드 필수값에 맞춰 payload 고정
-    const payload = {
-      storeName: form.storeName.trim(),
-      foodTypeId,
-      storeAddress: form.address.trim(),
-      lat: finalPos.lat,
-      lng: finalPos.lng,
-    };
-
-    try {
-      const res = await fetch(`${API_BASE}/api/stores`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
       });
 
-      const text = await res.text();
-
-      // ✅ 검증 에러(400) 메시지 그대로 alert
-      if (!res.ok) {
-        let msg = `가게 등록 실패 (${res.status})`;
-
-        try {
-          const j = JSON.parse(text);
-          if (j && typeof j === "object") {
-            msg = Object.values(j).join("\n");
-          } else if (typeof j === "string") {
-            msg = j;
+    const searchByKeyword = () =>
+      new Promise((resolve, reject) => {
+        if (!places) return reject(new Error("장소 검색 객체가 없습니다."));
+        places.keywordSearch(addr, (data, status) => {
+          if (
+            status === window.kakao.maps.services.Status.OK &&
+            data &&
+            data.length > 0
+          ) {
+            const d = data[0];
+            resolve({ lat: parseFloat(d.y), lng: parseFloat(d.x) });
+          } else {
+            reject(new Error("키워드 검색 실패"));
           }
-        } catch {
-          if (text) msg = text;
-        }
+        });
+      });
 
-        alert(msg);
-        return;
-      }
-
-      let savedId = null;
+    try {
       try {
-        const json = JSON.parse(text);
-        if (typeof json === "number") savedId = json;
-        else if (json && typeof json === "object") {
-          if (typeof json.data === "number") savedId = json.data;
-          else if (typeof json.id === "number") savedId = json.id;
+        finalPos = await searchByAddress();
+      } catch {
+        finalPos = await searchByKeyword();
+      }
+      setSelectedPos(finalPos);
+    } catch (e2) {
+      errlog("입력한 주소로 좌표 찾기 실패:", e2);
+      alert(
+        "입력한 주소로 위치를 찾을 수 없어요.\n지도를 클릭해서 위치를 선택해 주세요."
+      );
+      return;
+    }
+  }
+
+  if (!finalPos) {
+    alert("위치를 찾지 못했어요. 다시 시도해 주세요.");
+    return;
+  }
+
+  const foodTypeId = form.categoryId ? Number(form.categoryId) : null;
+
+  // ✅ 백엔드 필수값에 맞춰 payload 고정
+  const payload = {
+    storeName: form.storeName.trim(),
+    foodTypeId,
+    storeAddress: form.address.trim(),
+    lat: finalPos.lat,
+    lng: finalPos.lng,
+  };
+
+  try {
+    const res = await fetch(`${API_BASE}/api/stores`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const text = await res.text();
+
+    // ✅ 검증 에러(400) 메시지 그대로 alert
+    if (!res.ok) {
+      let msg = `가게 등록 실패 (${res.status})`;
+
+      try {
+        const j = JSON.parse(text);
+        if (j && typeof j === "object") {
+          msg = Object.values(j).join("\n");
+        } else if (typeof j === "string") {
+          msg = j;
         }
       } catch {
-        const n = Number(text);
-        if (!Number.isNaN(n)) savedId = n;
+        if (text) msg = text;
       }
 
-      const newStoreForMarker = {
-        idx: savedId,
-        storeName: payload.storeName,
-        address: payload.storeAddress,
-        latitude: payload.lat,
-        longitude: payload.lng,
-        foodTypeId: payload.foodTypeId,
-        foodTypeLabel:
-          CATEGORIES.find((c) => c.id === payload.foodTypeId)?.label || "",
-      };
-
-      allStoresRef.current = [
-        newStoreForMarker,
-        ...(allStoresRef.current || []),
-      ];
-
-      if (mapInstanceRef.current) {
-        if (!categoryFilterId || Number(categoryFilterId) === Number(foodTypeId)) {
-          addStoreMarker(mapInstanceRef.current, newStoreForMarker, {
-            recommended: false,
-          });
-        }
-      }
-
-      closeModal();
-    } catch (e3) {
-      errlog("가게 등록 실패:", e3);
-      alert("가게 등록에 실패했어 ㅠㅠ");
+      alert(msg);
+      return;
     }
-  };
+
+    // ✅ 이제 응답은 storeId가 아니라 "요청ID(changeRequestId)"
+    let requestId = null;
+    try {
+      const json = JSON.parse(text);
+      if (typeof json === "number") requestId = json;
+      else if (json && typeof json === "object") {
+        if (typeof json.data === "number") requestId = json.data;
+        else if (typeof json.id === "number") requestId = json.id;
+      }
+    } catch {
+      const n = Number(text);
+      if (!Number.isNaN(n)) requestId = n;
+    }
+
+    // ✅ 여기서부터가 핵심: 승인 전엔 지도에 마커 추가/목록추가 절대 하지 않음
+    alert(
+      `등록 요청 완료!\n(요청번호: ${requestId ?? "확인 불가"})\n관리자 승인 후 지도에 표시돼요.`
+    );
+
+    closeModal();
+  } catch (e3) {
+    errlog("가게 등록 실패:", e3);
+    alert("가게 등록에 실패했어 ㅠㅠ");
+  }
+};
+
 
   // ==========================
   // 리뷰 작성
