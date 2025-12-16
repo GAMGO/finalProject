@@ -34,7 +34,8 @@ public class SecurityConfig {
             "/api/food/**",
             "/api/email/**",
             "/api/recovery/**",
-            "/api/routes/**"
+            "/api/routes/**",
+            
     };
 
     @Bean
@@ -85,7 +86,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/favorites/**").authenticated()
 
                         // 리뷰 작성/수정/삭제는 로그인 필요 (GET은 위에서 permitAll)
-                        .requestMatchers("/api/stores/**/reviews/**").authenticated()
+                        .requestMatchers("/api/stores/*/reviews/**").authenticated()
 
                         // 관리자용 API
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")

@@ -4,51 +4,53 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono; // 🚨 필수 임포트 (Reactive Streams)
+import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/api") // /api 하위 경로는 Spring Boot 서버가 처리해야 합니다.
 public class FastAPIProxyController {
 
-    // application.properties에서 설정된 FastAPI 서버 URL을 주입받습니다.
+    // 1. Spring 설정 파일(application.yml/properties)에서 FastAPI의 실제 Base URL을 로드합니다.
+    //    예: stats.fastapi.base-url=http://finalproject-production-c135.up.railway.app
     @Value("${stats.fastapi.base-url}") 
     private String fastApiBaseUrl; 
 
+    // 2. FastAPI 서버의 실제 Host 이름을 상수로 정의합니다.
+    private static final String RAILWAY_FASTAPI_HOST = "finalproject-production-c135.up.railway.app";
+    
     private final WebClient webClient;
 
     public FastAPIProxyController(WebClient.Builder webClientBuilder) {
-        // WebClient 인스턴스를 생성하며, FastAPI 기본 URL을 설정합니다.
-        // 현재는 WebClient.Builder 주입 방식을 그대로 사용합니다.
+        // webClient를 초기화할 때 Base URL을 사용합니다.
+        // WebClient는 fastApiBaseUrl로 요청을 보냅니다.
         this.webClient = webClientBuilder.baseUrl(fastApiBaseUrl).build(); 
     }
 
-    /**
-     * [GET] /api/stores/{storeId}/summary 요청을 FastAPI로 포워딩합니다.
-     * 반환 타입 Mono를 사용하여 비동기(Non-Blocking) 방식으로 응답합니다.
-     */
-    @GetMapping("/stores/{storeId}/summary")
+    // summary 요청 프록시 (GET)
+    // 프론트엔드 요청: /api/stores/{storeId}/summary
+    @GetMapping("/api/stores/{storeId}/summary")
     public Mono<ResponseEntity<String>> proxySummary(@PathVariable String storeId) {
-        String fastApiPath = "/api/stores/" + storeId + "/summary"; // FastAPI의 실제 경로
-
+        String fastApiPath = "/api/stores/" + storeId + "/summary"; 
+        
         return webClient.get()
                 .uri(fastApiPath)
+                // 3. FastAPI가 구동 중인 Railway의 Host 헤더를 명시적으로 설정합니다.
+                .header("Host", RAILWAY_FASTAPI_HOST)
                 .retrieve()
-                .toEntity(String.class); // Mono<ResponseEntity<String>> 반환 (비동기)
+                .toEntity(String.class);
     }
 
-    /**
-     * [POST] /recommend/route 요청을 FastAPI로 포워딩합니다.
-     * 경로 추천 요청은 /api 경로 아래에 있지 않으므로 @RequestMapping과 별개로 매핑합니다.
-     * 반환 타입 Mono를 사용하여 비동기(Non-Blocking) 방식으로 응답합니다.
-     */
+    // recommend 요청 프록시 (POST)
+    // 프론트엔드 요청: /recommend/route
     @PostMapping("/recommend/route")
     public Mono<ResponseEntity<String>> proxyRecommend(@RequestBody String requestBody) {
-        String fastApiPath = "/recommend/route"; // FastAPI의 실제 경로
+        String fastApiPath = "/recommend/route"; 
 
         return webClient.post()
                 .uri(fastApiPath)
-                .bodyValue(requestBody) // 요청 본문을 그대로 전달
+                // 3. FastAPI가 구동 중인 Railway의 Host 헤더를 명시적으로 설정합니다.
+                .header("Host", RAILWAY_FASTAPI_HOST)
+                .bodyValue(requestBody)
                 .retrieve()
-                .toEntity(String.class); // Mono<ResponseEntity<String>> 반환 (비동기)
+                .toEntity(String.class);
     }
 }

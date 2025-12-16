@@ -41,8 +41,7 @@ dependencies {
     implementation "io.jsonwebtoken:jjwt-api:${jwtVersion}"
     runtimeOnly "io.jsonwebtoken:jjwt-impl:${jwtVersion}"
     runtimeOnly "io.jsonwebtoken:jjwt-jackson:${jwtVersion}" // jackson serializer
-
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    // testImplementation 'org.springframework.boot:spring-boot-starter-test'
     // testImplementation 'org.springframework.security:spring-security-test'
 }
 tasks.named('test') {

@@ -174,12 +174,6 @@ const handleLogin = async () => {
     fontFamily: customFont,
   };
 
-  const logoContainerStyle = {
-    maxWidth: "100%",
-    height: "auto",
-    marginBottom: "30px",
-  };
-
   const inputGroupStyle = {
     marginBottom: "20px",
     textAlign: "left",
@@ -230,7 +224,14 @@ const handleLogin = async () => {
       isDark ? chocolateShadow : darkPurple
     }`,
   };
-
+  const logo_img = {
+  display: "block",
+  maxWidth: "100%",
+  height: "auto",
+  border: "none !important",
+  outline: "none !important",
+  marginBottom: "30px",
+};
   const messageStyle = {
     marginTop: "15px",
     marginBottom: "15px",
@@ -261,7 +262,7 @@ const handleLogin = async () => {
 
       <div style={loginBoxStyle}>
         <div>
-          <img src={dishLogoUrl} alt="DISH 로고" style={logoContainerStyle} />
+          <img src={DISH_LOGO} alt="DISH 로고" style={logo_img} />
         </div>
 
         {/* 메시지 영역 */}
