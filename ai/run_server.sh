@@ -10,4 +10,4 @@ python modify_db_config.py uncomment
 # 2. 최종 API 서버 실행
 echo "🚀 Uvicorn API 서버 실행 중..."
 # 0.0.0.0으로 바인딩하여 외부 접근이 가능하도록 합니다.
-uvicorn main:app --host 0.0.0.0 --port 8000
+uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}
