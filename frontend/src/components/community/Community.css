@@ -1,15 +1,13 @@
-/* src/components/community/Community.css */
 /* -------- 커뮤니티 전용 팔레트 (App 변수 재사용) -------- */
 :root {
   --brand-purple: #78266a;
   --accent-brown: #333943;
-  --bg-main: #ffffff; /* 전체 배경 흰색 */
+  --bg-main: #ffffff;
   --text-main: #111827;
   --text-muted: #6b7280;
 }
 
-/* -------- 커뮤니티 레이아웃 -------- */
-
+/* -------- 커뮤니티 기본 레이아웃 -------- */
 .community-root {
   width: 100%;
   min-height: 100vh;
@@ -36,25 +34,20 @@
   border-radius: 999px;
   border: none;
   outline: none;
-
   background: var(--brand-purple);
   color: #ffffff;
   font-size: 14px;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
 }
 
-/* placeholder 색만 살짝 연하게 */
 .community-main-input::placeholder {
   color: rgba(255, 255, 255, 0.7);
 }
 
 /* -------- 리스트 (DCinside 스타일) -------- */
-
 .community-list-wrapper {
   width: 100%;
-  max-width: none;
   box-sizing: border-box;
-
   margin: 0 auto;
   padding: 4px 24px 8px;
   background: #ffffff;
@@ -73,28 +66,22 @@
   grid-template-columns: 96px 1fr 150px 72px;
   column-gap: 16px;
   align-items: center;
-
   padding: 10px 0;
-  border-top: 1px solid #e5e7eb;   /* 더 진한 구분선 */
+  border-top: 1px solid #e5e7eb;
   cursor: pointer;
 }
 
-/* 첫 줄은 위에 선 없게 */
-.community-row:first-child {
-  border-top: none;
+/* ✅ 썸네일 없는 경우: 첫 칸 제거 (JSX에서 no-thumb 클래스가 붙음) */
+.community-row.no-thumb {
+  grid-template-columns: 1fr 150px 72px;
 }
 
-/* 홀/짝 줄 살짝 톤 차이 */
-.community-row:nth-child(odd) {
-  background: #ffffff;
-}
-.community-row:nth-child(even) {
-  background: #fbfbfb;
-}
+.community-row:first-child { border-top: none; }
 
-.community-row:hover {
-  background: #f3f4ff; /* hover 시 살짝 파란 느낌 */
-}
+.community-row:nth-child(odd) { background: #ffffff; }
+.community-row:nth-child(even) { background: #fbfbfb; }
+
+.community-row:hover { background: #f3f4ff; }
 
 .community-thumb {
   width: 96px;
@@ -103,7 +90,6 @@
   overflow: hidden;
   background: #e5e7eb;
 }
-
 .community-thumb img {
   width: 100%;
   height: 100%;
@@ -111,20 +97,13 @@
   display: block;
 }
 
-/* 가운데 영역 */
 .community-row-main {
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
-
-.community-row-title-line {
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
-}
-
+.community-row-title-line { display: flex; align-items: baseline; gap: 4px; }
 .community-row-title {
   font-size: 14px;
   color: var(--text-main);
@@ -132,12 +111,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
-.community-row-count {
-  font-size: 12px;
-  color: #ef4444;
-}
-
+.community-row-count { font-size: 12px; color: #ef4444; }
 .community-row-meta {
   font-size: 12px;
   color: var(--text-muted);
@@ -145,30 +119,7 @@
   align-items: center;
   gap: 4px;
 }
-
-.community-row-writer {
-  white-space: nowrap;
-}
-
-.community-row-location {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.community-row-dot {
-  color: var(--text-muted);
-}
-
-/* 오른쪽 보드명 / 시간 */
-.community-row-board {
-  font-size: 12px;
-  color: #9ca3af;
-  text-align: right;
-  padding-right: 4px;
-  white-space: nowrap;
-}
-
+.community-row-board,
 .community-row-time {
   font-size: 12px;
   color: #9ca3af;
@@ -176,14 +127,36 @@
   white-space: nowrap;
 }
 
-/* -------- 상세 페이지 -------- */
+/* -------- 오른쪽 하단 글쓰기 플로팅 버튼 -------- */
+.community-fab {
+  position: fixed;
+  right: 32px;
+  bottom: 32px;
+  width: 55px;
+  height: 72px;
+  border: none;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  z-index: 11000;
+}
+.community-fab img { width: 100%; height: 100%; }
 
+.community-fab-icon { width: 100%; height: 100%; display: block; }
+.community-fab-icon-dark { display: none; }
+:root[data-theme="dark"] .community-fab-icon-light { display: none; }
+:root[data-theme="dark"] .community-fab-icon-dark { display: block; }
+
+/* ========================================================
+   상세 페이지
+======================================================== */
+
+/* -------- 상단 본문 카드 -------- */
 .post-detail-wrapper {
-  max-width: 960px;
+  width: 950px; /* ← 기존 960px에서 넓힘 */
   margin: 20px auto 0;
   padding: 0 16px 24px;
 }
-
 .post-detail-back {
   border: none;
   background: transparent;
@@ -192,21 +165,18 @@
   cursor: pointer;
   margin-bottom: 8px;
 }
-
 .post-detail-main {
   background: #ffffff;
   border-radius: 8px;
   padding: 18px 20px 20px;
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
 }
-
 .post-detail-title {
   font-size: 20px;
   font-weight: 700;
   color: var(--text-main);
   margin: 0 0 8px 0;
 }
-
 .post-detail-meta {
   font-size: 12px;
   color: var(--text-muted);
@@ -215,14 +185,8 @@
   gap: 4px;
   margin-bottom: 12px;
 }
-
-.post-detail-writer {
-  font-weight: 600;
-}
-
-.post-detail-dot {
-  color: var(--text-muted);
-}
+.post-detail-writer { font-weight: 600; }
+.post-detail-dot { color: var(--text-muted); }
 
 .post-detail-thumbnail {
   width: 100%;
@@ -232,7 +196,6 @@
   background: #e5e7eb;
   margin-bottom: 12px;
 }
-
 .post-detail-thumbnail img {
   width: 100%;
   height: 100%;
@@ -245,52 +208,50 @@
   color: var(--text-main);
   line-height: 1.6;
   white-space: pre-wrap;
+  word-break: break-word;
 }
 
-/* 아래 영역: 댓글 + 같은 작성자 글 */
-.post-detail-layout-bottom {
-  display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-  gap: 16px;
-  margin-top: 16px;
+/* 헤더 액션 버튼 */
+.post-header { position: relative; margin-bottom: 10px; }
+.post-actions { position: absolute; top: 0; right: 0; display: flex; gap: 8px; }
+.post-btn {
+  border: none;
+  border-radius: 15px;
+  padding: 6px 10px;
+  font-size: 13px;
+  cursor: pointer;
 }
+.post-btn:hover { filter: brightness(1.05); }
 
-/* 댓글 */
+/* 버튼 색상 */
+:root[data-theme="light"] .post-btn.edit   { background:#78266a; color:#fff; }
+:root[data-theme="light"] .post-btn.delete { background:#d979c9; color:#fff; }
+:root[data-theme="dark"] .post-btn.edit   { background:#6b2a2a; color:#fff; }
+:root[data-theme="dark"] .post-btn.delete { background:#a33b3b; color:#fff; }
+
+.post-detail-thumbnail:empty { display: none; }
+
+/* -------- 하단: 댓글 -------- */
+.post-detail-layout-bottom { display: block; margin-top: 16px; }
+
 .post-comments {
   background: #ffffff;
   border-radius: 8px;
   padding: 14px 16px 16px;
   box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
 }
-
-.post-comments-title {
-  font-size: 15px;
-  font-weight: 600;
-  margin: 0 0 10px 0;
-}
-
+.post-comments-title { font-size: 15px; font-weight: 600; margin: 0 0 10px 0; }
 .post-comments-list {
   list-style: none;
   margin: 0 0 10px 0;
   padding: 0;
-  max-height: 260px;
+  max-height: 400px;
   overflow-y: auto;
+  padding-right: 8px;
 }
-
-.post-comments-empty {
-  font-size: 13px;
-  color: var(--text-muted);
-}
-
-.post-comment-row {
-  padding: 6px 0;
-  border-bottom: 1px solid #f3f4f6;
-}
-
-.post-comment-row:last-child {
-  border-bottom: none;
-}
-
+.post-comments-empty { font-size: 13px; color: var(--text-muted); }
+.post-comment-row { padding: 6px 0; border-bottom: 1px solid #f3f4f6; }
+.post-comment-row:last-child { border-bottom: none; }
 .post-comment-header {
   font-size: 12px;
   color: var(--text-muted);
@@ -298,27 +259,15 @@
   gap: 4px;
   margin-bottom: 2px;
 }
-
-.post-comment-author {
-  font-weight: 600;
-}
-
-.post-comment-dot {
-  color: var(--text-muted);
-}
-
-.post-comment-text {
-  font-size: 13px;
-  color: var(--text-main);
-}
-
+.post-comment-author { font-weight: 600; }
+.post-comment-dot { color: var(--text-muted); }
+.post-comment-content { font-size: 13px; color: var(--text-main); }
 .post-comment-form {
   margin-top: 6px;
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
-
 .post-comment-input {
   width: 100%;
   resize: vertical;
@@ -329,16 +278,8 @@
   border: 1px solid #d1d5db;
   outline: none;
 }
-
-.post-comment-input:focus {
-  border-color: var(--brand-purple);
-}
-
-.post-comment-actions {
-  display: flex;
-  justify-content: flex-end;
-}
-
+.post-comment-input:focus { border-color: var(--brand-purple); }
+.post-comment-actions { display: flex; justify-content: flex-end; }
 .post-comment-submit {
   border: none;
   border-radius: 999px;
@@ -350,14 +291,28 @@
   cursor: pointer;
 }
 
-/* 같은 작성자 글 */
-.post-writer-more {
-  background: #ffffff;
-  border-radius: 8px;
-  padding: 14px 14px 10px;
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+/* -------- 오른쪽 레일 (“님의 다른 글”) -------- */
+.community-root.is-detail .post-detail-wrapper {
+  padding-right: 260px; /* 레일 붙이기 여유 */
 }
 
+.community-root.is-detail .post-writer-more {
+  position: fixed;
+  right: 24px;
+  top: 80px; 
+  width: 240px;
+  max-height: calc(100vh - 200px); 
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 14px 14px 56px; /* ⬇ 아래 여백 = 그라데이션 공간 */
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+  overflow-y: auto;
+  z-index: 50;
+
+  position: fixed;
+}
+
+/* 제목 */
 .post-writer-more-title {
   font-size: 14px;
   font-weight: 600;
@@ -381,7 +336,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 4px 0;
+  padding: 6px 0;
   border-bottom: 1px solid #f3f4f6;
 }
 
@@ -400,194 +355,51 @@
   color: #ef4444;
 }
 
-/* -------- 오른쪽 하단 글쓰기 플로팅 버튼 -------- */
-
-.community-fab {
-  position: fixed;
-  right: 32px;
-  bottom: 32px;
-  width: 55px;
-  height: 72px;
-  border: none;
-  padding: 0;
-  background: transparent;
-  cursor: pointer;
-  z-index: 11000;
+/* ✅ 아래 흐려지는 그라데이션 (이제 제대로 보임) */
+.community-root.is-detail .post-writer-more::after {
+  content: "";
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 48px;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 1)
+  );
 }
 
-.community-fab img {
-  width: 100%;
-  height: 100%;
+/* -------- 다크모드 -------- */
+:root[data-theme="dark"] .post-comment-input {
+  background-color: #ffffff !important;
+  color: #1a1a1a !important;
+  border: 2px solid #2b0b0b !important;
+  border-radius: 10px;
 }
-/* ===========================
- *   글쓰기(PostEditor) 레이아웃
- * =========================== */
-
-.post-editor-root {
-  width: 100%;
-  min-height: calc(100vh - 48px);
-  display: flex;
-  justify-content: center;
-  padding: 24px 16px 40px;
-  box-sizing: border-box;
+:root[data-theme="dark"] .post-detail-back { color: #ffffff !important; }
+:root[data-theme="dark"] .post-comments-title,
+:root[data-theme="dark"] .post-writer-more-title { color: #000000 !important; }
+:root[data-theme="dark"] .post-comment-submit {
+  background: #6b2a2a !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
 }
+:root[data-theme="dark"] .post-comment-submit:hover { filter: brightness(1.1); }
+:root[data-theme="dark"] .post-comment-content { color: #fefefe !important; }
+:root[data-theme="dark"] .post-comment-header { color: #e5e5e5 !important; }
+:root[data-theme="dark"] .post-comment-input::placeholder { color: #888 !important; }
 
-.post-editor-card {
-  width: 100%;
-  max-width: 720px;
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 20px 24px 24px;
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.16);
-}
-
-/* 헤더: 제목 + 닫기 버튼 */
-.post-editor-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.post-editor-header h2 {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--text-main);
-}
-
-.post-editor-close {
-  border: none;
-  background: transparent;
-  font-size: 18px;
-  cursor: pointer;
-  color: var(--text-muted);
-}
-
-/* 폼 전체 */
-.post-editor-form {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-/* 라벨 + 입력 한 줄 */
-.post-editor-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-}
-
-.post-editor-row > label {
-  width: 70px;
-  font-size: 13px;
-  color: var(--text-muted);
-  padding-top: 8px;
-}
-
-/* 인풋/셀렉트 공통 스타일 */
-.post-editor-input {
-  flex: 1;
-  border-radius: 8px;
-  border: 1px solid #d1d5db;
-  padding: 8px 10px;
-  font-size: 13px;
-  outline: none;
-}
-
-.post-editor-input:focus {
-  border-color: var(--brand-purple);
-}
-
-/* 내용 textarea */
-.post-editor-row-textarea > label {
-  padding-top: 6px;
-}
-
-.post-editor-textarea {
-  flex: 1;
-  border-radius: 8px;
-  border: 1px solid #d1d5db;
-  padding: 10px 12px;
-  font-size: 13px;
-  resize: vertical;
-  min-height: 140px;
-  outline: none;
-}
-
-.post-editor-textarea:focus {
-  border-color: var(--brand-purple);
-}
-
-/* 파일 업로드 + 미리보기 */
-.post-editor-row-file input[type="file"] {
-  font-size: 13px;
-}
-
-.post-editor-file-wrap {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.post-editor-thumb {
-  width: 160px;
-  height: 100px;
-  border-radius: 8px;
-  overflow: hidden;
-  background: #e5e7eb;
-}
-
-.post-editor-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-/* 버튼 영역 */
-.post-editor-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.post-editor-btn {
-  border-radius: 999px;
-  padding: 8px 18px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-}
-
-.post-editor-btn-primary {
-  background: var(--brand-purple);
-  color: #ffffff;
-}
-
-.post-editor-btn-secondary {
-  background: #f3f4f6;
-  color: #4b5563;
-}
-
-/* 커뮤니티 글쓰기 플로팅 아이콘 라이트/다크 전환 */
-.community-fab-icon {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-.community-fab-icon-dark {
-  display: none;
-}
-
-:root[data-theme="dark"] .community-fab-icon-light {
-  display: none;
-}
-
-:root[data-theme="dark"] .community-fab-icon-dark {
-  display: block;
+/* -------- 반응형 -------- */
+@media (max-width: 1100px) {
+  .community-root.is-detail .post-detail-wrapper { padding-right: 200px; }
+  .community-root.is-detail .post-writer-more {
+    position: fixed;
+    right: 24px;
+    top: 140px;
+    width: 220px;
+    max-height: calc(100vh - 180px);
+    overflow-y: auto;
+  }
 }
