@@ -14,19 +14,11 @@ import {
   updatePost as updatePostApi,
   deletePost as deletePostApi,
 } from "../api/posts";
-import {
-  listComments,
-  createComment,
-  deleteComment,
-} from "../api/comments";
-
-const DEFAULT_THUMB =
-  "https://images.pexels.com/photos/461198/pexels-photo-461198.jpeg?auto=compress&cs=tinysrgb&w=400";
+import { listComments, createComment, deleteComment } from "../api/comments";
 
 /** 서버(PostResponse) → 커뮤니티 카드용 포맷으로 매핑 */
 function mapPostFromApi(p) {
   return {
-    // ⚠️ DB 컬럼이 idx여도 프론트에서는 id로 통일
     id: p.id ?? p.postId ?? p.idx,
     title: p.title ?? "(제목 없음)",
     writer: p.writer ?? "익명",
@@ -36,19 +28,17 @@ function mapPostFromApi(p) {
           hour: "2-digit",
           minute: "2-digit",
         })
-      : (p.created_at
-          ? new Date(p.created_at).toLocaleTimeString("ko-KR", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })
-          : "방금 전"),
+      : p.created_at
+      ? new Date(p.created_at).toLocaleTimeString("ko-KR", {
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : "방금 전",
     commentCount: p.commentCount ?? 0,
     views: p.viewCount ?? p.views ?? 0,
     category: p.type ?? p.category ?? "제보",
     location: p.locationText ?? p.location ?? "",
-    // 빈 문자열("")도 기본 썸네일로 대체
-    thumbnail: p.imageUrl || DEFAULT_THUMB,
-    // 게시글 본문은 body로 통일
+    thumbnail: p.imageUrl ? p.imageUrl : null, // 이미지 없으면 null
     body: p.body ?? p.content ?? "",
   };
 }
@@ -58,7 +48,7 @@ function mapPostToEditorInitial(post) {
   return {
     type: post.category ?? "제보",
     title: post.title ?? "",
-    body: post.body ?? "", // content 대신 body
+    body: post.body ?? "",
     locationText: post.location ?? "",
     storeCategory: post.board ?? "",
     writer: post.writer ?? "",
@@ -71,17 +61,14 @@ export default function CommunityPage() {
   const [view, setView] = useState("list");
   const [posts, setPosts] = useState([]);
   const [selectedPostId, setSelectedPostId] = useState(null);
-  const [editingPost, setEditingPost] = useState(null); // PostEditor 초기값(수정 모드일 때만 세팅)
+  const [editingPost, setEditingPost] = useState(null);
 
   // 댓글 상태: { [postId]: [{ id, author, content, createdAt }] }
   const [commentsByPost, setCommentsByPost] = useState({});
 
-  const selectedPost =
-    posts.find((p) => p.id === selectedPostId) || null;
+  const selectedPost = posts.find((p) => p.id === selectedPostId) || null;
 
-  // ─────────────────────────────────────────────────────────────
-  // 게시글 목록 최초 로드
-  // ─────────────────────────────────────────────────────────────
+  // 목록 최초 로드
   useEffect(() => {
     (async () => {
       try {
@@ -94,12 +81,9 @@ export default function CommunityPage() {
     })();
   }, []);
 
-  // ─────────────────────────────────────────────────────────────
-  // 상세 진입: 댓글 불러오기(페이지 0 기준)
-  // ─────────────────────────────────────────────────────────────
+  // 상세 진입
   const handleOpenPost = async (postId) => {
     if (!postId) {
-      console.warn("postId가 없습니다.");
       alert("게시글 정보를 불러올 수 없어요.");
       return;
     }
@@ -123,16 +107,11 @@ export default function CommunityPage() {
     setView("list");
   };
 
-  // ─────────────────────────────────────────────────────────────
   // 댓글 등록
-  // ─────────────────────────────────────────────────────────────
   const handleAddComment = async (postId, content) => {
     if (!content.trim()) return;
     try {
-      await createComment(postId, {
-        author: "익명",
-        content: content.trim(),
-      });
+      await createComment(postId, { author: "익명", content: content.trim() });
       const page = await listComments(postId, 0, 10);
       setCommentsByPost((prev) => ({
         ...prev,
@@ -144,24 +123,19 @@ export default function CommunityPage() {
     }
   };
 
-  // ─────────────────────────────────────────────────────────────
-  // 글쓰기(생성) / 수정 / 삭제
-  // ─────────────────────────────────────────────────────────────
+  // 글쓰기/수정/삭제
   const handleOpenWrite = () => {
-    setEditingPost(null); // 생성 모드
+    setEditingPost(null);
     setView("write");
   };
 
   const handleCreatePost = async (form) => {
     try {
-      const created = await createPostApi(form); // 서버가 id 또는 객체 반환
-      // 목록 재조회
+      const created = await createPostApi(form);
       const data = await listPostsApi();
       const list = Array.isArray(data) ? data : data?.content ?? [];
       const mapped = list.map(mapPostFromApi);
       setPosts(mapped);
-
-      // 생성된 글로 이동 (id / postId / idx 다 대응)
       const createdId =
         (typeof created === "object"
           ? created.id ?? created.postId ?? created.idx
@@ -175,7 +149,7 @@ export default function CommunityPage() {
   };
 
   const openEdit = (post) => {
-    setEditingPost(mapPostToEditorInitial(post)); // 수정 모드 초기값
+    setEditingPost(mapPostToEditorInitial(post));
     setSelectedPostId(post.id);
     setView("write");
   };
@@ -185,8 +159,7 @@ export default function CommunityPage() {
       await updatePostApi(postId, form);
       const data = await listPostsApi();
       const list = Array.isArray(data) ? data : data?.content ?? [];
-      const mapped = list.map(mapPostFromApi);
-      setPosts(mapped);
+      setPosts(list.map(mapPostFromApi));
       setEditingPost(null);
       setSelectedPostId(postId);
       setView("detail");
@@ -217,7 +190,7 @@ export default function CommunityPage() {
   };
 
   return (
-    <div className="community-root">
+    <div className={`community-root ${view === "detail" ? "is-detail" : "is-list"}`}>
       {/* 리스트 화면 */}
       {view === "list" && (
         <>
@@ -261,11 +234,11 @@ export default function CommunityPage() {
           onAddComment={handleAddComment}
           onEdit={() => openEdit(selectedPost)}
           onDelete={() => handleDeletePost(selectedPost.id)}
-          onDeleteComment={(commentId) => deleteComment(commentId)} // 필요 시 사용
+          onDeleteComment={(commentId) => deleteComment(commentId)}
         />
       )}
 
-      {/* 글쓰기/수정 화면 (PostEditor 재사용) */}
+      {/* 글쓰기/수정 화면 */}
       {view === "write" && (
         <PostEditor
           initial={editingPost ?? undefined}
@@ -291,41 +264,38 @@ function CommunityList({ posts, onOpenPost }) {
   return (
     <div className="community-list-wrapper">
       <ul className="community-list">
-        {posts.map((post) => (
-          <li
-            key={post.id ?? post.idx ?? Math.random()} // idx 대비 방어
-            className="community-row"
-            onClick={() => onOpenPost(post.id)}
-          >
-            <div className="community-thumb">
-              {/* ⬇️ CHANGED: 빈 값이면 <img> 렌더링하지 않음 */}
-              {post.thumbnail && (
-                <img src={post.thumbnail} alt={post.title} />
+        {posts.map((post) => {
+          const hasThumb = Boolean(post.thumbnail);
+          return (
+            <li
+              key={post.id ?? post.idx ?? Math.random()}
+              className={`community-row ${hasThumb ? "has-thumb" : "no-thumb"}`}
+              onClick={() => onOpenPost(post.id)}
+            >
+              {/* 썸네일이 있을 때만 표시 */}
+              {hasThumb && (
+                <div className="community-thumb">
+                  <img src={post.thumbnail} alt={post.title} />
+                </div>
               )}
-            </div>
 
-            <div className="community-row-main">
-              <div className="community-row-title-line">
-                <span className="community-row-title">{post.title}</span>
-                <span className="community-row-count">
-                  [{post.commentCount}]
-                </span>
+              <div className="community-row-main">
+                <div className="community-row-title-line">
+                  <span className="community-row-title">{post.title}</span>
+                  <span className="community-row-count">[{post.commentCount}]</span>
+                </div>
+                <div className="community-row-meta">
+                  <span className="community-row-writer">{post.writer}</span>
+                  <span className="community-row-dot">·</span>
+                  <span className="community-row-location">{post.location}</span>
+                </div>
               </div>
-              <div className="community-row-meta">
-                <span className="community-row-writer">
-                  {post.writer}
-                </span>
-                <span className="community-row-dot">·</span>
-                <span className="community-row-location">
-                  {post.location}
-                </span>
-              </div>
-            </div>
 
-            <div className="community-row-board">{post.board}</div>
-            <div className="community-row-time">{post.time}</div>
-          </li>
-        ))}
+              <div className="community-row-board">{post.board}</div>
+              <div className="community-row-time">{post.time}</div>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
@@ -363,12 +333,13 @@ function CommunityDetail({
       </button>
 
       <div className="post-detail-main">
-        <h1 className="post-detail-title">{post.title}</h1>
-
-        {/* 수정/삭제 버튼 */}
-        <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-          <button onClick={onEdit}>수정</button>
-          <button onClick={onDelete}>삭제</button>
+        {/* 제목 + 우측 상단 액션 */}
+        <div className="post-header">
+          <h1 className="post-detail-title">{post.title}</h1>
+          <div className="post-actions">
+            <button className="post-btn edit" onClick={onEdit}>수정</button>
+            <button className="post-btn delete" onClick={onDelete}>삭제</button>
+          </div>
         </div>
 
         <div className="post-detail-meta">
@@ -382,13 +353,9 @@ function CommunityDetail({
         </div>
 
         <div className="post-detail-thumbnail">
-          {/* ⬇️ CHANGED: 빈 값이면 렌더링하지 않음 */}
-          {post.thumbnail && (
-            <img src={post.thumbnail} alt={post.title} />
-          )}
+          {post.thumbnail && <img src={post.thumbnail} alt={post.title} />}
         </div>
 
-        {/* ✅ 게시글 본문: body 사용 */}
         <pre className="post-detail-content">{post.body}</pre>
       </div>
 
@@ -425,32 +392,22 @@ function CommunityDetail({
               onChange={(e) => setCommentInput(e.target.value)}
             />
             <div className="post-comment-actions">
-              <button type="submit" className="post-comment-submit">
-                등록
-              </button>
+              <button type="submit" className="post-comment-submit">등록</button>
             </div>
           </form>
         </section>
 
         {/* 같은 작성자 글 */}
         <aside className="post-writer-more">
-          <h3 className="post-writer-more-title">
-            {post.writer} 님의 다른 글
-          </h3>
+          <h3 className="post-writer-more-title">{post.writer} 님의 다른 글</h3>
           <ul className="post-writer-more-list">
             {sameWriterPosts.length === 0 ? (
-              <li className="post-writer-more-empty">
-                다른 글이 없습니다.
-              </li>
+              <li className="post-writer-more-empty">다른 글이 없습니다.</li>
             ) : (
               sameWriterPosts.map((p) => (
                 <li key={p.id} className="post-writer-more-row">
-                  <span className="post-writer-more-title-text">
-                    {p.title}
-                  </span>
-                  <span className="post-writer-more-count">
-                    [{p.commentCount}]
-                  </span>
+                  <span className="post-writer-more-title-text">{p.title}</span>
+                  <span className="post-writer-more-count">[{p.commentCount}]</span>
                 </li>
               ))
             )}
