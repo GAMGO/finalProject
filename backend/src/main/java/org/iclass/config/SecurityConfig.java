@@ -35,6 +35,8 @@ public class SecurityConfig {
             "/api/email/**",
             "/api/recovery/**",
             "/api/routes/**",
+            "/recommend/route",
+            "/api/stores/*/summary"
             
     };
 
