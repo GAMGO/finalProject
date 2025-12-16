@@ -12,7 +12,7 @@ def get_db_connection():
         password=os.getenv("SQL_PW", "1234"),
         database=os.getenv("DBNAME", "my_project_db"),
         charset="utf8mb4",
-        cursorclass=pymysql.cursors.DictCursor   # ★ 핵심 포인트
+        # cursorclass=pymysql.cursors.DictCursor   # ★ 핵심 포인트
     )
     return conn
 
